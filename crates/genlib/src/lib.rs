@@ -1,12 +1,9 @@
-use quick_xml::{
-    Reader,
-    events::{BytesStart, Event},
-};
+use quick_xml::{Reader, events::Event};
 
 #[derive(Debug)]
 struct Field {
     name: String,
-    ty: String,
+    field_type: String,
 }
 
 #[derive(Debug)]
@@ -16,9 +13,53 @@ struct SchemaType {
     fields: Vec<Field>,
 }
 
+const RUST_RESERVED_WORDS: &[&str] = &["Self", "type"];
+
+/// Convert PascalCase/camelCase to snake_case
+fn to_snake_case(name: &str) -> String {
+    let mut result = String::new();
+    let mut prev_is_lower = false;
+
+    for (i, ch) in name.chars().enumerate() {
+        if ch.is_uppercase() {
+            // Add underscore before uppercase if:
+            // - Not the first character
+            // - Previous character was lowercase or digit
+            if i > 0 && (prev_is_lower || name.chars().nth(i - 1).is_some_and(|c| c.is_numeric())) {
+                result.push('_');
+            }
+            result.push(ch.to_ascii_lowercase());
+            prev_is_lower = false;
+        } else {
+            result.push(ch);
+            prev_is_lower = ch.is_lowercase();
+        }
+    }
+
+    result
+}
+
+/// Check if a field name is a Rust reserved word
+fn is_reserved_word(name: &str) -> bool {
+    RUST_RESERVED_WORDS.contains(&name)
+}
+
+/// Convert a field name to a safe Rust identifier in snake_case
+fn safe_field_name(name: &str) -> (String, bool) {
+    let snake_case = to_snake_case(name);
+
+    if is_reserved_word(&snake_case) {
+        let safe_name = format!("{snake_case}_");
+        (safe_name, true)
+    } else {
+        let needs_rename = name != snake_case;
+        (snake_case, needs_rename)
+    }
+}
+
 fn generate_type(schema_type: &SchemaType) -> String {
     let type_name = &schema_type.name;
-    println!("generate type name = {type_name}");
+    println!("generate_type: name = {type_name}");
 
     let mut out = String::new();
 
@@ -26,21 +67,25 @@ fn generate_type(schema_type: &SchemaType) -> String {
         out.push_str(format!("// {text_str}\n").as_str());
     }
 
-    // fields
-    println!("FIELDS");
     let mut fields: Vec<String> = Vec::new();
 
     for field in &schema_type.fields {
-        println!("FIELD");
+        let original_name = &field.name;
+        let (safe_name, needs_rename) = safe_field_name(original_name);
 
-        println!("{}", field.name);
-        fields.push(format!("    {}: String", field.name));
+        if needs_rename {
+            fields.push(format!(
+                "    #[serde(rename = \"{original_name}\")]\n    {safe_name}: String"
+            ));
+        } else {
+            fields.push(format!("    {safe_name}: String"));
+        }
     }
     let fields_out = fields.join(",\n");
 
     out.push_str(
         format!(
-            "#[derive(Debug, Clone)]
+            "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct {type_name} {{
 {fields_out}
 }}\n\n",
@@ -54,15 +99,13 @@ pub struct {type_name} {{
 pub fn generate(xml: &str) -> String {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
-    // TODO: Use a better data structure
+    // TODO: Use a better data structure?
     let mut out = String::new();
 
     let mut types: Vec<SchemaType> = Vec::new();
     let mut current_type: Option<SchemaType> = None;
 
     loop {
-        println!("loop it, current_type={current_type:?}");
-
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) | Ok(Event::Empty(e)) => {
                 let tag_name =
@@ -81,7 +124,6 @@ pub fn generate(xml: &str) -> String {
                             _ => {}
                         }
                     }
-                    println!("Resetting current_type to {:?}", name);
                     current_type = Some(SchemaType {
                         name: name.unwrap_or_default(),
                         text,
@@ -111,7 +153,7 @@ pub fn generate(xml: &str) -> String {
                         if let (Some(fname), Some(ftype)) = (field_name, field_type) {
                             ty.fields.push(Field {
                                 name: fname,
-                                ty: ftype,
+                                field_type: ftype,
                             });
                         }
                     }
@@ -131,8 +173,6 @@ pub fn generate(xml: &str) -> String {
         }
         buf.clear();
     }
-
-    print!("ALL TYPES: {types:?}");
 
     for schema_type in types {
         out.push_str(&generate_type(&schema_type));

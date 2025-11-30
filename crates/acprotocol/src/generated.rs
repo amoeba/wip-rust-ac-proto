@@ -1,3607 +1,5181 @@
 // Full spell Id combining the spell id with the spell layer.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LayeredSpellId {
-    Id: String,
-    Layer: String
+    #[serde(rename = "Id")]
+    id: String,
+    #[serde(rename = "Layer")]
+    layer: String
 }
 
 // List which is packable for network
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PackableList {
-    Count: String
+    #[serde(rename = "Count")]
+    count: String
 }
 
 // HashTable which is packable for network
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PackableHashTable {
-    Count: String,
-    MaxSize: String
+    #[serde(rename = "Count")]
+    count: String,
+    #[serde(rename = "MaxSize")]
+    max_size: String
 }
 
 // HashTable which is packable for network
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PHashTable {
-    PackedSize: String
+    #[serde(rename = "PackedSize")]
+    packed_size: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Vector3 {
-    X: String,
-    Y: String,
-    Z: String
+    #[serde(rename = "X")]
+    x: String,
+    #[serde(rename = "Y")]
+    y: String,
+    #[serde(rename = "Z")]
+    z: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Quaternion {
-    W: String,
-    X: String,
-    Y: String,
-    Z: String
+    #[serde(rename = "W")]
+    w: String,
+    #[serde(rename = "X")]
+    x: String,
+    #[serde(rename = "Y")]
+    y: String,
+    #[serde(rename = "Z")]
+    z: String
 }
 
 // Landcell location, without orientation
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Origin {
-    Landcell: String,
-    Location: String
+    #[serde(rename = "Landcell")]
+    landcell: String,
+    #[serde(rename = "Location")]
+    location: String
 }
 
 // Landcell location, including orientation
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Position {
-    Landcell: String,
-    Frame: String
+    #[serde(rename = "Landcell")]
+    landcell: String,
+    #[serde(rename = "Frame")]
+    frame: String
 }
 
 // A the location and orientation of an object within a landcell
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Frame {
-    Origin: String,
-    Orientation: String
+    #[serde(rename = "Origin")]
+    origin: String,
+    #[serde(rename = "Orientation")]
+    orientation: String
 }
 
 // Optional header data when PacketHeaderFlags includes ServerSwitch
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ServerSwitchHeader {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Optional header data when PacketHeaderFlags includes CICMDCommand
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CICMDCommandHeader {
-    Command: String,
-    Parameter: String
+    #[serde(rename = "Command")]
+    command: String,
+    #[serde(rename = "Parameter")]
+    parameter: String
 }
 
 // Optional header data when PacketHeaderFlags includes Flow
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct FlowHeader {
-    Bytes: String,
-    Interval: String
+    #[serde(rename = "Bytes")]
+    bytes: String,
+    #[serde(rename = "Interval")]
+    interval: String
 }
 
 // Optional header data when PacketHeaderFlags includes LogonServerAddr
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SocketAddress {
-    Family: String,
-    Port: String,
-    Address: String,
-    Empty: String
+    #[serde(rename = "Family")]
+    family: String,
+    #[serde(rename = "Port")]
+    port: String,
+    #[serde(rename = "Address")]
+    address: String,
+    #[serde(rename = "Empty")]
+    empty: String
 }
 
 // Optional header data when PacketHeaderFlags includes LoginRequest
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LoginRequestHeader {
-    ClientVersion: String,
-    Length: String,
-    AuthType: String,
-    Flags: String,
-    Sequence: String,
-    Account: String,
-    AccountToLoginAs: String,
-    Password: String,
-    GlsTicket: String
+    #[serde(rename = "ClientVersion")]
+    client_version: String,
+    #[serde(rename = "Length")]
+    length: String,
+    #[serde(rename = "AuthType")]
+    auth_type: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Account")]
+    account: String,
+    #[serde(rename = "AccountToLoginAs")]
+    account_to_login_as: String,
+    #[serde(rename = "Password")]
+    password: String,
+    #[serde(rename = "GlsTicket")]
+    gls_ticket: String
 }
 
 // Optional header data when PacketHeaderFlags includes Referral
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ReferralHeader {
-    Cookie: String,
-    Address: String,
-    IdServer: String,
-    Unknown: String
+    #[serde(rename = "Cookie")]
+    cookie: String,
+    #[serde(rename = "Address")]
+    address: String,
+    #[serde(rename = "IdServer")]
+    id_server: String,
+    #[serde(rename = "Unknown")]
+    unknown: String
 }
 
 // Optional header data when PacketHeaderFlags includes ConnectRequest
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ConnectRequestHeader {
-    ServerTime: String,
-    Cookie: String,
-    NetID: String,
-    OutgoingSeed: String,
-    IncomingSeed: String,
-    Unknown: String
+    #[serde(rename = "ServerTime")]
+    server_time: String,
+    #[serde(rename = "Cookie")]
+    cookie: String,
+    #[serde(rename = "NetID")]
+    net_id: String,
+    #[serde(rename = "OutgoingSeed")]
+    outgoing_seed: String,
+    #[serde(rename = "IncomingSeed")]
+    incoming_seed: String,
+    #[serde(rename = "Unknown")]
+    unknown: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct NetError {
-    StringId: String,
-    TableId: String
+    #[serde(rename = "StringId")]
+    string_id: String,
+    #[serde(rename = "TableId")]
+    table_id: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EchoResponseHeader {
-    LocalTime: String,
-    HoldingTime: String
+    #[serde(rename = "LocalTime")]
+    local_time: String,
+    #[serde(rename = "HoldingTime")]
+    holding_time: String
 }
 
 // A collection of property tables.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ACBaseQualities {
-    Flags: String,
-    WeenieType: String,
-    IntProperties: String,
-    Int64Properties: String,
-    BoolProperties: String,
-    FloatProperties: String,
-    StringProperties: String,
-    DataProperties: String,
-    InstanceProperties: String,
-    PositionProperties: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "WeenieType")]
+    weenie_type: String,
+    #[serde(rename = "IntProperties")]
+    int_properties: String,
+    #[serde(rename = "Int64Properties")]
+    int64_properties: String,
+    #[serde(rename = "BoolProperties")]
+    bool_properties: String,
+    #[serde(rename = "FloatProperties")]
+    float_properties: String,
+    #[serde(rename = "StringProperties")]
+    string_properties: String,
+    #[serde(rename = "DataProperties")]
+    data_properties: String,
+    #[serde(rename = "InstanceProperties")]
+    instance_properties: String,
+    #[serde(rename = "PositionProperties")]
+    position_properties: String
 }
 
 // The ACQualities structure contains character property lists.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ACQualities {
-    Flags: String,
-    HasHealth: String,
-    Attributes: String,
-    Skills: String,
-    Body: String,
-    SpellBook: String,
-    Enchantments: String,
-    EventFilter: String,
-    Emotes: String,
-    CreationProfile: String,
-    PageData: String,
-    Generators: String,
-    GeneratorRegistry: String,
-    GeneratorQueue: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "HasHealth")]
+    has_health: String,
+    #[serde(rename = "Attributes")]
+    attributes: String,
+    #[serde(rename = "Skills")]
+    skills: String,
+    #[serde(rename = "Body")]
+    body: String,
+    #[serde(rename = "SpellBook")]
+    spell_book: String,
+    #[serde(rename = "Enchantments")]
+    enchantments: String,
+    #[serde(rename = "EventFilter")]
+    event_filter: String,
+    #[serde(rename = "Emotes")]
+    emotes: String,
+    #[serde(rename = "CreationProfile")]
+    creation_profile: String,
+    #[serde(rename = "PageData")]
+    page_data: String,
+    #[serde(rename = "Generators")]
+    generators: String,
+    #[serde(rename = "GeneratorRegistry")]
+    generator_registry: String,
+    #[serde(rename = "GeneratorQueue")]
+    generator_queue: String
 }
 
 // The AttributeCache structure contains information about a character attributes.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AttributeCache {
-    Flags: String,
-    Strength: String,
-    Endurance: String,
-    Quickness: String,
-    Coordination: String,
-    Focus: String,
-    Self: String,
-    Health: String,
-    Stamina: String,
-    Mana: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Strength")]
+    strength: String,
+    #[serde(rename = "Endurance")]
+    endurance: String,
+    #[serde(rename = "Quickness")]
+    quickness: String,
+    #[serde(rename = "Coordination")]
+    coordination: String,
+    #[serde(rename = "Focus")]
+    focus: String,
+    #[serde(rename = "Self")]
+    self: String,
+    #[serde(rename = "Health")]
+    health: String,
+    #[serde(rename = "Stamina")]
+    stamina: String,
+    #[serde(rename = "Mana")]
+    mana: String
 }
 
 // The Attribute structure contains information about a character attribute.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AttributeInfo {
-    PointsRaised: String,
-    InnatePoints: String,
-    ExperienceSpent: String
+    #[serde(rename = "PointsRaised")]
+    points_raised: String,
+    #[serde(rename = "InnatePoints")]
+    innate_points: String,
+    #[serde(rename = "ExperienceSpent")]
+    experience_spent: String
 }
 
 // The SecondaryAttribute structure contains information about a character vital.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SecondaryAttributeInfo {
-    Attribute: String,
-    Current: String
+    #[serde(rename = "Attribute")]
+    attribute: String,
+    #[serde(rename = "Current")]
+    current: String
 }
 
 // The Skill structure contains information about a character skill.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Skill {
-    PointsRaised: String,
-    AdjustPP: String,
-    TrainingLevel: String,
-    ExperienceSpent: String,
-    InnatePoints: String,
-    ResistanceOfLastCheck: String,
-    LastUsedTime: String
+    #[serde(rename = "PointsRaised")]
+    points_raised: String,
+    #[serde(rename = "AdjustPP")]
+    adjust_pp: String,
+    #[serde(rename = "TrainingLevel")]
+    training_level: String,
+    #[serde(rename = "ExperienceSpent")]
+    experience_spent: String,
+    #[serde(rename = "InnatePoints")]
+    innate_points: String,
+    #[serde(rename = "ResistanceOfLastCheck")]
+    resistance_of_last_check: String,
+    #[serde(rename = "LastUsedTime")]
+    last_used_time: String
 }
 
 // Contains body part table
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Body {
-    BodyParts: String
+    #[serde(rename = "BodyParts")]
+    body_parts: String
 }
 
 // Information on individual body parts. (Needs to be confirmed if this was used in prod)
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct BodyPart {
-    HasBPSD: String,
-    DamageType: String,
-    DamageVal: String,
-    DamageVar: String,
-    ArmorCache: String,
-    BH: String,
-    BPSD: String
+    #[serde(rename = "HasBPSD")]
+    has_bpsd: String,
+    #[serde(rename = "DamageType")]
+    damage_type: String,
+    #[serde(rename = "DamageVal")]
+    damage_val: String,
+    #[serde(rename = "DamageVar")]
+    damage_var: String,
+    #[serde(rename = "ArmorCache")]
+    armor_cache: String,
+    #[serde(rename = "BH")]
+    bh: String,
+    #[serde(rename = "BPSD")]
+    bpsd: String
 }
 
 // Information on armor levels
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ArmorCache {
-    BaseArmor: String,
-    ArmorVsSlash: String,
-    ArmorVsPierce: String,
-    ArmorVsBludgeon: String,
-    ArmorVsCold: String,
-    ArmorVsFire: String,
-    ArmorVsAcid: String,
-    ArmorVsElectric: String,
-    ArmorVsNether: String
+    #[serde(rename = "BaseArmor")]
+    base_armor: String,
+    #[serde(rename = "ArmorVsSlash")]
+    armor_vs_slash: String,
+    #[serde(rename = "ArmorVsPierce")]
+    armor_vs_pierce: String,
+    #[serde(rename = "ArmorVsBludgeon")]
+    armor_vs_bludgeon: String,
+    #[serde(rename = "ArmorVsCold")]
+    armor_vs_cold: String,
+    #[serde(rename = "ArmorVsFire")]
+    armor_vs_fire: String,
+    #[serde(rename = "ArmorVsAcid")]
+    armor_vs_acid: String,
+    #[serde(rename = "ArmorVsElectric")]
+    armor_vs_electric: String,
+    #[serde(rename = "ArmorVsNether")]
+    armor_vs_nether: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct BodyPartSelectionData {
-    HLF: String,
-    MLF: String,
-    LLF: String,
-    HRF: String,
-    MRF: String,
-    LRF: String,
-    HLB: String,
-    MLB: String,
-    LLB: String,
-    HRB: String,
-    MRB: String,
-    LRB: String
+    #[serde(rename = "HLF")]
+    hlf: String,
+    #[serde(rename = "MLF")]
+    mlf: String,
+    #[serde(rename = "LLF")]
+    llf: String,
+    #[serde(rename = "HRF")]
+    hrf: String,
+    #[serde(rename = "MRF")]
+    mrf: String,
+    #[serde(rename = "LRF")]
+    lrf: String,
+    #[serde(rename = "HLB")]
+    hlb: String,
+    #[serde(rename = "MLB")]
+    mlb: String,
+    #[serde(rename = "LLB")]
+    llb: String,
+    #[serde(rename = "HRB")]
+    hrb: String,
+    #[serde(rename = "MRB")]
+    mrb: String,
+    #[serde(rename = "LRB")]
+    lrb: String
 }
 
 // Contains information related to the spell in your spellbook
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SpellBookPage {
-    CastingLikelihood: String,
-    Unknown: String,
-    CastingLikelihood2: String
+    #[serde(rename = "CastingLikelihood")]
+    casting_likelihood: String,
+    #[serde(rename = "Unknown")]
+    unknown: String,
+    #[serde(rename = "CastingLikelihood2")]
+    casting_likelihood2: String
 }
 
 // Contains information related to the spells in effect on the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EnchantmentRegistry {
-    Flags: String,
-    LifeSpells: String,
-    CreatureSpells: String,
-    Vitae: String,
-    Cooldowns: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "LifeSpells")]
+    life_spells: String,
+    #[serde(rename = "CreatureSpells")]
+    creature_spells: String,
+    #[serde(rename = "Vitae")]
+    vitae: String,
+    #[serde(rename = "Cooldowns")]
+    cooldowns: String
 }
 
 // The Enchantment structure describes an active enchantment.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Enchantment {
-    Id: String,
-    HasEquipmentSet: String,
-    SpellCategory: String,
-    PowerLevel: String,
-    StartTime: String,
-    Duration: String,
-    CasterId: String,
-    DegradeModifier: String,
-    DegradeLimit: String,
-    LastTimeDegraded: String,
-    StatMod: String,
-    EquipmentSet: String
+    #[serde(rename = "Id")]
+    id: String,
+    #[serde(rename = "HasEquipmentSet")]
+    has_equipment_set: String,
+    #[serde(rename = "SpellCategory")]
+    spell_category: String,
+    #[serde(rename = "PowerLevel")]
+    power_level: String,
+    #[serde(rename = "StartTime")]
+    start_time: String,
+    #[serde(rename = "Duration")]
+    duration: String,
+    #[serde(rename = "CasterId")]
+    caster_id: String,
+    #[serde(rename = "DegradeModifier")]
+    degrade_modifier: String,
+    #[serde(rename = "DegradeLimit")]
+    degrade_limit: String,
+    #[serde(rename = "LastTimeDegraded")]
+    last_time_degraded: String,
+    #[serde(rename = "StatMod")]
+    stat_mod: String,
+    #[serde(rename = "EquipmentSet")]
+    equipment_set: String
 }
 
 // Information on stat modification
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct StatMod {
-    Type: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Contains a list of events to filter? Unknown what this does currently.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EventFilter {
-    Events: String
+    #[serde(rename = "Events")]
+    events: String
 }
 
 // Contains a list of emotes for NPCs? Unknown what this does currently.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmoteTable {
-    Emotes: String
+    #[serde(rename = "Emotes")]
+    emotes: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmoteSetList {
-    Emotes: String
+    #[serde(rename = "Emotes")]
+    emotes: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmoteSet {
-    Category: String,
-    Probability: String,
-    ClassId: String,
-    Style: String,
-    Substyle: String,
-    Quest: String,
-    VendorType: String,
-    MinHealth: String,
-    MaxHealth: String,
-    Emotes: String
+    #[serde(rename = "Category")]
+    category: String,
+    #[serde(rename = "Probability")]
+    probability: String,
+    #[serde(rename = "ClassId")]
+    class_id: String,
+    #[serde(rename = "Style")]
+    style: String,
+    #[serde(rename = "Substyle")]
+    substyle: String,
+    #[serde(rename = "Quest")]
+    quest: String,
+    #[serde(rename = "VendorType")]
+    vendor_type: String,
+    #[serde(rename = "MinHealth")]
+    min_health: String,
+    #[serde(rename = "MaxHealth")]
+    max_health: String,
+    #[serde(rename = "Emotes")]
+    emotes: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Emote {
-    Type: String,
-    Delay: String,
-    Extent: String,
-    Message: String,
-    Message: String,
-    Amount: String,
-    Stat: String,
-    Amount: String,
-    Stat: String,
-    Stat: String,
-    Percent: String,
-    Message: String,
-    Min: String,
-    Max: String,
-    Amount64: String,
-    HeroXP64: String,
-    Amount64: String,
-    Amount: String,
-    SpellId: String,
-    CProfile: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Delay")]
+    delay: String,
+    #[serde(rename = "Extent")]
+    extent: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Percent")]
+    percent: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Min")]
+    min: String,
+    #[serde(rename = "Max")]
+    max: String,
+    #[serde(rename = "Amount64")]
+    amount64: String,
+    #[serde(rename = "HeroXP64")]
+    hero_xp64: String,
+    #[serde(rename = "Amount64")]
+    amount64: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "SpellId")]
+    spell_id: String,
+    #[serde(rename = "CProfile")]
+    cprofile: String,
     msg: String,
-    CProfile: String,
-    WealthRating: String,
-    TreasureClass: String,
-    TreasureType: String,
-    Motion: String,
-    Frame: String,
-    PhysicsScript: String,
-    Sound: String,
-    Amount: String,
-    Stat: String,
-    Stat: String,
-    Amount: String,
-    Message: String,
-    Stat: String,
-    Message: String,
-    TestString: String,
-    Stat: String,
-    Message: String,
-    Min: String,
-    Max: String,
-    Stat: String,
-    Message: String,
-    Min64: String,
-    Max64: String,
-    Stat: String,
-    Message: String,
-    FMin: String,
-    FMax: String,
-    Stat: String,
-    Percent: String,
-    Min64: String,
-    Max64: String,
-    Stat: String,
-    Percent: String,
-    Min: String,
-    Max: String,
-    Display: String,
-    Position: String
+    #[serde(rename = "CProfile")]
+    cprofile: String,
+    #[serde(rename = "WealthRating")]
+    wealth_rating: String,
+    #[serde(rename = "TreasureClass")]
+    treasure_class: String,
+    #[serde(rename = "TreasureType")]
+    treasure_type: String,
+    #[serde(rename = "Motion")]
+    motion: String,
+    #[serde(rename = "Frame")]
+    frame: String,
+    #[serde(rename = "PhysicsScript")]
+    physics_script: String,
+    #[serde(rename = "Sound")]
+    sound: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "TestString")]
+    test_string: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Min")]
+    min: String,
+    #[serde(rename = "Max")]
+    max: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Min64")]
+    min64: String,
+    #[serde(rename = "Max64")]
+    max64: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "FMin")]
+    fmin: String,
+    #[serde(rename = "FMax")]
+    fmax: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Percent")]
+    percent: String,
+    #[serde(rename = "Min64")]
+    min64: String,
+    #[serde(rename = "Max64")]
+    max64: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Percent")]
+    percent: String,
+    #[serde(rename = "Min")]
+    min: String,
+    #[serde(rename = "Max")]
+    max: String,
+    #[serde(rename = "Display")]
+    display: String,
+    #[serde(rename = "Position")]
+    position: String
 }
 
 // Set information about an item for creation
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CreationProfile {
-    WeenieClassId: String,
-    Palette: String,
-    Shade: String,
-    Destination: String,
-    StackSize: String,
-    TryToBond: String
+    #[serde(rename = "WeenieClassId")]
+    weenie_class_id: String,
+    #[serde(rename = "Palette")]
+    palette: String,
+    #[serde(rename = "Shade")]
+    shade: String,
+    #[serde(rename = "Destination")]
+    destination: String,
+    #[serde(rename = "StackSize")]
+    stack_size: String,
+    #[serde(rename = "TryToBond")]
+    try_to_bond: String
 }
 
 // List of pages in a book
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PageDataList {
-    MaxNumPages: String,
-    MaxNumCharsPerPage: String,
-    Pages: String
+    #[serde(rename = "MaxNumPages")]
+    max_num_pages: String,
+    #[serde(rename = "MaxNumCharsPerPage")]
+    max_num_chars_per_page: String,
+    #[serde(rename = "Pages")]
+    pages: String
 }
 
 // Data for an individual page
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PageData {
-    AuthorId: String,
-    AuthorName: String,
-    AuthorAccount: String,
-    Version: String,
-    TextIncluded: String,
-    IgnoreAuthor: String,
-    PageText: String
+    #[serde(rename = "AuthorId")]
+    author_id: String,
+    #[serde(rename = "AuthorName")]
+    author_name: String,
+    #[serde(rename = "AuthorAccount")]
+    author_account: String,
+    #[serde(rename = "Version")]
+    version: String,
+    #[serde(rename = "TextIncluded")]
+    text_included: String,
+    #[serde(rename = "IgnoreAuthor")]
+    ignore_author: String,
+    #[serde(rename = "PageText")]
+    page_text: String
 }
 
 // Blob fragment data used to contruct message data. These can be spread across multiple packets
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct BlobFragments {
-    Sequence: String,
-    Id: String,
-    Count: String,
-    Size: String,
-    Index: String,
-    Group: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Id")]
+    id: String,
+    #[serde(rename = "Count")]
+    count: String,
+    #[serde(rename = "Size")]
+    size: String,
+    #[serde(rename = "Index")]
+    index: String,
+    #[serde(rename = "Group")]
+    group: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GeneratorTable {
-    Generators: String
+    #[serde(rename = "Generators")]
+    generators: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GeneratorProfile {
-    Probability: String,
-    TypeId: String,
-    Delay: String,
-    InitCreate: String,
-    MaxNum: String,
-    WhenCreate: String,
-    WhereCreate: String,
-    StackSize: String,
-    Ptid: String,
-    Shade: String,
-    PosVal: String,
-    Slot: String
+    #[serde(rename = "Probability")]
+    probability: String,
+    #[serde(rename = "TypeId")]
+    type_id: String,
+    #[serde(rename = "Delay")]
+    delay: String,
+    #[serde(rename = "InitCreate")]
+    init_create: String,
+    #[serde(rename = "MaxNum")]
+    max_num: String,
+    #[serde(rename = "WhenCreate")]
+    when_create: String,
+    #[serde(rename = "WhereCreate")]
+    where_create: String,
+    #[serde(rename = "StackSize")]
+    stack_size: String,
+    #[serde(rename = "Ptid")]
+    ptid: String,
+    #[serde(rename = "Shade")]
+    shade: String,
+    #[serde(rename = "PosVal")]
+    pos_val: String,
+    #[serde(rename = "Slot")]
+    slot: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GeneratorRegistry {
-    Registry: String
+    #[serde(rename = "Registry")]
+    registry: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GeneratorRegistryNode {
-    WcidOrType: String,
-    Ts: String,
-    TreasureType: String,
-    Slot: String,
-    Checkpointed: String,
-    Shop: String,
-    Amount: String
+    #[serde(rename = "WcidOrType")]
+    wcid_or_type: String,
+    #[serde(rename = "Ts")]
+    ts: String,
+    #[serde(rename = "TreasureType")]
+    treasure_type: String,
+    #[serde(rename = "Slot")]
+    slot: String,
+    #[serde(rename = "Checkpointed")]
+    checkpointed: String,
+    #[serde(rename = "Shop")]
+    shop: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Set of inventory items
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GeneratorQueue {
-    Queue: String
+    #[serde(rename = "Queue")]
+    queue: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GeneratorQueueNode {
-    Slot: String,
-    When: String
+    #[serde(rename = "Slot")]
+    slot: String,
+    #[serde(rename = "When")]
+    when: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct WindowProperty {
-    Key_a: String,
-    Unknown_c: String,
-    TitleSource: String,
-    StringId: String,
-    FileId: String,
-    Value_a: String,
-    Unknown_1b: String,
-    Unknown_1c: String,
-    Unknown_d: String,
-    Value_d: String,
-    Unknown_e: String,
-    Value_e: String,
-    Unknown_f: String,
-    Value_f: String,
-    Unknown_h: String,
-    Value_h: String,
-    Unknown_i: String,
-    Value_i: String,
-    Unknown_j: String,
-    Value_j: String
+    #[serde(rename = "Key_a")]
+    key_a: String,
+    #[serde(rename = "Unknown_c")]
+    unknown_c: String,
+    #[serde(rename = "TitleSource")]
+    title_source: String,
+    #[serde(rename = "StringId")]
+    string_id: String,
+    #[serde(rename = "FileId")]
+    file_id: String,
+    #[serde(rename = "Value_a")]
+    value_a: String,
+    #[serde(rename = "Unknown_1b")]
+    unknown_1b: String,
+    #[serde(rename = "Unknown_1c")]
+    unknown_1c: String,
+    #[serde(rename = "Unknown_d")]
+    unknown_d: String,
+    #[serde(rename = "Value_d")]
+    value_d: String,
+    #[serde(rename = "Unknown_e")]
+    unknown_e: String,
+    #[serde(rename = "Value_e")]
+    value_e: String,
+    #[serde(rename = "Unknown_f")]
+    unknown_f: String,
+    #[serde(rename = "Value_f")]
+    value_f: String,
+    #[serde(rename = "Unknown_h")]
+    unknown_h: String,
+    #[serde(rename = "Value_h")]
+    value_h: String,
+    #[serde(rename = "Unknown_i")]
+    unknown_i: String,
+    #[serde(rename = "Value_i")]
+    value_i: String,
+    #[serde(rename = "Unknown_j")]
+    unknown_j: String,
+    #[serde(rename = "Value_j")]
+    value_j: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct WindowOption {
-    Type_a: String,
-    Unknown_b: String,
-    PropertyCount: String
+    #[serde(rename = "Type_a")]
+    type_a: String,
+    #[serde(rename = "Unknown_b")]
+    unknown_b: String,
+    #[serde(rename = "PropertyCount")]
+    property_count: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct OptionProperty {
-    Type: String,
-    Unknown_a: String,
-    WindowOptions: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Unknown_a")]
+    unknown_a: String,
+    #[serde(rename = "WindowOptions")]
+    window_options: String,
     unknown_k: String,
-    activeOpacity: String,
+    #[serde(rename = "activeOpacity")]
+    active_opacity: String,
     unknown_l: String,
-    inactiveOpacity: String
+    #[serde(rename = "inactiveOpacity")]
+    inactive_opacity: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GameplayOptions {
-    Size: String,
-    Unknown200_2: String,
-    OptionPropertyCount: String
+    #[serde(rename = "Size")]
+    size: String,
+    #[serde(rename = "Unknown200_2")]
+    unknown200_2: String,
+    #[serde(rename = "OptionPropertyCount")]
+    option_property_count: String
 }
 
 // The PlayerModule structure contains character options.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PlayerModule {
-    Flags: String,
-    Options: String,
-    Shortcuts: String,
-    Tab1Spells: String,
-    Tab2Spells: String,
-    Tab3Spells: String,
-    Tab4Spells: String,
-    Tab5Spells: String,
-    Tab6Spells: String,
-    Tab7Spells: String,
-    Tab8Spells: String,
-    FillComps: String,
-    SpellBookFilters: String,
-    OptionFlags: String,
-    Unknown100_1: String,
-    OptionStrings: String,
-    GameplayOptions: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Options")]
+    options: String,
+    #[serde(rename = "Shortcuts")]
+    shortcuts: String,
+    #[serde(rename = "Tab1Spells")]
+    tab1_spells: String,
+    #[serde(rename = "Tab2Spells")]
+    tab2_spells: String,
+    #[serde(rename = "Tab3Spells")]
+    tab3_spells: String,
+    #[serde(rename = "Tab4Spells")]
+    tab4_spells: String,
+    #[serde(rename = "Tab5Spells")]
+    tab5_spells: String,
+    #[serde(rename = "Tab6Spells")]
+    tab6_spells: String,
+    #[serde(rename = "Tab7Spells")]
+    tab7_spells: String,
+    #[serde(rename = "Tab8Spells")]
+    tab8_spells: String,
+    #[serde(rename = "FillComps")]
+    fill_comps: String,
+    #[serde(rename = "SpellBookFilters")]
+    spell_book_filters: String,
+    #[serde(rename = "OptionFlags")]
+    option_flags: String,
+    #[serde(rename = "Unknown100_1")]
+    unknown100_1: String,
+    #[serde(rename = "OptionStrings")]
+    option_strings: String,
+    #[serde(rename = "GameplayOptions")]
+    gameplay_options: String
 }
 
 // Set of shortcuts
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ShortCutManager {
-    Shortcuts: String
+    #[serde(rename = "Shortcuts")]
+    shortcuts: String
 }
 
 // Shortcut
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ShortCutData {
-    Index: String,
-    ObjectId: String,
-    SpellId: String
+    #[serde(rename = "Index")]
+    index: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // List of spells in spell tab
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SpellTab {
-    Spells: String
+    #[serde(rename = "Spells")]
+    spells: String
 }
 
 // Set of inventory items
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ContentProfile {
-    ObjectId: String,
-    ContainerType: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ContainerType")]
+    container_type: String
 }
 
 // Set of inventory items
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct InventoryPlacement {
-    ObjectId: String,
-    Location: String,
-    Priority: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Location")]
+    location: String,
+    #[serde(rename = "Priority")]
+    priority: String
 }
 
 // Allegience information
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AllegianceProfile {
-    TotalMembers: String,
-    TotalVassals: String,
-    Hierarchy: String
+    #[serde(rename = "TotalMembers")]
+    total_members: String,
+    #[serde(rename = "TotalVassals")]
+    total_vassals: String,
+    #[serde(rename = "Hierarchy")]
+    hierarchy: String
 }
 
 // Allegience record
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AllegianceRecord {
-    TreeParent: String,
-    AllegianceData: String
+    #[serde(rename = "TreeParent")]
+    tree_parent: String,
+    #[serde(rename = "AllegianceData")]
+    allegiance_data: String
 }
 
 // Allegience hierarchy information
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AllegianceHierarchy {
-    RecordCount: String,
-    OldVersion: String,
-    Officers: String,
-    OfficerTitles: String,
-    MonarchBroadcastTime: String,
-    MonarchBroadcastsToday: String,
-    SpokesBroadcastTime: String,
-    SpokesBroadcastsToday: String,
-    Motd: String,
-    MotdSetBy: String,
-    ChatRoomId: String,
-    Bindpoint: String,
-    AllegianceName: String,
-    NameLastSetTime: String,
-    IsLocked: String,
-    ApprovedVassal: String,
-    MonarchData: String
+    #[serde(rename = "RecordCount")]
+    record_count: String,
+    #[serde(rename = "OldVersion")]
+    old_version: String,
+    #[serde(rename = "Officers")]
+    officers: String,
+    #[serde(rename = "OfficerTitles")]
+    officer_titles: String,
+    #[serde(rename = "MonarchBroadcastTime")]
+    monarch_broadcast_time: String,
+    #[serde(rename = "MonarchBroadcastsToday")]
+    monarch_broadcasts_today: String,
+    #[serde(rename = "SpokesBroadcastTime")]
+    spokes_broadcast_time: String,
+    #[serde(rename = "SpokesBroadcastsToday")]
+    spokes_broadcasts_today: String,
+    #[serde(rename = "Motd")]
+    motd: String,
+    #[serde(rename = "MotdSetBy")]
+    motd_set_by: String,
+    #[serde(rename = "ChatRoomId")]
+    chat_room_id: String,
+    #[serde(rename = "Bindpoint")]
+    bindpoint: String,
+    #[serde(rename = "AllegianceName")]
+    allegiance_name: String,
+    #[serde(rename = "NameLastSetTime")]
+    name_last_set_time: String,
+    #[serde(rename = "IsLocked")]
+    is_locked: String,
+    #[serde(rename = "ApprovedVassal")]
+    approved_vassal: String,
+    #[serde(rename = "MonarchData")]
+    monarch_data: String
 }
 
 // Set of allegiance data for a specific player
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AllegianceData {
-    CharacterId: String,
-    XPCached: String,
-    XPTithed: String,
-    Flags: String,
-    Gender: String,
-    Heritage: String,
-    Rank: String,
-    Level: String,
-    Loyalty: String,
-    Leadership: String,
-    TimeOnline: String,
-    TimeOnline: String,
-    AllegianceAge: String,
-    Name: String
+    #[serde(rename = "CharacterId")]
+    character_id: String,
+    #[serde(rename = "XPCached")]
+    xpcached: String,
+    #[serde(rename = "XPTithed")]
+    xptithed: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Gender")]
+    gender: String,
+    #[serde(rename = "Heritage")]
+    heritage: String,
+    #[serde(rename = "Rank")]
+    rank: String,
+    #[serde(rename = "Level")]
+    level: String,
+    #[serde(rename = "Loyalty")]
+    loyalty: String,
+    #[serde(rename = "Leadership")]
+    leadership: String,
+    #[serde(rename = "TimeOnline")]
+    time_online: String,
+    #[serde(rename = "TimeOnline")]
+    time_online: String,
+    #[serde(rename = "AllegianceAge")]
+    allegiance_age: String,
+    #[serde(rename = "Name")]
+    name: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct FriendData {
-    FriendId: String,
-    Online: String,
-    AppearOffline: String,
-    Name: String,
-    OutFriends: String,
-    InFriends: String
+    #[serde(rename = "FriendId")]
+    friend_id: String,
+    #[serde(rename = "Online")]
+    online: String,
+    #[serde(rename = "AppearOffline")]
+    appear_offline: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "OutFriends")]
+    out_friends: String,
+    #[serde(rename = "InFriends")]
+    in_friends: String
 }
 
 // Data related to an item, namely the amount and description
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ItemProfile {
-    PackedAmount: String,
-    ObjectId: String,
-    WeenieDescription: String,
-    OldWeenieDescription: String
+    #[serde(rename = "PackedAmount")]
+    packed_amount: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "WeenieDescription")]
+    weenie_description: String,
+    #[serde(rename = "OldWeenieDescription")]
+    old_weenie_description: String
 }
 
 // The PublicWeenieDesc structure defines an object's game behavior.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PublicWeenieDesc {
-    Header: String,
-    Name: String,
-    WeenieClassId: String,
-    Icon: String,
-    Type: String,
-    Behavior: String,
-    Header2: String,
-    PluralName: String,
-    ItemsCapacity: String,
-    ContainerCapacity: String,
-    AmmunitionType: String,
-    Value: String,
-    Useability: String,
-    UseRadius: String,
-    TargetType: String,
-    Effects: String,
-    CombatUse: String,
-    Structure: String,
-    MaxStructure: String,
-    StackSize: String,
-    MaxStackSize: String,
-    ContainerId: String,
-    WielderId: String,
-    ValidSlots: String,
-    Slot: String,
-    Priority: String,
-    BlipColor: String,
-    RadarEnum: String,
-    PhysicsScript: String,
-    Workmanship: String,
-    Burden: String,
-    SpellId: String,
-    OwnerId: String,
-    Restrictions: String,
-    HookItemTypes: String,
-    MonarchId: String,
-    HookType: String,
-    IconOverlay: String,
-    IconUnderlay: String,
-    Material: String,
-    CooldownId: String,
-    CooldownDuration: String,
-    PetOwnerId: String
+    #[serde(rename = "Header")]
+    header: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "WeenieClassId")]
+    weenie_class_id: String,
+    #[serde(rename = "Icon")]
+    icon: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Behavior")]
+    behavior: String,
+    #[serde(rename = "Header2")]
+    header2: String,
+    #[serde(rename = "PluralName")]
+    plural_name: String,
+    #[serde(rename = "ItemsCapacity")]
+    items_capacity: String,
+    #[serde(rename = "ContainerCapacity")]
+    container_capacity: String,
+    #[serde(rename = "AmmunitionType")]
+    ammunition_type: String,
+    #[serde(rename = "Value")]
+    value: String,
+    #[serde(rename = "Useability")]
+    useability: String,
+    #[serde(rename = "UseRadius")]
+    use_radius: String,
+    #[serde(rename = "TargetType")]
+    target_type: String,
+    #[serde(rename = "Effects")]
+    effects: String,
+    #[serde(rename = "CombatUse")]
+    combat_use: String,
+    #[serde(rename = "Structure")]
+    structure: String,
+    #[serde(rename = "MaxStructure")]
+    max_structure: String,
+    #[serde(rename = "StackSize")]
+    stack_size: String,
+    #[serde(rename = "MaxStackSize")]
+    max_stack_size: String,
+    #[serde(rename = "ContainerId")]
+    container_id: String,
+    #[serde(rename = "WielderId")]
+    wielder_id: String,
+    #[serde(rename = "ValidSlots")]
+    valid_slots: String,
+    #[serde(rename = "Slot")]
+    slot: String,
+    #[serde(rename = "Priority")]
+    priority: String,
+    #[serde(rename = "BlipColor")]
+    blip_color: String,
+    #[serde(rename = "RadarEnum")]
+    radar_enum: String,
+    #[serde(rename = "PhysicsScript")]
+    physics_script: String,
+    #[serde(rename = "Workmanship")]
+    workmanship: String,
+    #[serde(rename = "Burden")]
+    burden: String,
+    #[serde(rename = "SpellId")]
+    spell_id: String,
+    #[serde(rename = "OwnerId")]
+    owner_id: String,
+    #[serde(rename = "Restrictions")]
+    restrictions: String,
+    #[serde(rename = "HookItemTypes")]
+    hook_item_types: String,
+    #[serde(rename = "MonarchId")]
+    monarch_id: String,
+    #[serde(rename = "HookType")]
+    hook_type: String,
+    #[serde(rename = "IconOverlay")]
+    icon_overlay: String,
+    #[serde(rename = "IconUnderlay")]
+    icon_underlay: String,
+    #[serde(rename = "Material")]
+    material: String,
+    #[serde(rename = "CooldownId")]
+    cooldown_id: String,
+    #[serde(rename = "CooldownDuration")]
+    cooldown_duration: String,
+    #[serde(rename = "PetOwnerId")]
+    pet_owner_id: String
 }
 
 // The RestrictionDB contains the access control list for a dwelling object.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct RestrictionDB {
-    Version: String,
-    Flags: String,
-    MonarchId: String,
-    Permissions: String
+    #[serde(rename = "Version")]
+    version: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "MonarchId")]
+    monarch_id: String,
+    #[serde(rename = "Permissions")]
+    permissions: String
 }
 
 // The OldPublicWeenieDesc structure defines an object's game behavior.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct OldPublicWeenieDesc {
-    Header: String,
-    Name: String,
-    WeenieClassId: String,
-    Icon: String,
-    Type: String,
-    Bitfield: String,
-    PluralName: String,
-    ItemsCapacity: String,
-    ContainerCapacity: String,
-    Value: String,
-    Useability: String,
-    UseRadius: String,
-    tTargetType: String,
-    Effects: String,
-    AmmunitionType: String,
-    CombatUse: String,
-    Structure: String,
-    MaxStructure: String,
-    StackSize: String,
-    MaxStackSize: String,
-    ContainerId: String,
-    WielderId: String,
-    ValidSlots: String,
-    Slots: String,
-    Priority: String,
-    BlipColor: String,
-    RadarEnum: String,
-    ObviousDistance: String,
-    Vndwcid: String,
-    SpellId: String,
-    HouseOwnerId: String,
-    PhysicsScript: String,
-    Restrictions: String,
-    HookType: String,
-    HookItemTypes: String,
-    MonarchId: String,
-    IconOverlay: String,
-    Material: String
+    #[serde(rename = "Header")]
+    header: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "WeenieClassId")]
+    weenie_class_id: String,
+    #[serde(rename = "Icon")]
+    icon: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Bitfield")]
+    bitfield: String,
+    #[serde(rename = "PluralName")]
+    plural_name: String,
+    #[serde(rename = "ItemsCapacity")]
+    items_capacity: String,
+    #[serde(rename = "ContainerCapacity")]
+    container_capacity: String,
+    #[serde(rename = "Value")]
+    value: String,
+    #[serde(rename = "Useability")]
+    useability: String,
+    #[serde(rename = "UseRadius")]
+    use_radius: String,
+    #[serde(rename = "tTargetType")]
+    t_target_type: String,
+    #[serde(rename = "Effects")]
+    effects: String,
+    #[serde(rename = "AmmunitionType")]
+    ammunition_type: String,
+    #[serde(rename = "CombatUse")]
+    combat_use: String,
+    #[serde(rename = "Structure")]
+    structure: String,
+    #[serde(rename = "MaxStructure")]
+    max_structure: String,
+    #[serde(rename = "StackSize")]
+    stack_size: String,
+    #[serde(rename = "MaxStackSize")]
+    max_stack_size: String,
+    #[serde(rename = "ContainerId")]
+    container_id: String,
+    #[serde(rename = "WielderId")]
+    wielder_id: String,
+    #[serde(rename = "ValidSlots")]
+    valid_slots: String,
+    #[serde(rename = "Slots")]
+    slots: String,
+    #[serde(rename = "Priority")]
+    priority: String,
+    #[serde(rename = "BlipColor")]
+    blip_color: String,
+    #[serde(rename = "RadarEnum")]
+    radar_enum: String,
+    #[serde(rename = "ObviousDistance")]
+    obvious_distance: String,
+    #[serde(rename = "Vndwcid")]
+    vndwcid: String,
+    #[serde(rename = "SpellId")]
+    spell_id: String,
+    #[serde(rename = "HouseOwnerId")]
+    house_owner_id: String,
+    #[serde(rename = "PhysicsScript")]
+    physics_script: String,
+    #[serde(rename = "Restrictions")]
+    restrictions: String,
+    #[serde(rename = "HookType")]
+    hook_type: String,
+    #[serde(rename = "HookItemTypes")]
+    hook_item_types: String,
+    #[serde(rename = "MonarchId")]
+    monarch_id: String,
+    #[serde(rename = "IconOverlay")]
+    icon_overlay: String,
+    #[serde(rename = "Material")]
+    material: String
 }
 
 // Information related to a secure trade.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade {
-    PartnerId: String,
-    Sequence: String,
-    Status: String,
-    InitiatorId: String,
-    Accepted: String,
-    PartnerAccepted: String
+    #[serde(rename = "PartnerId")]
+    partner_id: String,
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Status")]
+    status: String,
+    #[serde(rename = "InitiatorId")]
+    initiator_id: String,
+    #[serde(rename = "Accepted")]
+    accepted: String,
+    #[serde(rename = "PartnerAccepted")]
+    partner_accepted: String
 }
 
 // A jump with sequences
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct JumpPack {
-    Extent: String,
-    Velocity: String,
-    ObjectInstanceSequence: String,
-    ObjectServerControlSequence: String,
-    ObjectTeleportSequence: String,
-    ObjectForcePositionSequence: String
+    #[serde(rename = "Extent")]
+    extent: String,
+    #[serde(rename = "Velocity")]
+    velocity: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectServerControlSequence")]
+    object_server_control_sequence: String,
+    #[serde(rename = "ObjectTeleportSequence")]
+    object_teleport_sequence: String,
+    #[serde(rename = "ObjectForcePositionSequence")]
+    object_force_position_sequence: String
 }
 
 // A set of data related to changing states with sequences
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MoveToStatePack {
-    RawMotionState: String,
-    Position: String,
-    ObjectInstanceSequence: String,
-    ObjectServerControlSequence: String,
-    ObjectTeleportSequence: String,
-    ObjectForcePositionSequence: String,
-    Contact: String
+    #[serde(rename = "RawMotionState")]
+    raw_motion_state: String,
+    #[serde(rename = "Position")]
+    position: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectServerControlSequence")]
+    object_server_control_sequence: String,
+    #[serde(rename = "ObjectTeleportSequence")]
+    object_teleport_sequence: String,
+    #[serde(rename = "ObjectForcePositionSequence")]
+    object_force_position_sequence: String,
+    #[serde(rename = "Contact")]
+    contact: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PackedMotionCommand {
-    CommandId: String,
-    PackedSequence: String,
-    Speed: String
+    #[serde(rename = "CommandId")]
+    command_id: String,
+    #[serde(rename = "PackedSequence")]
+    packed_sequence: String,
+    #[serde(rename = "Speed")]
+    speed: String
 }
 
 // Data related to the movement of the object sent from a client
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct RawMotionState {
-    Flags: String,
-    CurrentHoldkey: String,
-    CurrentStyle: String,
-    ForwardCommand: String,
-    ForwardHoldkey: String,
-    ForwardSpeed: String,
-    SidestepCommand: String,
-    SidestepHoldkey: String,
-    SidestepSpeed: String,
-    TurnCommand: String,
-    TurnHoldkey: String,
-    TurnSpeed: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "CurrentHoldkey")]
+    current_holdkey: String,
+    #[serde(rename = "CurrentStyle")]
+    current_style: String,
+    #[serde(rename = "ForwardCommand")]
+    forward_command: String,
+    #[serde(rename = "ForwardHoldkey")]
+    forward_holdkey: String,
+    #[serde(rename = "ForwardSpeed")]
+    forward_speed: String,
+    #[serde(rename = "SidestepCommand")]
+    sidestep_command: String,
+    #[serde(rename = "SidestepHoldkey")]
+    sidestep_holdkey: String,
+    #[serde(rename = "SidestepSpeed")]
+    sidestep_speed: String,
+    #[serde(rename = "TurnCommand")]
+    turn_command: String,
+    #[serde(rename = "TurnHoldkey")]
+    turn_holdkey: String,
+    #[serde(rename = "TurnSpeed")]
+    turn_speed: String
 }
 
 // An autonomous position with sequences
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AutonomousPositionPack {
-    Position: String,
-    ObjectInstanceSequence: String,
-    ObjectServerControlSequence: String,
-    ObjectTeleportSequence: String,
-    ObjectForcePositionSequence: String,
-    Contact: String
+    #[serde(rename = "Position")]
+    position: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectServerControlSequence")]
+    object_server_control_sequence: String,
+    #[serde(rename = "ObjectTeleportSequence")]
+    object_teleport_sequence: String,
+    #[serde(rename = "ObjectForcePositionSequence")]
+    object_force_position_sequence: String,
+    #[serde(rename = "Contact")]
+    contact: String
 }
 
 // A position with sequences
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PositionPack {
-    Flags: String,
-    Origin: String,
-    WQuat: String,
-    XQuat: String,
-    YQuat: String,
-    ZQuat: String,
-    Velocity: String,
-    PlacementId: String,
-    ObjectInstanceSequence: String,
-    ObjectPositionSequence: String,
-    ObjectTeleportSequence: String,
-    ObjectForcePositionSequence: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Origin")]
+    origin: String,
+    #[serde(rename = "WQuat")]
+    wquat: String,
+    #[serde(rename = "XQuat")]
+    xquat: String,
+    #[serde(rename = "YQuat")]
+    yquat: String,
+    #[serde(rename = "ZQuat")]
+    zquat: String,
+    #[serde(rename = "Velocity")]
+    velocity: String,
+    #[serde(rename = "PlacementId")]
+    placement_id: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectPositionSequence")]
+    object_position_sequence: String,
+    #[serde(rename = "ObjectTeleportSequence")]
+    object_teleport_sequence: String,
+    #[serde(rename = "ObjectForcePositionSequence")]
+    object_force_position_sequence: String
 }
 
 // Data related to the movement and animation of the object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MovementData {
-    ObjectMovementSequence: String,
-    ObjectServerControlSequence: String,
-    Autonomous: String,
-    MovementType: String,
-    OptionFlags: String,
-    Stance: String,
-    State: String,
-    StickyObject: String,
-    Target: String,
-    Origin: String,
-    MoveToParams: String,
-    MyRunRate: String,
-    Origin: String,
-    MoveToParams: String,
-    MyRunRate: String,
-    TargetId: String,
-    DesiredHeading: String,
-    TurnToParams: String,
-    TurnToParams: String
+    #[serde(rename = "ObjectMovementSequence")]
+    object_movement_sequence: String,
+    #[serde(rename = "ObjectServerControlSequence")]
+    object_server_control_sequence: String,
+    #[serde(rename = "Autonomous")]
+    autonomous: String,
+    #[serde(rename = "MovementType")]
+    movement_type: String,
+    #[serde(rename = "OptionFlags")]
+    option_flags: String,
+    #[serde(rename = "Stance")]
+    stance: String,
+    #[serde(rename = "State")]
+    state: String,
+    #[serde(rename = "StickyObject")]
+    sticky_object: String,
+    #[serde(rename = "Target")]
+    target: String,
+    #[serde(rename = "Origin")]
+    origin: String,
+    #[serde(rename = "MoveToParams")]
+    move_to_params: String,
+    #[serde(rename = "MyRunRate")]
+    my_run_rate: String,
+    #[serde(rename = "Origin")]
+    origin: String,
+    #[serde(rename = "MoveToParams")]
+    move_to_params: String,
+    #[serde(rename = "MyRunRate")]
+    my_run_rate: String,
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "DesiredHeading")]
+    desired_heading: String,
+    #[serde(rename = "TurnToParams")]
+    turn_to_params: String,
+    #[serde(rename = "TurnToParams")]
+    turn_to_params: String
 }
 
 // Contains information for animations and general free motion
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct InterpertedMotionState {
-    Flags: String,
-    CurrentStyle: String,
-    ForwardCommand: String,
-    SidestepCommand: String,
-    TurnCommand: String,
-    ForwardSpeed: String,
-    SidestepSpeed: String,
-    TurnSpeed: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "CurrentStyle")]
+    current_style: String,
+    #[serde(rename = "ForwardCommand")]
+    forward_command: String,
+    #[serde(rename = "SidestepCommand")]
+    sidestep_command: String,
+    #[serde(rename = "TurnCommand")]
+    turn_command: String,
+    #[serde(rename = "ForwardSpeed")]
+    forward_speed: String,
+    #[serde(rename = "SidestepSpeed")]
+    sidestep_speed: String,
+    #[serde(rename = "TurnSpeed")]
+    turn_speed: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDDRevision {
-    IdDatFile: String,
-    Iteration: String,
-    IdsToDownload: String,
-    IdsToPurge: String
+    #[serde(rename = "IdDatFile")]
+    id_dat_file: String,
+    #[serde(rename = "Iteration")]
+    iteration: String,
+    #[serde(rename = "IdsToDownload")]
+    ids_to_download: String,
+    #[serde(rename = "IdsToPurge")]
+    ids_to_purge: String
 }
 
 // Set of movement parameters required for a MoveTo movement
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MoveToMovementParameters {
-    Bitmember: String,
-    DistanceToObject: String,
-    MinDistance: String,
-    FailDistance: String,
-    AnimationSpeed: String,
-    WalkRunThreshold: String,
-    DesiredHeading: String
+    #[serde(rename = "Bitmember")]
+    bitmember: String,
+    #[serde(rename = "DistanceToObject")]
+    distance_to_object: String,
+    #[serde(rename = "MinDistance")]
+    min_distance: String,
+    #[serde(rename = "FailDistance")]
+    fail_distance: String,
+    #[serde(rename = "AnimationSpeed")]
+    animation_speed: String,
+    #[serde(rename = "WalkRunThreshold")]
+    walk_run_threshold: String,
+    #[serde(rename = "DesiredHeading")]
+    desired_heading: String
 }
 
 // Set of movement parameters required for a TurnTo motion
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct TurnToMovementParameters {
-    Bitmember: String,
-    AnimationSpeed: String,
-    DesiredHeading: String
+    #[serde(rename = "Bitmember")]
+    bitmember: String,
+    #[serde(rename = "AnimationSpeed")]
+    animation_speed: String,
+    #[serde(rename = "DesiredHeading")]
+    desired_heading: String
 }
 
 // The ObjDesc structure defines an object's visual appearance.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ObjDesc {
-    Version: String,
-    PaletteCount: String,
-    TextureCount: String,
-    ModelCount: String,
-    Palette: String
+    #[serde(rename = "Version")]
+    version: String,
+    #[serde(rename = "PaletteCount")]
+    palette_count: String,
+    #[serde(rename = "TextureCount")]
+    texture_count: String,
+    #[serde(rename = "ModelCount")]
+    model_count: String,
+    #[serde(rename = "Palette")]
+    palette: String
 }
 
 // Contains data for a subpalette
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Subpalette {
-    Palette: String,
-    Offset: String,
-    NumColors: String
+    #[serde(rename = "Palette")]
+    palette: String,
+    #[serde(rename = "Offset")]
+    offset: String,
+    #[serde(rename = "NumColors")]
+    num_colors: String
 }
 
 // Contains data for texture map changes
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct TextureMapChange {
-    PartIndex: String,
-    OldTexId: String,
-    NewTexId: String
+    #[serde(rename = "PartIndex")]
+    part_index: String,
+    #[serde(rename = "OldTexId")]
+    old_tex_id: String,
+    #[serde(rename = "NewTexId")]
+    new_tex_id: String
 }
 
 // Contains data for animation part changes
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AnimPartChange {
-    PartIndex: String,
-    PartId: String
+    #[serde(rename = "PartIndex")]
+    part_index: String,
+    #[serde(rename = "PartId")]
+    part_id: String
 }
 
 // Data for a character creation
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CharGenResult {
-    Account: String,
-    One: String,
-    HeritageGroup: String,
-    Gender: String,
-    EyesStrip: String,
-    NoseStrip: String,
-    MouthStrip: String,
-    HairColor: String,
-    EyeColor: String,
-    HairStyle: String,
-    HeadgearStyle: String,
-    HeadgearColor: String,
-    ShirtStyle: String,
-    ShirtColor: String,
-    TrousersStyle: String,
-    TrousersColor: String,
-    FootwearStyle: String,
-    FootwearColor: String,
-    SkinShade: String,
-    HairShade: String,
-    HeadgearShade: String,
-    ShirtShade: String,
-    TrousersShade: String,
-    TootwearShade: String,
-    TemplateNum: String,
-    Strength: String,
-    Endurance: String,
-    Coordination: String,
-    Quickness: String,
-    Focus: String,
-    Self: String,
-    Slot: String,
-    ClassId: String,
-    Skills: String,
-    Name: String,
-    StartArea: String,
-    IsAdmin: String,
-    IsEnvoy: String,
-    Validation: String
+    #[serde(rename = "Account")]
+    account: String,
+    #[serde(rename = "One")]
+    one: String,
+    #[serde(rename = "HeritageGroup")]
+    heritage_group: String,
+    #[serde(rename = "Gender")]
+    gender: String,
+    #[serde(rename = "EyesStrip")]
+    eyes_strip: String,
+    #[serde(rename = "NoseStrip")]
+    nose_strip: String,
+    #[serde(rename = "MouthStrip")]
+    mouth_strip: String,
+    #[serde(rename = "HairColor")]
+    hair_color: String,
+    #[serde(rename = "EyeColor")]
+    eye_color: String,
+    #[serde(rename = "HairStyle")]
+    hair_style: String,
+    #[serde(rename = "HeadgearStyle")]
+    headgear_style: String,
+    #[serde(rename = "HeadgearColor")]
+    headgear_color: String,
+    #[serde(rename = "ShirtStyle")]
+    shirt_style: String,
+    #[serde(rename = "ShirtColor")]
+    shirt_color: String,
+    #[serde(rename = "TrousersStyle")]
+    trousers_style: String,
+    #[serde(rename = "TrousersColor")]
+    trousers_color: String,
+    #[serde(rename = "FootwearStyle")]
+    footwear_style: String,
+    #[serde(rename = "FootwearColor")]
+    footwear_color: String,
+    #[serde(rename = "SkinShade")]
+    skin_shade: String,
+    #[serde(rename = "HairShade")]
+    hair_shade: String,
+    #[serde(rename = "HeadgearShade")]
+    headgear_shade: String,
+    #[serde(rename = "ShirtShade")]
+    shirt_shade: String,
+    #[serde(rename = "TrousersShade")]
+    trousers_shade: String,
+    #[serde(rename = "TootwearShade")]
+    tootwear_shade: String,
+    #[serde(rename = "TemplateNum")]
+    template_num: String,
+    #[serde(rename = "Strength")]
+    strength: String,
+    #[serde(rename = "Endurance")]
+    endurance: String,
+    #[serde(rename = "Coordination")]
+    coordination: String,
+    #[serde(rename = "Quickness")]
+    quickness: String,
+    #[serde(rename = "Focus")]
+    focus: String,
+    #[serde(rename = "Self")]
+    self: String,
+    #[serde(rename = "Slot")]
+    slot: String,
+    #[serde(rename = "ClassId")]
+    class_id: String,
+    #[serde(rename = "Skills")]
+    skills: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "StartArea")]
+    start_area: String,
+    #[serde(rename = "IsAdmin")]
+    is_admin: String,
+    #[serde(rename = "IsEnvoy")]
+    is_envoy: String,
+    #[serde(rename = "Validation")]
+    validation: String
 }
 
 // Basic information for a character used at the Login screen
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CharacterIdentity {
-    CharacterId: String,
-    Name: String,
-    SecondsGreyedOut: String
+    #[serde(rename = "CharacterId")]
+    character_id: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "SecondsGreyedOut")]
+    seconds_greyed_out: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EquipLocation {
-    ObjectId: String,
-    Slot: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Slot")]
+    slot: String
 }
 
 // The PhysicsDesc structure defines an object's physical behavior.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PhysicsDesc {
-    Flags: String,
-    State: String,
-    MovementBuffer: String,
-    Autonomous: String,
-    AnimationFrame: String,
-    Position: String,
-    MotionId: String,
-    SoundId: String,
-    PhysicsScriptId: String,
-    SetupId: String,
-    ParentId: String,
-    ParentLocation: String,
-    Children: String,
-    Scale: String,
-    Friction: String,
-    Elasticity: String,
-    Translucency: String,
-    Velocity: String,
-    Acceleration: String,
-    Omega: String,
-    DefaultScript: String,
-    DefaultScriptIntensity: String,
-    ObjectPositionSequence: String,
-    ObjectMovementSequence: String,
-    ObjectStateSequence: String,
-    ObjectVectorSequence: String,
-    ObjectTeleportSequence: String,
-    ObjectServerControlSequence: String,
-    ObjectForcePositionSequence: String,
-    ObjectVisualDescSequence: String,
-    ObjectInstanceSequence: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "State")]
+    state: String,
+    #[serde(rename = "MovementBuffer")]
+    movement_buffer: String,
+    #[serde(rename = "Autonomous")]
+    autonomous: String,
+    #[serde(rename = "AnimationFrame")]
+    animation_frame: String,
+    #[serde(rename = "Position")]
+    position: String,
+    #[serde(rename = "MotionId")]
+    motion_id: String,
+    #[serde(rename = "SoundId")]
+    sound_id: String,
+    #[serde(rename = "PhysicsScriptId")]
+    physics_script_id: String,
+    #[serde(rename = "SetupId")]
+    setup_id: String,
+    #[serde(rename = "ParentId")]
+    parent_id: String,
+    #[serde(rename = "ParentLocation")]
+    parent_location: String,
+    #[serde(rename = "Children")]
+    children: String,
+    #[serde(rename = "Scale")]
+    scale: String,
+    #[serde(rename = "Friction")]
+    friction: String,
+    #[serde(rename = "Elasticity")]
+    elasticity: String,
+    #[serde(rename = "Translucency")]
+    translucency: String,
+    #[serde(rename = "Velocity")]
+    velocity: String,
+    #[serde(rename = "Acceleration")]
+    acceleration: String,
+    #[serde(rename = "Omega")]
+    omega: String,
+    #[serde(rename = "DefaultScript")]
+    default_script: String,
+    #[serde(rename = "DefaultScriptIntensity")]
+    default_script_intensity: String,
+    #[serde(rename = "ObjectPositionSequence")]
+    object_position_sequence: String,
+    #[serde(rename = "ObjectMovementSequence")]
+    object_movement_sequence: String,
+    #[serde(rename = "ObjectStateSequence")]
+    object_state_sequence: String,
+    #[serde(rename = "ObjectVectorSequence")]
+    object_vector_sequence: String,
+    #[serde(rename = "ObjectTeleportSequence")]
+    object_teleport_sequence: String,
+    #[serde(rename = "ObjectServerControlSequence")]
+    object_server_control_sequence: String,
+    #[serde(rename = "ObjectForcePositionSequence")]
+    object_force_position_sequence: String,
+    #[serde(rename = "ObjectVisualDescSequence")]
+    object_visual_desc_sequence: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AdminAccountData {
-    AccountName: String,
-    BookieId: String
+    #[serde(rename = "AccountName")]
+    account_name: String,
+    #[serde(rename = "BookieId")]
+    bookie_id: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct AdminPlayerData {
     name: String,
-    bookieId: String
+    #[serde(rename = "bookieId")]
+    bookie_id: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct VendorProfile {
-    Categories: String,
-    MinValue: String,
-    MaxValue: String,
-    DealsMagic: String,
-    BuyPrice: String,
-    SellPrice: String,
-    CurrencyId: String,
-    CurrencyAmount: String,
-    CurrencyName: String
+    #[serde(rename = "Categories")]
+    categories: String,
+    #[serde(rename = "MinValue")]
+    min_value: String,
+    #[serde(rename = "MaxValue")]
+    max_value: String,
+    #[serde(rename = "DealsMagic")]
+    deals_magic: String,
+    #[serde(rename = "BuyPrice")]
+    buy_price: String,
+    #[serde(rename = "SellPrice")]
+    sell_price: String,
+    #[serde(rename = "CurrencyId")]
+    currency_id: String,
+    #[serde(rename = "CurrencyAmount")]
+    currency_amount: String,
+    #[serde(rename = "CurrencyName")]
+    currency_name: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ArmorProfile {
-    ProtSlashing: String,
-    ProtPiercing: String,
-    ProtBludgeoning: String,
-    ProtCold: String,
-    ProtFire: String,
-    ProtAcid: String,
-    ProtNether: String,
-    ProtLightning: String
+    #[serde(rename = "ProtSlashing")]
+    prot_slashing: String,
+    #[serde(rename = "ProtPiercing")]
+    prot_piercing: String,
+    #[serde(rename = "ProtBludgeoning")]
+    prot_bludgeoning: String,
+    #[serde(rename = "ProtCold")]
+    prot_cold: String,
+    #[serde(rename = "ProtFire")]
+    prot_fire: String,
+    #[serde(rename = "ProtAcid")]
+    prot_acid: String,
+    #[serde(rename = "ProtNether")]
+    prot_nether: String,
+    #[serde(rename = "ProtLightning")]
+    prot_lightning: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct CreatureAppraisalProfile {
-    Flags: String,
-    Health: String,
-    HealthMax: String,
-    Strength: String,
-    Endurance: String,
-    Quickness: String,
-    Coordination: String,
-    Focus: String,
-    Self: String,
-    Stamina: String,
-    Mana: String,
-    StaminaMax: String,
-    ManaMax: String,
-    AttrHighlight: String,
-    AttrColor: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Health")]
+    health: String,
+    #[serde(rename = "HealthMax")]
+    health_max: String,
+    #[serde(rename = "Strength")]
+    strength: String,
+    #[serde(rename = "Endurance")]
+    endurance: String,
+    #[serde(rename = "Quickness")]
+    quickness: String,
+    #[serde(rename = "Coordination")]
+    coordination: String,
+    #[serde(rename = "Focus")]
+    focus: String,
+    #[serde(rename = "Self")]
+    self: String,
+    #[serde(rename = "Stamina")]
+    stamina: String,
+    #[serde(rename = "Mana")]
+    mana: String,
+    #[serde(rename = "StaminaMax")]
+    stamina_max: String,
+    #[serde(rename = "ManaMax")]
+    mana_max: String,
+    #[serde(rename = "AttrHighlight")]
+    attr_highlight: String,
+    #[serde(rename = "AttrColor")]
+    attr_color: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct WeaponProfile {
-    DamageType: String,
-    Speed: String,
-    Skill: String,
-    Damage: String,
-    Variance: String,
-    Modifier: String,
-    Length: String,
-    MaxVelocity: String,
-    Offsense: String,
-    MaxVelocityEstimated: String
+    #[serde(rename = "DamageType")]
+    damage_type: String,
+    #[serde(rename = "Speed")]
+    speed: String,
+    #[serde(rename = "Skill")]
+    skill: String,
+    #[serde(rename = "Damage")]
+    damage: String,
+    #[serde(rename = "Variance")]
+    variance: String,
+    #[serde(rename = "Modifier")]
+    modifier: String,
+    #[serde(rename = "Length")]
+    length: String,
+    #[serde(rename = "MaxVelocity")]
+    max_velocity: String,
+    #[serde(rename = "Offsense")]
+    offsense: String,
+    #[serde(rename = "MaxVelocityEstimated")]
+    max_velocity_estimated: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct HookAppraisalProfile {
-    Flags: String,
-    ValidLocations: String,
-    AmmoType: String
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "ValidLocations")]
+    valid_locations: String,
+    #[serde(rename = "AmmoType")]
+    ammo_type: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SquelchDB {
-    AccountHash: String,
-    CharacterHash: String,
-    GlobalInfo: String
+    #[serde(rename = "AccountHash")]
+    account_hash: String,
+    #[serde(rename = "CharacterHash")]
+    character_hash: String,
+    #[serde(rename = "GlobalInfo")]
+    global_info: String
 }
 
 // Set of information related to a squelch entry
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SquelchInfo {
-    Filters: String,
-    Name: String,
-    Account: String
+    #[serde(rename = "Filters")]
+    filters: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "Account")]
+    account: String
 }
 
 // Set of information related to purchasing a housing
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct HouseProfile {
-    DwellingId: String,
-    OwnerId: String,
-    Flags: String,
-    MinLevel: String,
-    MaxLevel: String,
-    MinAllegRank: String,
-    MaxAllegRank: String,
-    MaintenanceFree: String,
-    Type: String,
-    OwnerName: String,
-    Buy: String,
-    Rent: String
+    #[serde(rename = "DwellingId")]
+    dwelling_id: String,
+    #[serde(rename = "OwnerId")]
+    owner_id: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "MinLevel")]
+    min_level: String,
+    #[serde(rename = "MaxLevel")]
+    max_level: String,
+    #[serde(rename = "MinAllegRank")]
+    min_alleg_rank: String,
+    #[serde(rename = "MaxAllegRank")]
+    max_alleg_rank: String,
+    #[serde(rename = "MaintenanceFree")]
+    maintenance_free: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "OwnerName")]
+    owner_name: String,
+    #[serde(rename = "Buy")]
+    buy: String,
+    #[serde(rename = "Rent")]
+    rent: String
 }
 
 // The HousePayment structure contains information about a house purchase or maintenance item.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct HousePayment {
-    Required: String,
-    Paid: String,
-    WeenieClassId: String,
-    Name: String,
-    PluralName: String
+    #[serde(rename = "Required")]
+    required: String,
+    #[serde(rename = "Paid")]
+    paid: String,
+    #[serde(rename = "WeenieClassId")]
+    weenie_class_id: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "PluralName")]
+    plural_name: String
 }
 
 // Set of information related to owning a housing
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct HouseData {
-    BuyTime: String,
-    RentTime: String,
-    Type: String,
-    MaintenanceFree: String,
-    Buy: String,
-    Rent: String,
-    Position: String
+    #[serde(rename = "BuyTime")]
+    buy_time: String,
+    #[serde(rename = "RentTime")]
+    rent_time: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "MaintenanceFree")]
+    maintenance_free: String,
+    #[serde(rename = "Buy")]
+    buy: String,
+    #[serde(rename = "Rent")]
+    rent: String,
+    #[serde(rename = "Position")]
+    position: String
 }
 
 // Set of information related to house access
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct HAR {
-    Version: String,
-    Bitmask: String,
-    MonarchId: String,
-    GuestList: String,
-    RoommateList: String
+    #[serde(rename = "Version")]
+    version: String,
+    #[serde(rename = "Bitmask")]
+    bitmask: String,
+    #[serde(rename = "MonarchId")]
+    monarch_id: String,
+    #[serde(rename = "GuestList")]
+    guest_list: String,
+    #[serde(rename = "RoommateList")]
+    roommate_list: String
 }
 
 // Set of information related to a house guest
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GuestInfo {
-    HasStoragePermission: String,
-    GuestName: String
+    #[serde(rename = "HasStoragePermission")]
+    has_storage_permission: String,
+    #[serde(rename = "GuestName")]
+    guest_name: String
 }
 
 // Set of information related to a chess game move
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GameMoveData {
-    Type: String,
-    PlayerId: String,
-    Team: String,
-    IdPieceToMove: String,
-    YGrid: String,
-    IdPieceToMove: String,
-    YGrid: String,
-    XTo: String,
-    YTo: String,
-    IdPieceToMove: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "PlayerId")]
+    player_id: String,
+    #[serde(rename = "Team")]
+    team: String,
+    #[serde(rename = "IdPieceToMove")]
+    id_piece_to_move: String,
+    #[serde(rename = "YGrid")]
+    ygrid: String,
+    #[serde(rename = "IdPieceToMove")]
+    id_piece_to_move: String,
+    #[serde(rename = "YGrid")]
+    ygrid: String,
+    #[serde(rename = "XTo")]
+    xto: String,
+    #[serde(rename = "YTo")]
+    yto: String,
+    #[serde(rename = "IdPieceToMove")]
+    id_piece_to_move: String
 }
 
 // Set of information related to a salvage operation
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SalvageOperationsResultData {
-    SkillUsed: String,
-    NotSalvagable: String,
-    SalvageResults: String,
-    AugBonus: String
+    #[serde(rename = "SkillUsed")]
+    skill_used: String,
+    #[serde(rename = "NotSalvagable")]
+    not_salvagable: String,
+    #[serde(rename = "SalvageResults")]
+    salvage_results: String,
+    #[serde(rename = "AugBonus")]
+    aug_bonus: String
 }
 
 // Set of information related to a salvage of an item
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct SalvageResult {
-    Material: String,
-    Workmanship: String,
-    Units: String
+    #[serde(rename = "Material")]
+    material: String,
+    #[serde(rename = "Workmanship")]
+    workmanship: String,
+    #[serde(rename = "Units")]
+    units: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct FellowshipLockData {
-    Unknown1: String,
-    Unknown2: String,
-    Unknown3: String,
-    Timestamp: String,
-    Sequence: String
+    #[serde(rename = "Unknown1")]
+    unknown1: String,
+    #[serde(rename = "Unknown2")]
+    unknown2: String,
+    #[serde(rename = "Unknown3")]
+    unknown3: String,
+    #[serde(rename = "Timestamp")]
+    timestamp: String,
+    #[serde(rename = "Sequence")]
+    sequence: String
 }
 
 // Set of information for a fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship {
-    Members: String,
-    Name: String,
-    LeaderId: String,
-    ShareXP: String,
-    EvenXPSplit: String,
-    Open: String,
-    Locked: String,
-    RecentlyDeparted: String,
-    Locks: String
+    #[serde(rename = "Members")]
+    members: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "LeaderId")]
+    leader_id: String,
+    #[serde(rename = "ShareXP")]
+    share_xp: String,
+    #[serde(rename = "EvenXPSplit")]
+    even_xpsplit: String,
+    #[serde(rename = "Open")]
+    open: String,
+    #[serde(rename = "Locked")]
+    locked: String,
+    #[serde(rename = "RecentlyDeparted")]
+    recently_departed: String,
+    #[serde(rename = "Locks")]
+    locks: String
 }
 
 // The FellowInfo structure contains information about a fellowship member.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellow {
-    XPCached: String,
-    LumCached: String,
-    Level: String,
-    MaxHealth: String,
-    MaxStamina: String,
-    MaxMana: String,
-    CurrentHealth: String,
-    CurrentStamina: String,
-    CurrentMana: String,
-    ShareLoot: String,
-    Name: String
+    #[serde(rename = "XPCached")]
+    xpcached: String,
+    #[serde(rename = "LumCached")]
+    lum_cached: String,
+    #[serde(rename = "Level")]
+    level: String,
+    #[serde(rename = "MaxHealth")]
+    max_health: String,
+    #[serde(rename = "MaxStamina")]
+    max_stamina: String,
+    #[serde(rename = "MaxMana")]
+    max_mana: String,
+    #[serde(rename = "CurrentHealth")]
+    current_health: String,
+    #[serde(rename = "CurrentStamina")]
+    current_stamina: String,
+    #[serde(rename = "CurrentMana")]
+    current_mana: String,
+    #[serde(rename = "ShareLoot")]
+    share_loot: String,
+    #[serde(rename = "Name")]
+    name: String
 }
 
 // Contains information about a contract.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ContractTracker {
-    Version: String,
-    ContractId: String,
-    ContractStage: String,
-    TimeWhenDone: String,
-    TimeWhenRepeats: String
+    #[serde(rename = "Version")]
+    version: String,
+    #[serde(rename = "ContractId")]
+    contract_id: String,
+    #[serde(rename = "ContractStage")]
+    contract_stage: String,
+    #[serde(rename = "TimeWhenDone")]
+    time_when_done: String,
+    #[serde(rename = "TimeWhenRepeats")]
+    time_when_repeats: String
 }
 
 // Contains table of ContractTrackers
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ContractTrackerTable {
-    ContactTrackers: String
+    #[serde(rename = "ContactTrackers")]
+    contact_trackers: String
 }
 
 // Set a single character option.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_PlayerOptionChangedEvent {
-    Option: String,
-    Value: String
+    #[serde(rename = "Option")]
+    option: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Starts a melee attack against a target
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_TargetedMeleeAttack {
-    ObjectId: String,
-    Height: String,
-    Power: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Height")]
+    height: String,
+    #[serde(rename = "Power")]
+    power: String
 }
 
 // Starts a missle attack against a target
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_TargetedMissileAttack {
-    ObjectId: String,
-    Height: String,
-    Accuracy: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Height")]
+    height: String,
+    #[serde(rename = "Accuracy")]
+    accuracy: String
 }
 
 // Set AFK mode.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_SetAFKMode {
-    AFK: String
+    #[serde(rename = "AFK")]
+    afk: String
 }
 
 // Set AFK message.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_SetAFKMessage {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Talking
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_Talk {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Removes a friend
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_RemoveFriend {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Adds a friend
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_AddFriend {
-    CharacterName: String
+    #[serde(rename = "CharacterName")]
+    character_name: String
 }
 
 // Store an item in a container.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_PutItemInContainer {
-    ObjectId: String,
-    ContainerId: String,
-    SlotIndex: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ContainerId")]
+    container_id: String,
+    #[serde(rename = "SlotIndex")]
+    slot_index: String
 }
 
 // Gets and weilds an item.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_GetAndWieldItem {
-    ObjectId: String,
-    Slot: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Slot")]
+    slot: String
 }
 
 // Drop an item.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_DropItem {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Swear allegiance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_SwearAllegiance {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Break allegiance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_BreakAllegiance {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Allegiance update request
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_UpdateRequest {
-    On: String
+    #[serde(rename = "On")]
+    on: String
 }
 
 // Sets a character's display title
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_SetDisplayCharacterTitle {
-    TitleId: String
+    #[serde(rename = "TitleId")]
+    title_id: String
 }
 
 // Direct message by Id
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TalkDirect {
-    Message: String,
-    TargetId: String
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "TargetId")]
+    target_id: String
 }
 
 // Sets the allegiance name
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_SetAllegianceName {
-    Name: String
+    #[serde(rename = "Name")]
+    name: String
 }
 
 // Attempt to use an item with a target.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_UseWithTargetEvent {
-    ObjectId: String,
-    TargetId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "TargetId")]
+    target_id: String
 }
 
 // Attempt to use an item.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_UseEvent {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Sets an allegiance officer
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_SetAllegianceOfficer {
-    CharacterName: String,
-    Level: String
+    #[serde(rename = "CharacterName")]
+    character_name: String,
+    #[serde(rename = "Level")]
+    level: String
 }
 
 // Sets an allegiance officer title for a given level
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_SetAllegianceOfficerTitle {
-    Level: String,
-    Title: String
+    #[serde(rename = "Level")]
+    level: String,
+    #[serde(rename = "Title")]
+    title: String
 }
 
 // Perform the allegiance lock action
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_DoAllegianceLockAction {
-    Action: String
+    #[serde(rename = "Action")]
+    action: String
 }
 
 // Sets a person as an approved vassal
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_SetAllegianceApprovedVassal {
-    CharacterName: String
+    #[serde(rename = "CharacterName")]
+    character_name: String
 }
 
 // Gags a person in allegiance chat
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceChatGag {
-    CharacterName: String,
-    On: String
+    #[serde(rename = "CharacterName")]
+    character_name: String,
+    #[serde(rename = "On")]
+    on: String
 }
 
 // Perform the allegiance house action
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_DoAllegianceHouseAction {
-    Action: String
+    #[serde(rename = "Action")]
+    action: String
 }
 
 // Spend XP to raise a vital.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Train_TrainAttribute2nd {
-    Type: String,
-    Experience: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Experience")]
+    experience: String
 }
 
 // Spend XP to raise an attribute.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Train_TrainAttribute {
-    Type: String,
-    Experience: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Experience")]
+    experience: String
 }
 
 // Spend XP to raise a skill.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Train_TrainSkill {
-    Skill: String,
-    Experience: String
+    #[serde(rename = "Skill")]
+    skill: String,
+    #[serde(rename = "Experience")]
+    experience: String
 }
 
 // Spend skill credits to train a skill.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Train_TrainSkillAdvancementClass {
-    Skill: String,
-    Credits: String
+    #[serde(rename = "Skill")]
+    skill: String,
+    #[serde(rename = "Credits")]
+    credits: String
 }
 
 // Cast a spell with no target.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_CastUntargetedSpell {
-    SpellId: String
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // Cast a spell on a target
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_CastTargetedSpell {
-    ObjectId: String,
-    SpellId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // Changes the combat mode
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_ChangeCombatMode {
-    Mode: String
+    #[serde(rename = "Mode")]
+    mode: String
 }
 
 // Merges one stack with another
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_StackableMerge {
-    ObjectId: String,
-    TargetId: String,
-    Amount: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Split a stack and place it into a container
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_StackableSplitToContainer {
-    ObjectId: String,
-    ContainerId: String,
-    SlotIndex: String,
-    Amount: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ContainerId")]
+    container_id: String,
+    #[serde(rename = "SlotIndex")]
+    slot_index: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Split a stack and place it into the world
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_StackableSplitTo3D {
-    ObjectId: String,
-    Amount: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Changes an account squelch
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ModifyCharacterSquelch {
-    Add: String,
-    ObjectId: String,
-    CharacterName: String,
-    Type: String
+    #[serde(rename = "Add")]
+    add: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "CharacterName")]
+    character_name: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Changes an account squelch
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ModifyAccountSquelch {
-    Add: String,
-    CharacterName: String
+    #[serde(rename = "Add")]
+    add: String,
+    #[serde(rename = "CharacterName")]
+    character_name: String
 }
 
 // Changes the global filters, /filter -type as well as /chat and /notell
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ModifyGlobalSquelch {
-    Add: String,
-    Type: String
+    #[serde(rename = "Add")]
+    add: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Direct message by name
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TalkDirectByName {
-    Message: String,
-    TargetName: String
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "TargetName")]
+    target_name: String
 }
 
 // Buy from a vendor
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Vendor_Buy {
-    ObjectId: String,
-    Items: String,
-    AlternateCurrencyId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Items")]
+    items: String,
+    #[serde(rename = "AlternateCurrencyId")]
+    alternate_currency_id: String
 }
 
 // Sell to a vendor
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Vendor_Sell {
-    ObjectId: String,
-    Items: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Items")]
+    items: String
 }
 
 // Create a fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_Create {
-    Name: String,
-    ShareXP: String
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "ShareXP")]
+    share_xp: String
 }
 
 // Quit the fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_Quit {
-    Disband: String
+    #[serde(rename = "Disband")]
+    disband: String
 }
 
 // Dismiss a player from the fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_Dismiss {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Recruit a player to the fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_Recruit {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Update request
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_UpdateRequest {
-    On: String
+    #[serde(rename = "On")]
+    on: String
 }
 
 // Request update to book data (seems to be sent after failed add page)
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookAddPage {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Updates a page in a book
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookModifyPage {
-    ObjectId: String,
-    PageNum: String,
-    PageText: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "PageNum")]
+    page_num: String,
+    #[serde(rename = "PageText")]
+    page_text: String
 }
 
 // Add a page to a book
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookData {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Removes a page from a book
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookDeletePage {
-    ObjectId: String,
-    PageNum: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "PageNum")]
+    page_num: String
 }
 
 // Requests data for a page in a book
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookPageData {
-    ObjectId: String,
-    PageNum: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "PageNum")]
+    page_num: String
 }
 
 // Sets the inscription on an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_SetInscription {
-    ObjectId: String,
-    Inscription: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Inscription")]
+    inscription: String
 }
 
 // Appraise something
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_Appraise {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Give an item to someone.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_GiveObjectRequest {
-    TargetId: String,
-    ObjectId: String,
-    Amount: String
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Advocate Teleport
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Advocate_Teleport {
-    ObjectId: String,
-    Destination: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Destination")]
+    destination: String
 }
 
 // Sends an abuse report.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_AbuseLogRequest {
-    Character: String,
-    Status: String,
-    Complaint: String
+    #[serde(rename = "Character")]
+    character: String,
+    #[serde(rename = "Status")]
+    status: String,
+    #[serde(rename = "Complaint")]
+    complaint: String
 }
 
 // Joins a chat channel
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_AddToChannel {
-    Channel: String
+    #[serde(rename = "Channel")]
+    channel: String
 }
 
 // Leaves a chat channel
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_RemoveFromChannel {
-    Channel: String
+    #[serde(rename = "Channel")]
+    channel: String
 }
 
 // Sends a message to a chat channel
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ChannelBroadcast {
-    Channel: String,
-    SenderName: String,
-    Message: String
+    #[serde(rename = "Channel")]
+    channel: String,
+    #[serde(rename = "SenderName")]
+    sender_name: String,
+    #[serde(rename = "Message")]
+    message: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ChannelList {
-    Channel: String
+    #[serde(rename = "Channel")]
+    channel: String
 }
 
 // Stop viewing the contents of a container
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_NoLongerViewingContents {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Splits an item to a wield location.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_StackableSplitToWield {
-    ObjectId: String,
-    Slot: String,
-    Amount: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Slot")]
+    slot: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Add an item to the shortcut bar.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_AddShortCut {
-    Shortcut: String
+    #[serde(rename = "Shortcut")]
+    shortcut: String
 }
 
 // Remove an item from the shortcut bar.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_RemoveShortCut {
-    Index: String
+    #[serde(rename = "Index")]
+    index: String
 }
 
 // Set multiple character options.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_CharacterOptionsEvent {
-    Options: String
+    #[serde(rename = "Options")]
+    options: String
 }
 
 // Removes a spell from the spell book
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_RemoveSpell {
-    SpellId: String
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // Query's a creatures health
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_QueryHealth {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Query a character's age
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_QueryAge {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Query a character's birth day
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_QueryBirth {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Emote message
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_Emote {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Soul emote message
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_SoulEmote {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Add a spell to a spell bar.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_AddSpellFavorite {
-    SpellId: String,
-    Index: String,
-    SpellBar: String
+    #[serde(rename = "SpellId")]
+    spell_id: String,
+    #[serde(rename = "Index")]
+    index: String,
+    #[serde(rename = "SpellBar")]
+    spell_bar: String
 }
 
 // Remove a spell from a spell bar.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_RemoveSpellFavorite {
-    SpellId: String,
-    SpellBar: String
+    #[serde(rename = "SpellId")]
+    spell_id: String,
+    #[serde(rename = "SpellBar")]
+    spell_bar: String
 }
 
 // Starts trading with another player.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_OpenTradeNegotiations {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Adds an object to the trade.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_AddToTrade {
-    ObjectId: String,
-    SlotIndex: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "SlotIndex")]
+    slot_index: String
 }
 
 // Accepts a trade.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_AcceptTrade {
-    Contents: String
+    #[serde(rename = "Contents")]
+    contents: String
 }
 
 // Remove your corpse looting permission for the given player, /consent remove 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_RemoveFromPlayerConsentList {
-    TargetName: String
+    #[serde(rename = "TargetName")]
+    target_name: String
 }
 
 // Grants a player corpse looting permission, /permit add
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_AddPlayerPermission {
-    TargetName: String
+    #[serde(rename = "TargetName")]
+    target_name: String
 }
 
 // Buy a house
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_BuyHouse {
-    ObjectId: String,
-    Items: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Items")]
+    items: String
 }
 
 // Revokes a player's corpse looting permission, /permit remove
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_RemovePlayerPermission {
-    TargetName: String
+    #[serde(rename = "TargetName")]
+    target_name: String
 }
 
 // Pay rent for a house
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_RentHouse {
-    ObjectId: String,
-    Items: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Items")]
+    items: String
 }
 
 // Sets a new fill complevel for a component
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_SetDesiredComponentLevel {
-    Wcid: String,
-    Amount: String
+    #[serde(rename = "Wcid")]
+    wcid: String,
+    #[serde(rename = "Amount")]
+    amount: String
 }
 
 // Adds a guest to your house guest list
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_AddPermanentGuest {
-    GuestName: String
+    #[serde(rename = "GuestName")]
+    guest_name: String
 }
 
 // Removes a specific player from your house guest list, /house guest remove
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_RemovePermanentGuest {
-    GuestName: String
+    #[serde(rename = "GuestName")]
+    guest_name: String
 }
 
 // Sets your house open status
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_SetOpenHouseStatus {
-    OpenHouse: String
+    #[serde(rename = "OpenHouse")]
+    open_house: String
 }
 
 // Changes a specific players storage permission, /house storage add/remove
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_ChangeStoragePermission {
-    GuestName: String,
-    HasPermission: String
+    #[serde(rename = "GuestName")]
+    guest_name: String,
+    #[serde(rename = "HasPermission")]
+    has_permission: String
 }
 
 // Boots a specific player from your house /house boot
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_BootSpecificHouseGuest {
-    GuestName: String
+    #[serde(rename = "GuestName")]
+    guest_name: String
 }
 
 // Sets the allegiance message of the day, /allegiance motd set
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_SetMotd {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Gets SlumLord info, sent after getting a failed house transaction
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_QueryLord {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Queries an item's mana
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_QueryItemMana {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Modify whether house hooks are visibile or not, /house hooks on/off
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_SetHooksVisibility {
-    Visible: String
+    #[serde(rename = "Visible")]
+    visible: String
 }
 
 // Modify whether allegiance members are guests, /house guest add_allegiance/remove_allegiance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_ModifyAllegianceGuestPermission {
-    Add: String
+    #[serde(rename = "Add")]
+    add: String
 }
 
 // Modify whether allegiance members can access storage, /house storage add_allegiance/remove_allegiance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_ModifyAllegianceStoragePermission {
-    Add: String
+    #[serde(rename = "Add")]
+    add: String
 }
 
 // Joins a chess game
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_Join {
-    GameId: String,
-    Team: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "Team")]
+    team: String
 }
 
 // Makes a chess move
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_Move {
-    XFrom: String,
-    YFrom: String,
-    XTo: String,
-    YTo: String
+    #[serde(rename = "XFrom")]
+    xfrom: String,
+    #[serde(rename = "YFrom")]
+    yfrom: String,
+    #[serde(rename = "XTo")]
+    xto: String,
+    #[serde(rename = "YTo")]
+    yto: String
 }
 
 // Offer or confirm stalemate
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_Stalemate {
-    On: String
+    #[serde(rename = "On")]
+    on: String
 }
 
 // Lists available house /house available
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_ListAvailableHouses {
-    Type: String
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Confirms a dialog
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_ConfirmationResponse {
-    Type: String,
-    Context: String,
-    Accepted: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Context")]
+    context: String,
+    #[serde(rename = "Accepted")]
+    accepted: String
 }
 
 // Boots a player from the allegiance, optionally all characters on their account
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_BreakAllegianceBoot {
-    BooteeName: String,
-    AccountBoot: String
+    #[serde(rename = "BooteeName")]
+    bootee_name: String,
+    #[serde(rename = "AccountBoot")]
+    account_boot: String
 }
 
 // Request allegiance info for a player
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceInfoRequest {
-    TargetName: String
+    #[serde(rename = "TargetName")]
+    target_name: String
 }
 
 // Salvages items
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_CreateTinkeringTool {
-    ToolId: String,
-    Items: String
+    #[serde(rename = "ToolId")]
+    tool_id: String,
+    #[serde(rename = "Items")]
+    items: String
 }
 
 // Changes the spell book filter
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_SpellbookFilterEvent {
-    Options: String
+    #[serde(rename = "Options")]
+    options: String
 }
 
 // Fellowship Assign a new leader
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_AssignNewLeader {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Fellowship Change openness
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_ChangeFellowOpeness {
-    Open: String
+    #[serde(rename = "Open")]
+    open: String
 }
 
 // Boots a player from the allegiance chat
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceChatBoot {
-    CharacterName: String,
-    Reason: String
+    #[serde(rename = "CharacterName")]
+    character_name: String,
+    #[serde(rename = "Reason")]
+    reason: String
 }
 
 // Bans a player from the allegiance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AddAllegianceBan {
-    CharacterName: String
+    #[serde(rename = "CharacterName")]
+    character_name: String
 }
 
 // Removes a player ban from the allegiance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_RemoveAllegianceBan {
-    CharacterName: String
+    #[serde(rename = "CharacterName")]
+    character_name: String
 }
 
 // Removes an allegiance officer
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_RemoveAllegianceOfficer {
-    CharacterName: String
+    #[serde(rename = "CharacterName")]
+    character_name: String
 }
 
 // Admin Returns a plugin list response
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Admin_QueryPluginListResponse {
-    Context: String,
-    PluginList: String
+    #[serde(rename = "Context")]
+    context: String,
+    #[serde(rename = "PluginList")]
+    plugin_list: String
 }
 
 // Admin Returns plugin info
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Admin_QueryPluginResponse {
-    Context: String,
-    Success: String,
-    PluginName: String,
-    PluginAuthor: String,
-    PluginEmail: String,
-    PluginWebpage: String
+    #[serde(rename = "Context")]
+    context: String,
+    #[serde(rename = "Success")]
+    success: String,
+    #[serde(rename = "PluginName")]
+    plugin_name: String,
+    #[serde(rename = "PluginAuthor")]
+    plugin_author: String,
+    #[serde(rename = "PluginEmail")]
+    plugin_email: String,
+    #[serde(rename = "PluginWebpage")]
+    plugin_webpage: String
 }
 
 // Completes the barber interaction
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_FinishBarber {
-    BasePalette: String,
-    HeadObject: String,
-    HeadTexture: String,
-    DefaultHeadTexture: String,
-    EyesTexture: String,
-    DefaultEyesTexture: String,
-    NoseTexture: String,
-    DefaultNoseTexture: String,
-    MouthTexture: String,
-    DefaultMouthTexture: String,
-    SkinPalette: String,
-    HairPalette: String,
-    EyesPalette: String,
-    SetupId: String,
-    Option1: String,
-    Option2: String
+    #[serde(rename = "BasePalette")]
+    base_palette: String,
+    #[serde(rename = "HeadObject")]
+    head_object: String,
+    #[serde(rename = "HeadTexture")]
+    head_texture: String,
+    #[serde(rename = "DefaultHeadTexture")]
+    default_head_texture: String,
+    #[serde(rename = "EyesTexture")]
+    eyes_texture: String,
+    #[serde(rename = "DefaultEyesTexture")]
+    default_eyes_texture: String,
+    #[serde(rename = "NoseTexture")]
+    nose_texture: String,
+    #[serde(rename = "DefaultNoseTexture")]
+    default_nose_texture: String,
+    #[serde(rename = "MouthTexture")]
+    mouth_texture: String,
+    #[serde(rename = "DefaultMouthTexture")]
+    default_mouth_texture: String,
+    #[serde(rename = "SkinPalette")]
+    skin_palette: String,
+    #[serde(rename = "HairPalette")]
+    hair_palette: String,
+    #[serde(rename = "EyesPalette")]
+    eyes_palette: String,
+    #[serde(rename = "SetupId")]
+    setup_id: String,
+    #[serde(rename = "Option1")]
+    option1: String,
+    #[serde(rename = "Option2")]
+    option2: String
 }
 
 // Abandons a contract
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_AbandonContract {
-    ContractId: String
+    #[serde(rename = "ContractId")]
+    contract_id: String
 }
 
 // Performs a jump
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_Jump {
-    Jump: String
+    #[serde(rename = "Jump")]
+    jump: String
 }
 
 // Move to state data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_MoveToState {
-    MoveToState: String
+    #[serde(rename = "MoveToState")]
+    move_to_state: String
 }
 
 // Performs a movement based on input
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_DoMovementCommand {
-    Motion: String,
-    Speed: String,
-    HoldKey: String
+    #[serde(rename = "Motion")]
+    motion: String,
+    #[serde(rename = "Speed")]
+    speed: String,
+    #[serde(rename = "HoldKey")]
+    hold_key: String
 }
 
 // Stops a movement
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_StopMovementCommand {
-    Motion: String,
-    HoldKey: String
+    #[serde(rename = "Motion")]
+    motion: String,
+    #[serde(rename = "HoldKey")]
+    hold_key: String
 }
 
 // Sets an autonomy level
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_AutonomyLevel {
-    AutonomyLevel: String
+    #[serde(rename = "AutonomyLevel")]
+    autonomy_level: String
 }
 
 // Sends an autonomous position
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_AutonomousPosition {
-    Position: String
+    #[serde(rename = "Position")]
+    position: String
 }
 
 // Performs a non autonomous jump
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_Jump_NonAutonomous {
-    Extent: String
+    #[serde(rename = "Extent")]
+    extent: String
 }
 
 // Allegiance update cancelled
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceUpdateAborted {
-    FailureType: String
+    #[serde(rename = "FailureType")]
+    failure_type: String
 }
 
 // Display a message in a popup message window.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_PopUpString {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Information describing your character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_PlayerDescription {
-    BaseQualities: String,
-    Qualities: String,
-    PlayerModule: String,
-    ContentProfile: String,
-    InventoryPlacement: String
+    #[serde(rename = "BaseQualities")]
+    base_qualities: String,
+    #[serde(rename = "Qualities")]
+    qualities: String,
+    #[serde(rename = "PlayerModule")]
+    player_module: String,
+    #[serde(rename = "ContentProfile")]
+    content_profile: String,
+    #[serde(rename = "InventoryPlacement")]
+    inventory_placement: String
 }
 
 // Returns info related to your monarch, patron and vassals.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceUpdate {
-    Rank: String,
-    Profile: String
+    #[serde(rename = "Rank")]
+    rank: String,
+    #[serde(rename = "Profile")]
+    profile: String
 }
 
 // Friends list update
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_FriendsUpdate {
-    Friends: String,
-    Type: String
+    #[serde(rename = "Friends")]
+    friends: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Store an item in a container.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_ServerSaysContainId {
-    ObjectId: String,
-    ContainerId: String,
-    SlotIndex: String,
-    ContainerType: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ContainerId")]
+    container_id: String,
+    #[serde(rename = "SlotIndex")]
+    slot_index: String,
+    #[serde(rename = "ContainerType")]
+    container_type: String
 }
 
 // Equip an item.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_WearItem {
-    ObjectId: String,
-    Slot: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Slot")]
+    slot: String
 }
 
 // Titles for the current character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_CharacterTitleTable {
-    DisplayTitle: String,
-    Titles: String
+    #[serde(rename = "DisplayTitle")]
+    display_title: String,
+    #[serde(rename = "Titles")]
+    titles: String
 }
 
 // Set a title for the current character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_AddOrSetCharacterTitle {
-    NewTitle: String,
-    SetAsDisplayTitle: String
+    #[serde(rename = "NewTitle")]
+    new_title: String,
+    #[serde(rename = "SetAsDisplayTitle")]
+    set_as_display_title: String
 }
 
 // Close Container - Only sent when explicitly closed
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_StopViewingObjectContents {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Open the buy/sell panel for a merchant.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Vendor_VendorInfo {
-    ObjectId: String,
-    Profile: String,
-    Items: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Profile")]
+    profile: String,
+    #[serde(rename = "Items")]
+    items: String
 }
 
 // Opens barber UI
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_StartBarber {
-    BasePalette: String,
-    HeadObject: String,
-    HeadTexture: String,
-    DefaultHeadTexture: String,
-    EyesTexture: String,
-    DefaultEyesTexture: String,
-    NoseTexture: String,
-    DefaultNoseTexture: String,
-    MouthTexture: String,
-    DefaultMouthTexture: String,
-    SkinPalette: String,
-    HairPalette: String,
-    EyesPalette: String,
-    SetupId: String,
-    Option1: String,
-    Option2: String
+    #[serde(rename = "BasePalette")]
+    base_palette: String,
+    #[serde(rename = "HeadObject")]
+    head_object: String,
+    #[serde(rename = "HeadTexture")]
+    head_texture: String,
+    #[serde(rename = "DefaultHeadTexture")]
+    default_head_texture: String,
+    #[serde(rename = "EyesTexture")]
+    eyes_texture: String,
+    #[serde(rename = "DefaultEyesTexture")]
+    default_eyes_texture: String,
+    #[serde(rename = "NoseTexture")]
+    nose_texture: String,
+    #[serde(rename = "DefaultNoseTexture")]
+    default_nose_texture: String,
+    #[serde(rename = "MouthTexture")]
+    mouth_texture: String,
+    #[serde(rename = "DefaultMouthTexture")]
+    default_mouth_texture: String,
+    #[serde(rename = "SkinPalette")]
+    skin_palette: String,
+    #[serde(rename = "HairPalette")]
+    hair_palette: String,
+    #[serde(rename = "EyesPalette")]
+    eyes_palette: String,
+    #[serde(rename = "SetupId")]
+    setup_id: String,
+    #[serde(rename = "Option1")]
+    option1: String,
+    #[serde(rename = "Option2")]
+    option2: String
 }
 
 // Member left fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_Quit {
-    Disband: String
+    #[serde(rename = "Disband")]
+    disband: String
 }
 
 // Member dismissed from fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_Dismiss {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Sent when you first open a book, contains the entire table of contents.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookOpen {
-    BookId: String,
-    MaxNumPages: String,
-    PageData: String,
-    Inscription: String,
-    ScribeId: String,
-    ScribeName: String
+    #[serde(rename = "BookId")]
+    book_id: String,
+    #[serde(rename = "MaxNumPages")]
+    max_num_pages: String,
+    #[serde(rename = "PageData")]
+    page_data: String,
+    #[serde(rename = "Inscription")]
+    inscription: String,
+    #[serde(rename = "ScribeId")]
+    scribe_id: String,
+    #[serde(rename = "ScribeName")]
+    scribe_name: String
 }
 
 // Response to an attempt to add a page to a book.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookAddPageResponse {
-    BookId: String,
-    PageNumber: String,
-    Success: String
+    #[serde(rename = "BookId")]
+    book_id: String,
+    #[serde(rename = "PageNumber")]
+    page_number: String,
+    #[serde(rename = "Success")]
+    success: String
 }
 
 // Response to an attempt to delete a page from a book.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookDeletePageResponse {
-    BookId: String,
-    PageNumber: String,
-    Success: String
+    #[serde(rename = "BookId")]
+    book_id: String,
+    #[serde(rename = "PageNumber")]
+    page_number: String,
+    #[serde(rename = "Success")]
+    success: String
 }
 
 // Contains the text of a single page of a book, parchment or sign.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Writing_BookPageDataResponse {
-    ObjectId: String,
-    Page: String,
-    PageData: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Page")]
+    page: String,
+    #[serde(rename = "PageData")]
+    page_data: String
 }
 
 // Get Inscription Response, doesn't seem to be really used by client
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_GetInscriptionResponse {
-    Inscription: String,
-    ScribeName: String,
-    ScribeAccount: String
+    #[serde(rename = "Inscription")]
+    inscription: String,
+    #[serde(rename = "ScribeName")]
+    scribe_name: String,
+    #[serde(rename = "ScribeAccount")]
+    scribe_account: String
 }
 
 // The result of an attempt to assess an item or creature.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_SetAppraiseInfo {
-    ObjectId: String,
-    Flags: String,
-    Success: String,
-    IntProperties: String,
-    Int64Properties: String,
-    BoolProperties: String,
-    FloatProperties: String,
-    StringProperties: String,
-    DataIdProperties: String,
-    SpellBook: String,
-    ArmorProfile: String,
-    CreatureProfile: String,
-    WeaponProfile: String,
-    HookProfile: String,
-    ArmorHighlight: String,
-    ArmorColor: String,
-    WeaponHighlight: String,
-    WeaponColor: String,
-    ResistHighlight: String,
-    ResistColor: String,
-    BaseArmorHead: String,
-    BaseArmorChest: String,
-    BaseArmorGroin: String,
-    BaseArmorBicep: String,
-    BaseArmorWrist: String,
-    BaseArmorHand: String,
-    BaseArmorThigh: String,
-    BaseArmorShin: String,
-    BaseArmorFoot: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Success")]
+    success: String,
+    #[serde(rename = "IntProperties")]
+    int_properties: String,
+    #[serde(rename = "Int64Properties")]
+    int64_properties: String,
+    #[serde(rename = "BoolProperties")]
+    bool_properties: String,
+    #[serde(rename = "FloatProperties")]
+    float_properties: String,
+    #[serde(rename = "StringProperties")]
+    string_properties: String,
+    #[serde(rename = "DataIdProperties")]
+    data_id_properties: String,
+    #[serde(rename = "SpellBook")]
+    spell_book: String,
+    #[serde(rename = "ArmorProfile")]
+    armor_profile: String,
+    #[serde(rename = "CreatureProfile")]
+    creature_profile: String,
+    #[serde(rename = "WeaponProfile")]
+    weapon_profile: String,
+    #[serde(rename = "HookProfile")]
+    hook_profile: String,
+    #[serde(rename = "ArmorHighlight")]
+    armor_highlight: String,
+    #[serde(rename = "ArmorColor")]
+    armor_color: String,
+    #[serde(rename = "WeaponHighlight")]
+    weapon_highlight: String,
+    #[serde(rename = "WeaponColor")]
+    weapon_color: String,
+    #[serde(rename = "ResistHighlight")]
+    resist_highlight: String,
+    #[serde(rename = "ResistColor")]
+    resist_color: String,
+    #[serde(rename = "BaseArmorHead")]
+    base_armor_head: String,
+    #[serde(rename = "BaseArmorChest")]
+    base_armor_chest: String,
+    #[serde(rename = "BaseArmorGroin")]
+    base_armor_groin: String,
+    #[serde(rename = "BaseArmorBicep")]
+    base_armor_bicep: String,
+    #[serde(rename = "BaseArmorWrist")]
+    base_armor_wrist: String,
+    #[serde(rename = "BaseArmorHand")]
+    base_armor_hand: String,
+    #[serde(rename = "BaseArmorThigh")]
+    base_armor_thigh: String,
+    #[serde(rename = "BaseArmorShin")]
+    base_armor_shin: String,
+    #[serde(rename = "BaseArmorFoot")]
+    base_armor_foot: String
 }
 
 // ChannelBroadcast: Group Chat
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ChannelBroadcast {
-    Channel: String,
-    Message: String
+    #[serde(rename = "Channel")]
+    channel: String,
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // ChannelList: Provides list of characters listening to a channel, I assume in response to a command
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ChannelList {
-    Characters: String
+    #[serde(rename = "Characters")]
+    characters: String
 }
 
 // ChannelIndex: Provides list of channels available to the player, I assume in response to a command
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ChannelIndex {
-    Channels: String
+    #[serde(rename = "Channels")]
+    channels: String
 }
 
 // Set Pack Contents
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_OnViewContents {
-    ContainerId: String,
-    Items: String
+    #[serde(rename = "ContainerId")]
+    container_id: String,
+    #[serde(rename = "Items")]
+    items: String
 }
 
 // ServerSaysMoveItem: Removes an item from inventory (when you place it on the ground or give it away)
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_ServerSaysMoveItem {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // HandleAttackDoneEvent: Melee attack completed
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleAttackDoneEvent {
-    Number: String
+    #[serde(rename = "Number")]
+    number: String
 }
 
 // RemoveSpell: Delete a spell from your spellbook.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_RemoveSpell {
-    SpellId: String
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // You just died.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleVictimNotificationEventSelf {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Message for a death, something you killed or your own death message.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleVictimNotificationEventOther {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // HandleAttackerNotificationEvent: You have hit your target with a melee attack.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleAttackerNotificationEvent {
-    DefenderName: String,
-    Type: String,
-    DamagePercent: String,
-    Damage: String,
-    Critical: String,
-    AttackConditions: String
+    #[serde(rename = "DefenderName")]
+    defender_name: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "DamagePercent")]
+    damage_percent: String,
+    #[serde(rename = "Damage")]
+    damage: String,
+    #[serde(rename = "Critical")]
+    critical: String,
+    #[serde(rename = "AttackConditions")]
+    attack_conditions: String
 }
 
 // HandleDefenderNotificationEvent: You have been hit by a creature's melee attack.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleDefenderNotificationEvent {
-    AttackerName: String,
-    Type: String,
-    DamagePercent: String,
-    Damage: String,
-    Location: String,
-    Critical: String,
-    AttackConditions: String
+    #[serde(rename = "AttackerName")]
+    attacker_name: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "DamagePercent")]
+    damage_percent: String,
+    #[serde(rename = "Damage")]
+    damage: String,
+    #[serde(rename = "Location")]
+    location: String,
+    #[serde(rename = "Critical")]
+    critical: String,
+    #[serde(rename = "AttackConditions")]
+    attack_conditions: String
 }
 
 // HandleEvasionAttackerNotificationEvent: Your target has evaded your melee attack.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleEvasionAttackerNotificationEvent {
-    DefenderName: String
+    #[serde(rename = "DefenderName")]
+    defender_name: String
 }
 
 // HandleEvasionDefenderNotificationEvent: You have evaded a creature's melee attack.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandleEvasionDefenderNotificationEvent {
-    AttackerName: String
+    #[serde(rename = "AttackerName")]
+    attacker_name: String
 }
 
 // QueryHealthResponse: Update a creature's health bar.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_QueryHealthResponse {
-    ObjectId: String,
-    Health: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Health")]
+    health: String
 }
 
 // QueryAgeResponse: happens when you do /age in the game
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_QueryAgeResponse {
-    TargetName: String,
-    Age: String
+    #[serde(rename = "TargetName")]
+    target_name: String,
+    #[serde(rename = "Age")]
+    age: String
 }
 
 // UseDone: Ready. Previous action complete
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_UseDone {
-    FailureType: String
+    #[serde(rename = "FailureType")]
+    failure_type: String
 }
 
 // Allegiance update finished
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceUpdateDone {
-    FailureType: String
+    #[serde(rename = "FailureType")]
+    failure_type: String
 }
 
 // Close Assess Panel
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_AppraiseDone {
-    Unknown: String
+    #[serde(rename = "Unknown")]
+    unknown: String
 }
 
 // Squelch and Filter List
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_SetSquelchDB {
-    SquelchDB: String
+    #[serde(rename = "SquelchDB")]
+    squelch_db: String
 }
 
 // RegisterTrade: Send to begin a trade and display the trade window
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_RegisterTrade {
-    InitiatorId: String,
-    PartnerId: String,
-    Stamp: String
+    #[serde(rename = "InitiatorId")]
+    initiator_id: String,
+    #[serde(rename = "PartnerId")]
+    partner_id: String,
+    #[serde(rename = "Stamp")]
+    stamp: String
 }
 
 // OpenTrade: Open trade window
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_OpenTrade {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // CloseTrade: End trading
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_CloseTrade {
-    Reason: String
+    #[serde(rename = "Reason")]
+    reason: String
 }
 
 // RemoveFromTrade: Item was removed from trade window
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_AddToTrade {
-    ObjectId: String,
-    Side: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Side")]
+    side: String
 }
 
 // Removes an item from the trade window, not sure if this is used still?
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_RemoveFromTrade {
-    ObjectId: String,
-    Side: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Side")]
+    side: String
 }
 
 // AcceptTrade: The trade was accepted
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_AcceptTrade {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // DeclineTrade: The trade was declined
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_DeclineTrade {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // ResetTrade: The trade window was reset
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_ResetTrade {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // TradeFailure: Failure to add a trade item
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Trade_TradeFailure {
-    ObjectId: String,
-    Reason: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Reason")]
+    reason: String
 }
 
 // Buy a dwelling or pay maintenance
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_HouseProfile {
-    ObjectId: String,
-    Profile: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Profile")]
+    profile: String
 }
 
 // House panel information for owners.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_HouseData {
-    Data: String
+    #[serde(rename = "Data")]
+    data: String
 }
 
 // House Data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_HouseStatus {
-    NoticeType: String
+    #[serde(rename = "NoticeType")]
+    notice_type: String
 }
 
 // Update Rent Time
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_UpdateRentTime {
-    RentTime: String
+    #[serde(rename = "RentTime")]
+    rent_time: String
 }
 
 // Update Rent Payment
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_UpdateRentPayment {
-    Rent: String
+    #[serde(rename = "Rent")]
+    rent: String
 }
 
 // Update Restrictions
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_UpdateRestrictions {
-    Sequence: String,
-    SenderId: String,
-    Restrictions: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "SenderId")]
+    sender_id: String,
+    #[serde(rename = "Restrictions")]
+    restrictions: String
 }
 
 // House Guest List
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_UpdateHAR {
-    GuestList: String
+    #[serde(rename = "GuestList")]
+    guest_list: String
 }
 
 // House Profile
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_HouseTransaction {
-    NoticeType: String
+    #[serde(rename = "NoticeType")]
+    notice_type: String
 }
 
 // Update an item's mana bar.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_QueryItemManaResponse {
-    ObjectId: String,
-    Mana: String,
-    Success: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Mana")]
+    mana: String,
+    #[serde(rename = "Success")]
+    success: String
 }
 
 // Display a list of available dwellings in the chat window.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct House_AvailableHouses {
-    Type: String,
-    Houses: String,
-    NumHouses: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Houses")]
+    houses: String,
+    #[serde(rename = "NumHouses")]
+    num_houses: String
 }
 
 // Display a confirmation panel.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_ConfirmationRequest {
-    ConfirmationType: String,
-    ContextId: String,
-    Text: String
+    #[serde(rename = "ConfirmationType")]
+    confirmation_type: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "Text")]
+    text: String
 }
 
 // Confirmation done
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_ConfirmationDone {
-    ConfirmationType: String,
-    ContextId: String
+    #[serde(rename = "ConfirmationType")]
+    confirmation_type: String,
+    #[serde(rename = "ContextId")]
+    context_id: String
 }
 
 // Display an allegiance login/logout message in the chat window.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceLoginNotificationEvent {
-    CharacterId: String,
-    IsLoggedIn: String
+    #[serde(rename = "CharacterId")]
+    character_id: String,
+    #[serde(rename = "IsLoggedIn")]
+    is_logged_in: String
 }
 
 // Returns data for a player's allegiance information
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Allegiance_AllegianceInfoResponseEvent {
-    TargetId: String,
-    Profile: String
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "Profile")]
+    profile: String
 }
 
 // Joining game response
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_JoinGameResponse {
-    GameId: String,
-    Team: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "Team")]
+    team: String
 }
 
 // Start game
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_StartGame {
-    GameId: String,
-    Team: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "Team")]
+    team: String
 }
 
 // Move response
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_MoveResponse {
-    GameId: String,
-    MoveResult: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "MoveResult")]
+    move_result: String
 }
 
 // Opponent Turn
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_OpponentTurn {
-    GameId: String,
-    Team: String,
-    GameMove: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "Team")]
+    team: String,
+    #[serde(rename = "GameMove")]
+    game_move: String
 }
 
 // Opponent Stalemate State
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_OpponentStalemateState {
-    GameId: String,
-    Team: String,
-    On: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "Team")]
+    team: String,
+    #[serde(rename = "On")]
+    on: String
 }
 
 // Display a status message in the chat window.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_WeenieError {
-    Type: String
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Display a parameterized status message in the chat window.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_WeenieErrorWithString {
-    Type: String,
-    Text: String
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "Text")]
+    text: String
 }
 
 // End of Chess game
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game_GameOver {
-    GameId: String,
-    TeamWinner: String
+    #[serde(rename = "GameId")]
+    game_id: String,
+    #[serde(rename = "TeamWinner")]
+    team_winner: String
 }
 
 // Set Turbine Chat channel numbers.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_ChatRoomTracker {
-    AllegianceRoomId: String,
-    GeneralChatRoomId: String,
-    TradeChatRoomId: String,
-    LFGChatRoomId: String,
-    RoleplayChatRoomId: String,
-    OlthoiChatRoomId: String,
-    SocietyChatRoomId: String,
-    SocietyCelestialHandChatRoomId: String,
-    SocietyEldrichWebChatRoomId: String,
-    SocietyRadiantBloodChatRoomId: String
+    #[serde(rename = "AllegianceRoomId")]
+    allegiance_room_id: String,
+    #[serde(rename = "GeneralChatRoomId")]
+    general_chat_room_id: String,
+    #[serde(rename = "TradeChatRoomId")]
+    trade_chat_room_id: String,
+    #[serde(rename = "LFGChatRoomId")]
+    lfgchat_room_id: String,
+    #[serde(rename = "RoleplayChatRoomId")]
+    roleplay_chat_room_id: String,
+    #[serde(rename = "OlthoiChatRoomId")]
+    olthoi_chat_room_id: String,
+    #[serde(rename = "SocietyChatRoomId")]
+    society_chat_room_id: String,
+    #[serde(rename = "SocietyCelestialHandChatRoomId")]
+    society_celestial_hand_chat_room_id: String,
+    #[serde(rename = "SocietyEldrichWebChatRoomId")]
+    society_eldrich_web_chat_room_id: String,
+    #[serde(rename = "SocietyRadiantBloodChatRoomId")]
+    society_radiant_blood_chat_room_id: String
 }
 
 // Salvage operation results
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_SalvageOperationsResultData {
-    Result: String
+    #[serde(rename = "Result")]
+    result: String
 }
 
 // Someone has sent you a @tell.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_HearDirectSpeech {
-    Message: String,
-    SenderName: String,
-    SenderId: String,
-    TargetId: String,
-    Type: String,
-    SecretFlags: String
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "SenderName")]
+    sender_name: String,
+    #[serde(rename = "SenderId")]
+    sender_id: String,
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "SecretFlags")]
+    secret_flags: String
 }
 
 // Create or join a fellowship
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_FullUpdate {
-    Fellowship: String
+    #[serde(rename = "Fellowship")]
+    fellowship: String
 }
 
 // Add/Update a member to your fellowship.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Fellowship_UpdateFellow {
-    Fellow: String,
-    UpdateType: String
+    #[serde(rename = "Fellow")]
+    fellow: String,
+    #[serde(rename = "UpdateType")]
+    update_type: String
 }
 
 // Add a spell to your spellbook.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_UpdateSpell {
-    SpellId: String
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // Apply an enchantment to your character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_UpdateEnchantment {
-    Enchantment: String
+    #[serde(rename = "Enchantment")]
+    enchantment: String
 }
 
 // Remove an enchantment from your character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_RemoveEnchantment {
-    SpellId: String
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // Update multiple enchantments from your character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_UpdateMultipleEnchantments {
-    Enchantments: String
+    #[serde(rename = "Enchantments")]
+    enchantments: String
 }
 
 // Remove multiple enchantments from your character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_RemoveMultipleEnchantments {
-    Enchantments: String
+    #[serde(rename = "Enchantments")]
+    enchantments: String
 }
 
 // Silently remove An enchantment from your character.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_DispelEnchantment {
-    SpellId: String
+    #[serde(rename = "SpellId")]
+    spell_id: String
 }
 
 // Silently remove multiple enchantments from your character (no message in the chat window).
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Magic_DispelMultipleEnchantments {
-    Enchantments: String
+    #[serde(rename = "Enchantments")]
+    enchantments: String
 }
 
 // A portal storm is brewing.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Misc_PortalStormBrewing {
-    Extent: String
+    #[serde(rename = "Extent")]
+    extent: String
 }
 
 // A portal storm is imminent.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Misc_PortalStormImminent {
-    Extent: String
+    #[serde(rename = "Extent")]
+    extent: String
 }
 
 // Display a status message on the Action Viewscreen (the red text overlaid on the 3D area).
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TransientString {
-    Message: String
+    #[serde(rename = "Message")]
+    message: String
 }
 
 // Sends all contract data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_SendClientContractTrackerTable {
-    ContractTracker: String
+    #[serde(rename = "ContractTracker")]
+    contract_tracker: String
 }
 
 // Updates a contract data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_SendClientContractTracker {
-    ContractTracker: String,
-    DeleteContract: String,
-    SetAsDisplayContract: String
+    #[serde(rename = "ContractTracker")]
+    contract_tracker: String,
+    #[serde(rename = "DeleteContract")]
+    delete_contract: String,
+    #[serde(rename = "SetAsDisplayContract")]
+    set_as_display_contract: String
 }
 
 // Mark a character for deletetion.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_CharacterDelete {
-    Account: String,
-    Slot: String
+    #[serde(rename = "Account")]
+    account: String,
+    #[serde(rename = "Slot")]
+    slot: String
 }
 
 // Character creation result
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_SendCharGenResult {
-    Account: String,
-    Result: String
+    #[serde(rename = "Account")]
+    account: String,
+    #[serde(rename = "Result")]
+    result: String
 }
 
 // The character to log in.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_SendEnterWorld {
-    CharacterId: String,
-    Account: String
+    #[serde(rename = "CharacterId")]
+    character_id: String,
+    #[serde(rename = "Account")]
+    account: String
 }
 
 // Asks server for a new object description
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Object_SendForceObjdesc {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Seems to be a legacy friends command, /friends old, for when Jan 2006 event changed the friends list
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Social_SendFriendsCommand {
-    Command: String,
-    Player: String
+    #[serde(rename = "Command")]
+    command: String,
+    #[serde(rename = "Player")]
+    player: String
 }
 
 // Admin command to restore a character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Admin_SendAdminRestoreCharacter {
-    ObjectId: String,
-    RestoredCharName: String,
-    AccountToRestoreTo: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "RestoredCharName")]
+    restored_char_name: String,
+    #[serde(rename = "AccountToRestoreTo")]
+    account_to_restore_to: String
 }
 
 // Send or receive a message using Turbine Chat.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TurbineChat {
-    MmessageSize: String,
-    Type: String,
-    BlobDispatchType: String,
-    TargetType: String,
-    TargetId: String,
-    TransportType: String,
-    TransportId: String,
-    Cookie: String,
-    PayloadSize: String,
-    RoomId: String,
-    DisplayName: String,
-    Text: String,
-    ExtraDataSize: String,
-    SpeakerId: String,
-    HResult: String,
-    ChatType: String,
-    ContextId: String,
-    ResponseId: String,
-    MethodId: String,
-    RoomId: String,
-    Text: String,
-    ExtraDataSize: String,
-    SpeakerId: String,
-    HResult: String,
-    ChatType: String,
-    ContextId: String,
-    ResponseId: String,
-    MethodId: String,
-    HResult: String,
-    ContextId: String,
-    ResponseId: String,
-    MethodId: String,
-    HResult: String
+    #[serde(rename = "MmessageSize")]
+    mmessage_size: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "BlobDispatchType")]
+    blob_dispatch_type: String,
+    #[serde(rename = "TargetType")]
+    target_type: String,
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "TransportType")]
+    transport_type: String,
+    #[serde(rename = "TransportId")]
+    transport_id: String,
+    #[serde(rename = "Cookie")]
+    cookie: String,
+    #[serde(rename = "PayloadSize")]
+    payload_size: String,
+    #[serde(rename = "RoomId")]
+    room_id: String,
+    #[serde(rename = "DisplayName")]
+    display_name: String,
+    #[serde(rename = "Text")]
+    text: String,
+    #[serde(rename = "ExtraDataSize")]
+    extra_data_size: String,
+    #[serde(rename = "SpeakerId")]
+    speaker_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ChatType")]
+    chat_type: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "RoomId")]
+    room_id: String,
+    #[serde(rename = "Text")]
+    text: String,
+    #[serde(rename = "ExtraDataSize")]
+    extra_data_size: String,
+    #[serde(rename = "SpeakerId")]
+    speaker_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ChatType")]
+    chat_type: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String
 }
 
 // DDD request for data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_RequestDataMessage {
-    ResourceType: String,
-    ResourceId: String
+    #[serde(rename = "ResourceType")]
+    resource_type: String,
+    #[serde(rename = "ResourceId")]
+    resource_id: String
 }
 
 // TODO
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_InterrogationResponseMessage {
-    Language: String,
-    Files: String
+    #[serde(rename = "Language")]
+    language: String,
+    #[serde(rename = "Files")]
+    files: String
 }
 
 // Sent every time an object you are aware of ceases to exist. Merely running out of range does not generate this message - in that case, the client just automatically stops tracking it after receiving no updates for a while (which I presume is a very short while).
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_ServerSaysRemove {
-    ObjectId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String
 }
 
 // Failure to give an item
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_ServerSaysAttemptFailed {
-    ObjectId: String,
-    Reason: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Reason")]
+    reason: String
 }
 
 // For stackable items, this changes the number of items in the stack.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_UpdateStackSize {
-    Sequence: String,
-    ObjectId: String,
-    Amount: String,
-    NewValue: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "NewValue")]
+    new_value: String
 }
 
 // A Player Kill occurred nearby (also sent for suicides).
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Combat_HandlePlayerDeathEvent {
-    Message: String,
-    KilledId: String,
-    KillerId: String
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "KilledId")]
+    killed_id: String,
+    #[serde(rename = "KillerId")]
+    killer_id: String
 }
 
 // Remove an int property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveIntEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an int property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveIntEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a bool property from the charactert
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveBoolEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a bool property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveBoolEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a float property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveFloatEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a float property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveFloatEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a string property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveStringEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a string property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveStringEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an dataId property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveDataIdEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an dataId property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveDataIdEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an instanceId property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveInstanceIdEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an instanceId property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveInstanceIdEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a position property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemovePositionEvent {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove a position property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemovePositionEvent {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an int64 property from the character
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateRemoveInt64Event {
-    Sequence: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Remove an int64 property from an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_RemoveInt64Event {
-    Sequence: String,
-    ObjectId: String,
-    Type: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // Set or update a Character Int property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateInt {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object Int property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateInt {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Int64 property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateInt64 {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Int64 property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateInt64 {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Boolean property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateBool {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object Boolean property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateBool {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object float property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateFloat {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object float property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateFloat {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object String property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateString {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object String property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateString {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object DId property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateDataId {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object DId property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateDataId {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a IId property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateInstanceId {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update an Object IId property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateInstanceId {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Position property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdatePosition {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Position property value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdatePosition {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Skill value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateSkill {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Skill value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateSkill {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Skill Level
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateSkillLevel {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Skill Level
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateSkillLevel {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Skill state
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateSkillAC {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Skill state
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateSkillAC {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Attribute value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateAttribute {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Attribute value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateAttribute {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Attribute Level
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateAttributeLevel {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Attribute Level
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateAttributeLevel {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Vital value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateAttribute2nd {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Vital value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateAttribute2nd {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Vital value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_PrivateUpdateAttribute2ndLevel {
-    Sequence: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Set or update a Character Vital value
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Qualities_UpdateAttribute2ndLevel {
-    Sequence: String,
-    ObjectId: String,
-    Key: String,
-    Value: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Key")]
+    key: String,
+    #[serde(rename = "Value")]
+    value: String
 }
 
 // Indirect '/e' text.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_HearEmote {
-    SenderId: String,
-    SenderName: String,
-    Text: String
+    #[serde(rename = "SenderId")]
+    sender_id: String,
+    #[serde(rename = "SenderName")]
+    sender_name: String,
+    #[serde(rename = "Text")]
+    text: String
 }
 
 // Contains the text associated with an emote action.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_HearSoulEmote {
-    SenderId: String,
-    SenderName: String,
-    Text: String
+    #[serde(rename = "SenderId")]
+    sender_id: String,
+    #[serde(rename = "SenderName")]
+    sender_name: String,
+    #[serde(rename = "Text")]
+    text: String
 }
 
 // A message to be displayed in the chat window, spoken by a nearby player, NPC or creature
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_HearSpeech {
-    Message: String,
-    SenderName: String,
-    SenderId: String,
-    Type: String
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "SenderName")]
+    sender_name: String,
+    #[serde(rename = "SenderId")]
+    sender_id: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // A message to be displayed in the chat window, spoken by a nearby player, NPC or creature
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_HearRangedSpeech {
-    Message: String,
-    SenderName: String,
-    SenderId: String,
-    Range: String,
-    Type: String
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "SenderName")]
+    sender_name: String,
+    #[serde(rename = "SenderId")]
+    sender_id: String,
+    #[serde(rename = "Range")]
+    range: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // This appears to be an admin command to change the environment (light, fog, sounds, colors)
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Admin_Environs {
-    EnvrionOption: String
+    #[serde(rename = "EnvrionOption")]
+    envrion_option: String
 }
 
 // Sets both the position and movement, such as when materializing at a lifestone
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_PositionAndMovementEvent {
-    ObjectId: String,
-    Position: String,
-    MovementData: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Position")]
+    position: String,
+    #[serde(rename = "MovementData")]
+    movement_data: String
 }
 
 // Sent whenever a character changes their clothes. It contains the entire description of what their wearing (and possibly their facial features as well). This message is only sent for changes, when the character is first created, the body of this message is included inside the creation message.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_ObjDescEvent {
-    ObjectId: String,
-    ObjectDescription: String,
-    InstanceSequence: String,
-    VisualDescSequence: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ObjectDescription")]
+    object_description: String,
+    #[serde(rename = "InstanceSequence")]
+    instance_sequence: String,
+    #[serde(rename = "VisualDescSequence")]
+    visual_desc_sequence: String
 }
 
 // Sets the player visual desc, TODO confirm this
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_SetPlayerVisualDesc {
-    ObjectDescription: String
+    #[serde(rename = "ObjectDescription")]
+    object_description: String
 }
 
 // Character creation screen initilised.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_CharGenVerificationResponse {
-    ResponseType: String,
-    CharacterId: String,
-    Name: String,
-    SecondsUntilDeletion: String
+    #[serde(rename = "ResponseType")]
+    response_type: String,
+    #[serde(rename = "CharacterId")]
+    character_id: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "SecondsUntilDeletion")]
+    seconds_until_deletion: String
 }
 
 // Sent when your subsciption is about to expire
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_AwaitingSubscriptionExpiration {
-    SecondsRemaining: String
+    #[serde(rename = "SecondsRemaining")]
+    seconds_remaining: String
 }
 
 // The list of characters on the current account.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_LoginCharacterSet {
-    Status: String,
-    Characters: String,
-    DeletedCharacters: String,
-    NumAllowedCharacters: String,
-    Account: String,
-    UseTurbineChat: String,
-    HasThroneofDestiny: String
+    #[serde(rename = "Status")]
+    status: String,
+    #[serde(rename = "Characters")]
+    characters: String,
+    #[serde(rename = "DeletedCharacters")]
+    deleted_characters: String,
+    #[serde(rename = "NumAllowedCharacters")]
+    num_allowed_characters: String,
+    #[serde(rename = "Account")]
+    account: String,
+    #[serde(rename = "UseTurbineChat")]
+    use_turbine_chat: String,
+    #[serde(rename = "HasThroneofDestiny")]
+    has_throneof_destiny: String
 }
 
 // Failure to log in
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_CharacterError {
-    Reason: String
+    #[serde(rename = "Reason")]
+    reason: String
 }
 
 // Create an object somewhere in the world
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_CreateObject {
-    ObjectId: String,
-    ObjectDescription: String,
-    PhysicsDescription: String,
-    WeenieDescription: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ObjectDescription")]
+    object_description: String,
+    #[serde(rename = "PhysicsDescription")]
+    physics_description: String,
+    #[serde(rename = "WeenieDescription")]
+    weenie_description: String
 }
 
 // Login of player
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_CreatePlayer {
-    CharacterId: String
+    #[serde(rename = "CharacterId")]
+    character_id: String
 }
 
 // Sent whenever an object is being deleted from the scene.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_DeleteObject {
-    ObjectId: String,
-    ObjectInstanceSequence: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String
 }
 
 // Sets the position/motion of an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_PositionEvent {
-    ObjectId: String,
-    Position: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Position")]
+    position: String
 }
 
 // Sets the parent for an object, eg. equipting an object.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_ParentEvent {
-    ParentId: String,
-    ChildId: String,
-    Location: String,
-    Placement: String,
-    ObjectInstanceSequence: String,
-    ChildPositionSequence: String
+    #[serde(rename = "ParentId")]
+    parent_id: String,
+    #[serde(rename = "ChildId")]
+    child_id: String,
+    #[serde(rename = "Location")]
+    location: String,
+    #[serde(rename = "Placement")]
+    placement: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ChildPositionSequence")]
+    child_position_sequence: String
 }
 
 // Sent when picking up an object
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Inventory_PickupEvent {
-    ObjectId: String,
-    ObjectInstanceSequence: String,
-    ObjectPositionSequence: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectPositionSequence")]
+    object_position_sequence: String
 }
 
 // Set's the current state of the object. Client appears to only process the following state changes post creation: NoDraw, LightingOn, Hidden
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_SetState {
-    ObjectId: String,
-    NewState: String,
-    ObjectInstanceSequence: String,
-    ObjectStateSequence: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "NewState")]
+    new_state: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectStateSequence")]
+    object_state_sequence: String
 }
 
 // These are animations. Whenever a human, monster or object moves - one of these little messages is sent. Even idle emotes (like head scratching and nodding) are sent in this manner.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_SetObjectMovement {
-    ObjectId: String,
-    ObjectInstanceSequence: String,
-    MovementData: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "MovementData")]
+    movement_data: String
 }
 
 // Changes an objects vector, for things like jumping
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Movement_VectorUpdate {
-    ObjectId: String,
-    Velocity: String,
-    Omega: String,
-    ObjectInstanceSequence: String,
-    ObjectVectorSequence: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "Velocity")]
+    velocity: String,
+    #[serde(rename = "Omega")]
+    omega: String,
+    #[serde(rename = "ObjectInstanceSequence")]
+    object_instance_sequence: String,
+    #[serde(rename = "ObjectVectorSequence")]
+    object_vector_sequence: String
 }
 
 // Applies a sound effect.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Effects_SoundEvent {
-    ObjectId: String,
-    SoundType: String,
-    Volume: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "SoundType")]
+    sound_type: String,
+    #[serde(rename = "Volume")]
+    volume: String
 }
 
 // Instructs the client to show the portal graphic.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Effects_PlayerTeleport {
-    ObjectTeleportSequence: String
+    #[serde(rename = "ObjectTeleportSequence")]
+    object_teleport_sequence: String
 }
 
 // Instructs the client to play a script. (Not seen so far, maybe prefered PlayScriptType)
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Effects_PlayScriptId {
-    ObjectId: String,
-    ScriptId: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ScriptId")]
+    script_id: String
 }
 
 // Applies an effect with visual and sound by providing the type to be looked up in the Physics Script Table
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Effects_PlayScriptType {
-    ObjectId: String,
-    ScriptType: String,
-    Speed: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ScriptType")]
+    script_type: String,
+    #[serde(rename = "Speed")]
+    speed: String
 }
 
 // Account has been banned
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_AccountBanned {
-    BannedUntil: String,
-    Text: String
+    #[serde(rename = "BannedUntil")]
+    banned_until: String,
+    #[serde(rename = "Text")]
+    text: String
 }
 
 // Admin Receive Account Data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Admin_ReceiveAccountData {
-    Unknown: String,
-    AdminAccountData: String
+    #[serde(rename = "Unknown")]
+    unknown: String,
+    #[serde(rename = "AdminAccountData")]
+    admin_account_data: String
 }
 
 // Admin Receive Player Data
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Admin_ReceivePlayerData {
-    Unknown: String,
-    AdminPlayerData: String
+    #[serde(rename = "Unknown")]
+    unknown: String,
+    #[serde(rename = "AdminPlayerData")]
+    admin_player_data: String
 }
 
 // Update an existing object's data.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Item_UpdateObject {
-    ObjectId: String,
-    ObjectDesc: String,
-    PhysicsDesc: String,
-    WeenieDesc: String
+    #[serde(rename = "ObjectId")]
+    object_id: String,
+    #[serde(rename = "ObjectDesc")]
+    object_desc: String,
+    #[serde(rename = "PhysicsDesc")]
+    physics_desc: String,
+    #[serde(rename = "WeenieDesc")]
+    weenie_desc: String
 }
 
 // Account has been booted
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_AccountBooted {
-    AdditionalReasonText: String,
-    ReasonText: String
+    #[serde(rename = "AdditionalReasonText")]
+    additional_reason_text: String,
+    #[serde(rename = "ReasonText")]
+    reason_text: String
 }
 
 // Send or receive a message using Turbine Chat.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TurbineChat {
-    MessageSize: String,
-    Type: String,
-    BlobDispatchType: String,
-    TargetType: String,
-    TargetId: String,
-    TransportType: String,
-    TransportId: String,
-    Cookie: String,
-    PayloadSize: String,
-    RoomId: String,
-    DisplayName: String,
-    Text: String,
-    ExtraDataSize: String,
-    SpeakerId: String,
-    HResult: String,
-    ChatType: String,
-    ContextId: String,
-    ResponseId: String,
-    MethodId: String,
-    RoomId: String,
-    Text: String,
-    ExtraDataSize: String,
-    SpeakerId: String,
-    HResult: String,
-    ChatType: String,
-    ContextId: String,
-    ResponseId: String,
-    MethodId: String,
-    HResult: String,
-    ContextId: String,
-    ResponseId: String,
-    MethodId: String,
-    HResult: String
+    #[serde(rename = "MessageSize")]
+    message_size: String,
+    #[serde(rename = "Type")]
+    type_: String,
+    #[serde(rename = "BlobDispatchType")]
+    blob_dispatch_type: String,
+    #[serde(rename = "TargetType")]
+    target_type: String,
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "TransportType")]
+    transport_type: String,
+    #[serde(rename = "TransportId")]
+    transport_id: String,
+    #[serde(rename = "Cookie")]
+    cookie: String,
+    #[serde(rename = "PayloadSize")]
+    payload_size: String,
+    #[serde(rename = "RoomId")]
+    room_id: String,
+    #[serde(rename = "DisplayName")]
+    display_name: String,
+    #[serde(rename = "Text")]
+    text: String,
+    #[serde(rename = "ExtraDataSize")]
+    extra_data_size: String,
+    #[serde(rename = "SpeakerId")]
+    speaker_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ChatType")]
+    chat_type: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "RoomId")]
+    room_id: String,
+    #[serde(rename = "Text")]
+    text: String,
+    #[serde(rename = "ExtraDataSize")]
+    extra_data_size: String,
+    #[serde(rename = "SpeakerId")]
+    speaker_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ChatType")]
+    chat_type: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String
 }
 
 // Display a message in the chat window.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TextboxString {
-    Text: String,
-    Type: String
+    #[serde(rename = "Text")]
+    text: String,
+    #[serde(rename = "Type")]
+    type_: String
 }
 
 // The name of the current world.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Login_WorldInfo {
-    Connections: String,
-    MaxConnections: String,
-    WorldName: String
+    #[serde(rename = "Connections")]
+    connections: String,
+    #[serde(rename = "MaxConnections")]
+    max_connections: String,
+    #[serde(rename = "WorldName")]
+    world_name: String
 }
 
 // Add or update a dat file Resource.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_DataMessage {
-    DatFile: String,
-    ResourceType: String,
-    ResourceId: String,
-    Iteration: String,
-    Compression: String,
-    Version: String,
-    DataSize: String,
-    FileSize: String
+    #[serde(rename = "DatFile")]
+    dat_file: String,
+    #[serde(rename = "ResourceType")]
+    resource_type: String,
+    #[serde(rename = "ResourceId")]
+    resource_id: String,
+    #[serde(rename = "Iteration")]
+    iteration: String,
+    #[serde(rename = "Compression")]
+    compression: String,
+    #[serde(rename = "Version")]
+    version: String,
+    #[serde(rename = "DataSize")]
+    data_size: String,
+    #[serde(rename = "FileSize")]
+    file_size: String
 }
 
 // DDD error
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_ErrorMessage {
-    ResourceType: String,
-    ResourceId: String,
-    RError: String
+    #[serde(rename = "ResourceType")]
+    resource_type: String,
+    #[serde(rename = "ResourceId")]
+    resource_id: String,
+    #[serde(rename = "RError")]
+    rerror: String
 }
 
 // A list of dat files that need to be patched
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_BeginDDDMessage {
-    DataExpected: String,
-    Revisions: String
+    #[serde(rename = "DataExpected")]
+    data_expected: String,
+    #[serde(rename = "Revisions")]
+    revisions: String
 }
 
 // Add or update a dat file Resource.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_InterrogationMessage {
-    ServersRegion: String,
-    NameRuleLanguage: String,
-    ProductId: String,
-    SupportedLanguages: String
+    #[serde(rename = "ServersRegion")]
+    servers_region: String,
+    #[serde(rename = "NameRuleLanguage")]
+    name_rule_language: String,
+    #[serde(rename = "ProductId")]
+    product_id: String,
+    #[serde(rename = "SupportedLanguages")]
+    supported_languages: String
 }
 
 // Client to Server AC packet.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct C2SPacket {
-    Sequence: String,
-    Flags: String,
-    Checksum: String,
-    RecipientId: String,
-    TimeSinceLastPacket: String,
-    Size: String,
-    Iteration: String,
-    ServerSwitch: String,
-    RetransmitSequences: String,
-    RejectSequences: String,
-    AckSequence: String,
-    LoginRequest: String,
-    WorldLoginRequest: String,
-    ConnectResponse: String,
-    CICMDCommand: String,
-    Time: String,
-    EchoTime: String,
-    Flow: String,
-    Fragments: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Checksum")]
+    checksum: String,
+    #[serde(rename = "RecipientId")]
+    recipient_id: String,
+    #[serde(rename = "TimeSinceLastPacket")]
+    time_since_last_packet: String,
+    #[serde(rename = "Size")]
+    size: String,
+    #[serde(rename = "Iteration")]
+    iteration: String,
+    #[serde(rename = "ServerSwitch")]
+    server_switch: String,
+    #[serde(rename = "RetransmitSequences")]
+    retransmit_sequences: String,
+    #[serde(rename = "RejectSequences")]
+    reject_sequences: String,
+    #[serde(rename = "AckSequence")]
+    ack_sequence: String,
+    #[serde(rename = "LoginRequest")]
+    login_request: String,
+    #[serde(rename = "WorldLoginRequest")]
+    world_login_request: String,
+    #[serde(rename = "ConnectResponse")]
+    connect_response: String,
+    #[serde(rename = "CICMDCommand")]
+    cicmdcommand: String,
+    #[serde(rename = "Time")]
+    time: String,
+    #[serde(rename = "EchoTime")]
+    echo_time: String,
+    #[serde(rename = "Flow")]
+    flow: String,
+    #[serde(rename = "Fragments")]
+    fragments: String
 }
 
 // Server to Client AC packet.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct S2CPacket {
-    Sequence: String,
-    Flags: String,
-    Checksum: String,
-    RecipientId: String,
-    TimeSinceLastPacket: String,
-    Size: String,
-    Iteration: String,
-    AckSequence: String,
-    LogonServerAddr: String,
-    Referral: String,
-    ConnectRequest: String,
-    NetError: String,
-    NetErrorDisconnect: String,
-    EchoResponse: String,
-    Fragments: String
+    #[serde(rename = "Sequence")]
+    sequence: String,
+    #[serde(rename = "Flags")]
+    flags: String,
+    #[serde(rename = "Checksum")]
+    checksum: String,
+    #[serde(rename = "RecipientId")]
+    recipient_id: String,
+    #[serde(rename = "TimeSinceLastPacket")]
+    time_since_last_packet: String,
+    #[serde(rename = "Size")]
+    size: String,
+    #[serde(rename = "Iteration")]
+    iteration: String,
+    #[serde(rename = "AckSequence")]
+    ack_sequence: String,
+    #[serde(rename = "LogonServerAddr")]
+    logon_server_addr: String,
+    #[serde(rename = "Referral")]
+    referral: String,
+    #[serde(rename = "ConnectRequest")]
+    connect_request: String,
+    #[serde(rename = "NetError")]
+    net_error: String,
+    #[serde(rename = "NetErrorDisconnect")]
+    net_error_disconnect: String,
+    #[serde(rename = "EchoResponse")]
+    echo_response: String,
+    #[serde(rename = "Fragments")]
+    fragments: String
 }
 
