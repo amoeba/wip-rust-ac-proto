@@ -10,18 +10,24 @@ struct Field {
     field_type: String,
 }
 
+type SimpleFieldSet = Vec<Field>;
+
+#[derive(Debug)]
+enum FieldSet {
+    SimpleFieldSet(Vec<Field>),
+    VariantFieldSet(VariantFieldSet),
+}
+
 #[derive(Debug)]
 struct VariantFieldSet {
     name: String,
     fields: HashMap<String, Vec<Field>>,
 }
-
 #[derive(Debug)]
-struct SchemaType {
+struct ProtocolType {
     name: String,
     text: Option<String>,
-    fields: Vec<Field>,
-    variant: Option<VariantFieldSet>,
+    fields: Option<FieldSet>,
 }
 
 const RUST_RESERVED_WORDS: &[&str] = &["Self", "type"];
@@ -68,31 +74,53 @@ fn safe_field_name(name: &str) -> (String, bool) {
     }
 }
 
-fn generate_type(schema_type: &SchemaType) -> String {
-    let type_name = &schema_type.name;
+fn generate_type(protocol_type: &ProtocolType) -> String {
+    let type_name = &protocol_type.name;
     println!("generate_type: name = {type_name}");
 
     let mut out = String::new();
 
-    if let Some(text_str) = &schema_type.text {
+    if let Some(text_str) = &protocol_type.text {
         out.push_str(format!("// {text_str}\n").as_str());
     }
+    let mut field_out: Vec<String> = Vec::new();
 
-    let mut fields: Vec<String> = Vec::new();
+    if let Some(field_set) = &protocol_type.fields {
+        match field_set {
+            FieldSet::SimpleFieldSet(fields) => {
+                for field in fields {
+                    let original_name = &field.name;
+                    let (safe_name, needs_rename) = safe_field_name(original_name);
 
-    for field in &schema_type.fields {
-        let original_name = &field.name;
-        let (safe_name, needs_rename) = safe_field_name(original_name);
+                    if needs_rename {
+                        field_out.push(format!(
+                            "    #[serde(rename = \"{original_name}\")]\n    {safe_name}: String"
+                        ));
+                    } else {
+                        field_out.push(format!("    {safe_name}: String"));
+                    }
+                }
+            }
+            FieldSet::VariantFieldSet(variant_field_set) => {
+                // TODO: This is actually just the above code and I did this just so we can compile
+                for (name, fields) in &variant_field_set.fields {
+                    for field in fields {
+                        let original_name = &field.name;
+                        let (safe_name, needs_rename) = safe_field_name(original_name);
 
-        if needs_rename {
-            fields.push(format!(
-                "    #[serde(rename = \"{original_name}\")]\n    {safe_name}: String"
-            ));
-        } else {
-            fields.push(format!("    {safe_name}: String"));
+                        if needs_rename {
+                            field_out.push(format!(
+                            "    #[serde(rename = \"{original_name}\")]\n    {safe_name}: String"
+                        ));
+                        } else {
+                            field_out.push(format!("    {safe_name}: String"));
+                        }
+                    }
+                }
+            }
         }
     }
-    let fields_out = fields.join(",\n");
+    let fields_out: String = field_out.join(",\n");
 
     out.push_str(
         format!(
@@ -113,8 +141,9 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
     // TODO: Use a better data structure?
     let mut out = String::new();
 
-    let mut types: Vec<SchemaType> = Vec::new();
-    let mut current_type: Option<SchemaType> = None;
+    let mut types: Vec<ProtocolType> = Vec::new();
+    let mut current_type: Option<ProtocolType> = None;
+    // Not 100% sure I need these two since we have current_type
     let mut current_variant_field_id: Option<String> = None;
     let mut current_variant_fieldset: Option<VariantFieldSet> = None;
 
@@ -146,11 +175,10 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                                 continue;
                             }
                         }
-                        current_type = Some(SchemaType {
+                        current_type = Some(ProtocolType {
                             name,
                             text,
-                            fields: Vec::new(),
-                            variant: None,
+                            fields: None,
                         });
 
                         debug!("current_type is now {current_type:?}");
@@ -178,7 +206,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     debug!("Processing field {field_name:?}");
 
                     if let (Some(fname), Some(ftype)) = (field_name, field_type) {
-                        // TODO: Add to current field variant if we're in one
+                        // Handle VariantFieldSet first
                         if let Some(ref mut var) = current_variant_fieldset {
                             debug!("Processing field as variant field...");
                             let new_field = Field {
@@ -192,13 +220,18 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                                 variant_fieldset.push(new_field);
                             }
                         }
-                        // Normal field behavior below
+                        // SimpleFieldSet behavior below
                         else if let Some(ref mut ty) = current_type {
                             debug!("Processing field as normal field...");
-                            ty.fields.push(Field {
-                                name: fname,
-                                field_type: ftype,
-                            });
+                            let fields = ty
+                                .fields
+                                .get_or_insert_with(|| FieldSet::SimpleFieldSet(Vec::new()));
+                            if let FieldSet::SimpleFieldSet(vec) = fields {
+                                vec.push(Field {
+                                    name: fname,
+                                    field_type: ftype,
+                                });
+                            }
 
                             debug!("after adding fields, current_type is now {ty:?}");
                         }
@@ -248,10 +281,10 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     }
                 } else if e.name().as_ref() == b"switch" {
                     // Set current variant on current type and reset current_variant_fieldset
-                    if let Some(ref mut ty) = current_type {
-                        if let Some(v) = current_variant_fieldset.take() {
-                            ty.variant = Some(v);
-                        }
+                    if let (Some(ty), Some(variant)) =
+                        (&mut current_type, current_variant_fieldset.take())
+                    {
+                        ty.fields = Some(FieldSet::VariantFieldSet(variant));
                     }
                 } else if e.name().as_ref() == b"case" {
                     // TODO
@@ -264,8 +297,8 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
         buf.clear();
     }
 
-    for schema_type in types {
-        out.push_str(&generate_type(&schema_type));
+    for protocol_type in types {
+        out.push_str(&generate_type(&protocol_type));
     }
 
     out

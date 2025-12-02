@@ -122,20 +122,10 @@ pub struct SocketAddress {
 // Optional header data when PacketHeaderFlags includes LoginRequest
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct LoginRequestHeader {
-    #[serde(rename = "ClientVersion")]
-    client_version: String,
-    #[serde(rename = "Length")]
-    length: String,
-    #[serde(rename = "AuthType")]
-    auth_type: String,
-    #[serde(rename = "Flags")]
-    flags: String,
-    #[serde(rename = "Sequence")]
-    sequence: String,
-    #[serde(rename = "Account")]
-    account: String,
-    #[serde(rename = "AccountToLoginAs")]
-    account_to_login_as: String
+    #[serde(rename = "Password")]
+    password: String,
+    #[serde(rename = "GlsTicket")]
+    gls_ticket: String
 }
 
 // Optional header data when PacketHeaderFlags includes Referral
@@ -471,22 +461,135 @@ pub struct EmoteSetList {
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct EmoteSet {
-    #[serde(rename = "Category")]
-    category: String,
-    #[serde(rename = "Probability")]
-    probability: String,
-    #[serde(rename = "Emotes")]
-    emotes: String
+    #[serde(rename = "VendorType")]
+    vendor_type: String,
+    #[serde(rename = "MinHealth")]
+    min_health: String,
+    #[serde(rename = "MaxHealth")]
+    max_health: String,
+    #[serde(rename = "Quest")]
+    quest: String,
+    #[serde(rename = "ClassId")]
+    class_id: String,
+    #[serde(rename = "Style")]
+    style: String,
+    #[serde(rename = "Substyle")]
+    substyle: String
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Emote {
-    #[serde(rename = "Type")]
-    type_: String,
-    #[serde(rename = "Delay")]
-    delay: String,
-    #[serde(rename = "Extent")]
-    extent: String
+    #[serde(rename = "Sound")]
+    sound: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Percent")]
+    percent: String,
+    #[serde(rename = "Min")]
+    min: String,
+    #[serde(rename = "Max")]
+    max: String,
+    #[serde(rename = "Display")]
+    display: String,
+    #[serde(rename = "PhysicsScript")]
+    physics_script: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Motion")]
+    motion: String,
+    #[serde(rename = "Percent")]
+    percent: String,
+    #[serde(rename = "Min64")]
+    min64: String,
+    #[serde(rename = "Max64")]
+    max64: String,
+    #[serde(rename = "Message")]
+    message: String,
+    msg: String,
+    #[serde(rename = "CProfile")]
+    cprofile: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Min64")]
+    min64: String,
+    #[serde(rename = "Max64")]
+    max64: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "CProfile")]
+    cprofile: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "FMin")]
+    fmin: String,
+    #[serde(rename = "FMax")]
+    fmax: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Position")]
+    position: String,
+    #[serde(rename = "Amount64")]
+    amount64: String,
+    #[serde(rename = "HeroXP64")]
+    hero_xp64: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "WealthRating")]
+    wealth_rating: String,
+    #[serde(rename = "TreasureClass")]
+    treasure_class: String,
+    #[serde(rename = "TreasureType")]
+    treasure_type: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Min")]
+    min: String,
+    #[serde(rename = "Max")]
+    max: String,
+    #[serde(rename = "SpellId")]
+    spell_id: String,
+    #[serde(rename = "Frame")]
+    frame: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Amount")]
+    amount: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "TestString")]
+    test_string: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Amount64")]
+    amount64: String,
+    #[serde(rename = "Message")]
+    message: String,
+    #[serde(rename = "Min")]
+    min: String,
+    #[serde(rename = "Max")]
+    max: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Stat")]
+    stat: String,
+    #[serde(rename = "Percent")]
+    percent: String
 }
 
 // Set information about an item for creation
@@ -628,48 +731,34 @@ pub struct GeneratorQueueNode {
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct WindowProperty {
-    #[serde(rename = "Key_a")]
-    key_a: String,
-    #[serde(rename = "Unknown_1b")]
-    unknown_1b: String,
-    #[serde(rename = "Unknown_1c")]
-    unknown_1c: String,
-    #[serde(rename = "Unknown_d")]
-    unknown_d: String,
-    #[serde(rename = "Value_d")]
-    value_d: String,
-    #[serde(rename = "Unknown_e")]
-    unknown_e: String,
-    #[serde(rename = "Value_e")]
-    value_e: String,
-    #[serde(rename = "Unknown_f")]
-    unknown_f: String,
-    #[serde(rename = "Value_f")]
-    value_f: String,
-    #[serde(rename = "Unknown_h")]
-    unknown_h: String,
-    #[serde(rename = "Value_h")]
-    value_h: String,
-    #[serde(rename = "Unknown_i")]
-    unknown_i: String,
-    #[serde(rename = "Value_i")]
-    value_i: String,
-    #[serde(rename = "Unknown_j")]
-    unknown_j: String,
-    #[serde(rename = "Value_j")]
-    value_j: String
+    #[serde(rename = "StringId")]
+    string_id: String,
+    #[serde(rename = "FileId")]
+    file_id: String,
+    #[serde(rename = "Value_a")]
+    value_a: String
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct WindowOption {
-    #[serde(rename = "Type_a")]
-    type_a: String
+    #[serde(rename = "Unknown_b")]
+    unknown_b: String,
+    #[serde(rename = "PropertyCount")]
+    property_count: String
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct OptionProperty {
-    #[serde(rename = "Type")]
-    type_: String
+    #[serde(rename = "Unknown_a")]
+    unknown_a: String,
+    #[serde(rename = "WindowOptions")]
+    window_options: String,
+    unknown_k: String,
+    #[serde(rename = "activeOpacity")]
+    active_opacity: String,
+    unknown_l: String,
+    #[serde(rename = "inactiveOpacity")]
+    inactive_opacity: String
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -877,10 +966,10 @@ pub struct FriendData {
 // Data related to an item, namely the amount and description
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ItemProfile {
-    #[serde(rename = "PackedAmount")]
-    packed_amount: String,
-    #[serde(rename = "ObjectId")]
-    object_id: String
+    #[serde(rename = "WeenieDescription")]
+    weenie_description: String,
+    #[serde(rename = "OldWeenieDescription")]
+    old_weenie_description: String
 }
 
 // The PublicWeenieDesc structure defines an object's game behavior.
@@ -1209,18 +1298,32 @@ pub struct PositionPack {
 // Data related to the movement and animation of the object
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct MovementData {
-    #[serde(rename = "ObjectMovementSequence")]
-    object_movement_sequence: String,
-    #[serde(rename = "ObjectServerControlSequence")]
-    object_server_control_sequence: String,
-    #[serde(rename = "Autonomous")]
-    autonomous: String,
-    #[serde(rename = "MovementType")]
-    movement_type: String,
-    #[serde(rename = "OptionFlags")]
-    option_flags: String,
-    #[serde(rename = "Stance")]
-    stance: String
+    #[serde(rename = "Target")]
+    target: String,
+    #[serde(rename = "Origin")]
+    origin: String,
+    #[serde(rename = "MoveToParams")]
+    move_to_params: String,
+    #[serde(rename = "MyRunRate")]
+    my_run_rate: String,
+    #[serde(rename = "State")]
+    state: String,
+    #[serde(rename = "StickyObject")]
+    sticky_object: String,
+    #[serde(rename = "TurnToParams")]
+    turn_to_params: String,
+    #[serde(rename = "TargetId")]
+    target_id: String,
+    #[serde(rename = "DesiredHeading")]
+    desired_heading: String,
+    #[serde(rename = "TurnToParams")]
+    turn_to_params: String,
+    #[serde(rename = "Origin")]
+    origin: String,
+    #[serde(rename = "MoveToParams")]
+    move_to_params: String,
+    #[serde(rename = "MyRunRate")]
+    my_run_rate: String
 }
 
 // Contains information for animations and general free motion
@@ -1737,12 +1840,20 @@ pub struct GuestInfo {
 // Set of information related to a chess game move
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GameMoveData {
-    #[serde(rename = "Type")]
-    type_: String,
-    #[serde(rename = "PlayerId")]
-    player_id: String,
-    #[serde(rename = "Team")]
-    team: String
+    #[serde(rename = "IdPieceToMove")]
+    id_piece_to_move: String,
+    #[serde(rename = "YGrid")]
+    ygrid: String,
+    #[serde(rename = "XTo")]
+    xto: String,
+    #[serde(rename = "YTo")]
+    yto: String,
+    #[serde(rename = "IdPieceToMove")]
+    id_piece_to_move: String,
+    #[serde(rename = "IdPieceToMove")]
+    id_piece_to_move: String,
+    #[serde(rename = "YGrid")]
+    ygrid: String
 }
 
 // Set of information related to a salvage operation
@@ -3787,24 +3898,22 @@ pub struct Admin_SendAdminRestoreCharacter {
 // Send or receive a message using Turbine Chat.
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TurbineChat {
-    #[serde(rename = "MmessageSize")]
-    mmessage_size: String,
-    #[serde(rename = "Type")]
-    type_: String,
-    #[serde(rename = "BlobDispatchType")]
-    blob_dispatch_type: String,
-    #[serde(rename = "TargetType")]
-    target_type: String,
-    #[serde(rename = "TargetId")]
-    target_id: String,
-    #[serde(rename = "TransportType")]
-    transport_type: String,
-    #[serde(rename = "TransportId")]
-    transport_id: String,
-    #[serde(rename = "Cookie")]
-    cookie: String,
-    #[serde(rename = "PayloadSize")]
-    payload_size: String
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String
 }
 
 // DDD request for data
@@ -4476,8 +4585,12 @@ pub struct Character_SetPlayerVisualDesc {
 // Character creation screen initilised.
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Character_CharGenVerificationResponse {
-    #[serde(rename = "ResponseType")]
-    response_type: String
+    #[serde(rename = "CharacterId")]
+    character_id: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "SecondsUntilDeletion")]
+    seconds_until_deletion: String
 }
 
 // Sent when your subsciption is about to expire
@@ -4708,24 +4821,22 @@ pub struct Login_AccountBooted {
 // Send or receive a message using Turbine Chat.
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Communication_TurbineChat {
-    #[serde(rename = "MessageSize")]
-    message_size: String,
-    #[serde(rename = "Type")]
-    type_: String,
-    #[serde(rename = "BlobDispatchType")]
-    blob_dispatch_type: String,
-    #[serde(rename = "TargetType")]
-    target_type: String,
-    #[serde(rename = "TargetId")]
-    target_id: String,
-    #[serde(rename = "TransportType")]
-    transport_type: String,
-    #[serde(rename = "TransportId")]
-    transport_id: String,
-    #[serde(rename = "Cookie")]
-    cookie: String,
-    #[serde(rename = "PayloadSize")]
-    payload_size: String
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String,
+    #[serde(rename = "ContextId")]
+    context_id: String,
+    #[serde(rename = "ResponseId")]
+    response_id: String,
+    #[serde(rename = "MethodId")]
+    method_id: String,
+    #[serde(rename = "HResult")]
+    hresult: String
 }
 
 // Display a message in the chat window.
@@ -4751,20 +4862,8 @@ pub struct Login_WorldInfo {
 // Add or update a dat file Resource.
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DDD_DataMessage {
-    #[serde(rename = "DatFile")]
-    dat_file: String,
-    #[serde(rename = "ResourceType")]
-    resource_type: String,
-    #[serde(rename = "ResourceId")]
-    resource_id: String,
-    #[serde(rename = "Iteration")]
-    iteration: String,
-    #[serde(rename = "Compression")]
-    compression: String,
-    #[serde(rename = "Version")]
-    version: String,
-    #[serde(rename = "DataSize")]
-    data_size: String
+    #[serde(rename = "FileSize")]
+    file_size: String
 }
 
 // DDD error
