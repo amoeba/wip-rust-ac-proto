@@ -145,15 +145,55 @@ pub struct {type_name} {{}}\n\n"
 pub enum {type_name} {{\n"
         ));
 
+        // Group case values by their field sets (to handle multi-value cases)
+        // Map: field signature -> (primary_value, [all_values])
+        let mut field_groups: HashMap<String, (String, Vec<String>)> = HashMap::new();
+
         for (case_value, case_fields) in variant_fields {
-            // Generate variant name from case value (e.g., "0x4" -> "Type4")
-            let variant_name = if case_value.starts_with("0x") {
-                format!("Type{}", &case_value[2..])
+            // Create a signature for these fields to group identical field sets
+            let field_sig = case_fields.iter()
+                .map(|f| format!("{}:{}", f.name, f.field_type))
+                .collect::<Vec<_>>()
+                .join(";");
+
+            field_groups
+                .entry(field_sig)
+                .or_insert_with(|| (case_value.clone(), Vec::new()))
+                .1
+                .push(case_value.clone());
+        }
+
+        // Sort by primary value for consistent output
+        let mut sorted_groups: Vec<_> = field_groups.into_iter().collect();
+        sorted_groups.sort_by(|a, b| a.1.0.cmp(&b.1.0));
+
+        for (_field_sig, (_primary_value, mut all_values)) in sorted_groups {
+            // Sort values for consistent output
+            all_values.sort();
+
+            // Use the first sorted value for both rename and variant name
+            let first_value = &all_values[0];
+
+            // Generate variant name from first sorted case value
+            let variant_name = if first_value.starts_with("0x") || first_value.starts_with("0X") {
+                // Hex value: "0x4" -> "Type4", "0xAB" -> "TypeAB"
+                format!("Type{}", &first_value[2..].to_uppercase())
+            } else if first_value.starts_with('-') {
+                // Negative value: "-1" -> "TypeNeg1"
+                format!("TypeNeg{}", &first_value[1..])
             } else {
-                format!("Type{}", case_value)
+                // Decimal value: "4" -> "Type4"
+                format!("Type{}", first_value)
             };
 
-            out.push_str(&format!("    #[serde(rename = \"{case_value}\")]\n"));
+            // Primary serde rename
+            out.push_str(&format!("    #[serde(rename = \"{first_value}\")]\n"));
+
+            // Add aliases for additional values (if multi-value case)
+            for alias_value in &all_values[1..] {
+                out.push_str(&format!("    #[serde(alias = \"{alias_value}\")]\n"));
+            }
+
             out.push_str(&format!("    {variant_name} {{\n"));
 
             // Add common fields first (excluding the switch field itself, as serde uses it as the tag)
@@ -164,10 +204,12 @@ pub enum {type_name} {{\n"
                 }
             }
 
-            // Add variant-specific fields
-            for field in case_fields {
-                out.push_str(&generate_field_line(field));
-                out.push_str(",\n");
+            // Add variant-specific fields (get from variant_fields using first_value)
+            if let Some(case_fields) = variant_fields.get(first_value) {
+                for field in case_fields {
+                    out.push_str(&generate_field_line(field));
+                    out.push_str(",\n");
+                }
             }
 
             out.push_str("    },\n");
@@ -227,7 +269,7 @@ fn process_switch_tag(
     }
 }
 
-fn process_case_tag(e: &quick_xml::events::BytesStart) -> Option<String> {
+fn process_case_tag(e: &quick_xml::events::BytesStart) -> Option<Vec<String>> {
     let mut value = None;
 
     for attr in e.attributes().flatten() {
@@ -236,8 +278,16 @@ fn process_case_tag(e: &quick_xml::events::BytesStart) -> Option<String> {
         }
     }
 
-    debug!("current_case_value is now {value:?}");
-    value
+    // Parse multi-value cases (e.g., "0x01 | 0x08 | 0x0A") into individual values
+    let values = value.map(|v| {
+        v.split('|')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<String>>()
+    });
+
+    debug!("current_case_value is now {values:?}");
+    values
 }
 
 fn process_enum_start_tag(
@@ -296,17 +346,15 @@ fn process_enum_value_tag(
 
     if let (Some(name), Some(value), Some(current_enum)) = (name, value, current_enum) {
         // Handle multiple values in a single attribute (e.g., "0x0C | 0x0D")
-        if let Some(value) = value {
-            let values: Vec<&str> = value.split('|').collect();
-            for val in values {
-                let trimmed_val = val.trim();
-                if !trimmed_val.is_empty() {
-                    let enum_value = EnumValue { 
-                        name: name.clone(), 
-                        value: trimmed_val.to_string()
-                    };
-                    current_enum.values.push(enum_value);
-                }
+        let values: Vec<&str> = value.split('|').collect();
+        for val in values {
+            let trimmed_val = val.trim();
+            if !trimmed_val.is_empty() {
+                let enum_value = EnumValue {
+                    name: name.clone(),
+                    value: trimmed_val.to_string()
+                };
+                current_enum.values.push(enum_value);
             }
         }
     }
@@ -316,7 +364,7 @@ fn process_field_tag(
     e: &quick_xml::events::BytesStart,
     current_field_set: &mut Option<FieldSet>,
     in_switch: bool,
-    current_case_value: &Option<String>,
+    current_case_values: &Option<Vec<String>>,
 ) {
     let mut field_type = None;
     let mut field_name = None;
@@ -339,14 +387,17 @@ fn process_field_tag(
         };
 
         if in_switch {
-            if let (Some(case_val), Some(variant_fields)) =
-                (current_case_value, &mut field_set.variant_fields)
+            if let (Some(case_vals), Some(variant_fields)) =
+                (current_case_values, &mut field_set.variant_fields)
             {
-                variant_fields
-                    .entry(case_val.clone())
-                    .or_insert_with(Vec::new)
-                    .push(new_field);
-                debug!("Added field to variant case {case_val}");
+                // Add the same field to all values in this case
+                for case_val in case_vals {
+                    variant_fields
+                        .entry(case_val.clone())
+                        .or_insert_with(Vec::new)
+                        .push(new_field.clone());
+                    debug!("Added field to variant case {case_val}");
+                }
             }
         } else {
             field_set.common_fields.push(new_field);
@@ -433,7 +484,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
     let mut current_type: Option<ProtocolType> = None;
     let mut current_enum: Option<ProtocolEnum> = None;
     let mut current_field_set: Option<FieldSet> = None;
-    let mut current_case_value: Option<String> = None;
+    let mut current_case_values: Option<Vec<String>> = None;
     let mut in_switch = false;
 
     loop {
@@ -456,11 +507,11 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                 } else if tag_name == "enum" {
                     process_enum_start_tag(&e, &mut current_enum);
                 } else if tag_name == "field" {
-                    process_field_tag(&e, &mut current_field_set, in_switch, &current_case_value);
+                    process_field_tag(&e, &mut current_field_set, in_switch, &current_case_values);
                 } else if tag_name == "switch" {
                     in_switch = process_switch_tag(&e, &mut current_field_set);
                 } else if tag_name == "case" {
-                    current_case_value = process_case_tag(&e);
+                    current_case_values = process_case_tag(&e);
                 }
             }
             Ok(Event::Empty(e)) => {
@@ -477,7 +528,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         &filter_types,
                     );
                 } else if tag_name == "field" {
-                    process_field_tag(&e, &mut current_field_set, in_switch, &current_case_value);
+                    process_field_tag(&e, &mut current_field_set, in_switch, &current_case_values);
                 } else if tag_name == "value" {
                     process_enum_value_tag(&e, &mut current_enum);
                 }
@@ -493,7 +544,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         debug!("DONE: {types:?}");
                     }
                     in_switch = false;
-                    current_case_value = None;
+                    current_case_values = None;
                 } else if e.name().as_ref() == b"enum" {
                     // Close out enum
                     if let Some(en) = current_enum.take() {
@@ -503,7 +554,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     in_switch = false;
                     debug!("Exited switch");
                 } else if e.name().as_ref() == b"case" {
-                    current_case_value = None;
+                    current_case_values = None;
                 }
             }
             Ok(Event::Eof) => break,

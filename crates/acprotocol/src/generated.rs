@@ -5752,17 +5752,9 @@ pub struct EmoteSetList {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Category")]
 pub enum EmoteSet {
-    #[serde(rename = "0x0C | 0x0D | 0x16 | 0x17 | 0x1B | 0x1C | 0x1D | 0x1E | 0x1F | 0x20 | 0x21 | 0x22 | 0x23 | 0x24 | 0x25 | 0x26")]
-    Type0C | 0x0D | 0x16 | 0x17 | 0x1B | 0x1C | 0x1D | 0x1E | 0x1F | 0x20 | 0x21 | 0x22 | 0x23 | 0x24 | 0x25 | 0x26 {
-        #[serde(rename = "Probability")]
-        probability: f32,
-        #[serde(rename = "Emotes")]
-        emotes: PackableList,
-        #[serde(rename = "Quest")]
-        quest: String,
-    },
-    #[serde(rename = "0x01 | 0x06")]
-    Type01 | 0x06 {
+    #[serde(rename = "0x01")]
+    #[serde(alias = "0x06")]
+    Type01 {
         #[serde(rename = "Probability")]
         probability: f32,
         #[serde(rename = "Emotes")]
@@ -5801,22 +5793,121 @@ pub enum EmoteSet {
         #[serde(rename = "MaxHealth")]
         max_health: f32,
     },
+    #[serde(rename = "0x0C")]
+    #[serde(alias = "0x0D")]
+    #[serde(alias = "0x16")]
+    #[serde(alias = "0x17")]
+    #[serde(alias = "0x1B")]
+    #[serde(alias = "0x1C")]
+    #[serde(alias = "0x1D")]
+    #[serde(alias = "0x1E")]
+    #[serde(alias = "0x1F")]
+    #[serde(alias = "0x20")]
+    #[serde(alias = "0x21")]
+    #[serde(alias = "0x22")]
+    #[serde(alias = "0x23")]
+    #[serde(alias = "0x24")]
+    #[serde(alias = "0x25")]
+    #[serde(alias = "0x26")]
+    Type0C {
+        #[serde(rename = "Probability")]
+        probability: f32,
+        #[serde(rename = "Emotes")]
+        emotes: PackableList,
+        #[serde(rename = "Quest")]
+        quest: String,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type")]
 pub enum Emote {
-    #[serde(rename = "0x6E")]
-    Type6E {
+    #[serde(rename = "0x13")]
+    #[serde(alias = "0x1B")]
+    #[serde(alias = "0x49")]
+    #[serde(alias = "0xE")]
+    Type13 {
         #[serde(rename = "Delay")]
         delay: f32,
         #[serde(rename = "Extent")]
         extent: f32,
+        #[serde(rename = "SpellId")]
+        spell_id: u32,
+    },
+    #[serde(rename = "0x1C")]
+    #[serde(alias = "0x1D")]
+    Type1C {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Amount")]
+        amount: u32,
         #[serde(rename = "Stat")]
         stat: u32,
     },
-    #[serde(rename = "0x24 | 0x27 | 0x28 | 0x29 | 0x2A | 0x2B | 0x2C")]
-    Type24 | 0x27 | 0x28 | 0x29 | 0x2A | 0x2B | 0x2C {
+    #[serde(rename = "0x2")]
+    #[serde(alias = "0x3E")]
+    Type2 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Amount64")]
+        amount64: u64,
+        #[serde(rename = "HeroXP64")]
+        hero_xp64: u64,
+    },
+    #[serde(rename = "0x23")]
+    #[serde(alias = "0x2D")]
+    #[serde(alias = "0x2E")]
+    Type23 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Message")]
+        message: String,
+        #[serde(rename = "Stat")]
+        stat: u32,
+    },
+    #[serde(rename = "0x25")]
+    Type25 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Message")]
+        message: String,
+        #[serde(rename = "FMin")]
+        f_min: f64,
+        #[serde(rename = "FMax")]
+        f_max: f64,
+        #[serde(rename = "Stat")]
+        stat: u32,
+    },
+    #[serde(rename = "0x26")]
+    #[serde(alias = "0x4B")]
+    Type26 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Message")]
+        message: String,
+        #[serde(rename = "TestString")]
+        test_string: String,
+        #[serde(rename = "Stat")]
+        stat: u32,
+    },
+    #[serde(rename = "0x24")]
+    #[serde(alias = "0x27")]
+    #[serde(alias = "0x28")]
+    #[serde(alias = "0x29")]
+    #[serde(alias = "0x2A")]
+    #[serde(alias = "0x2B")]
+    #[serde(alias = "0x2C")]
+    Type24 {
         #[serde(rename = "Delay")]
         delay: f32,
         #[serde(rename = "Extent")]
@@ -5843,135 +5934,6 @@ pub enum Emote {
         #[serde(rename = "Max64")]
         max64: u64,
     },
-    #[serde(rename = "0x20 | 0x21 | 0x46 | 0x54 | 0x55 | 0x56 | 0x59 | 0x66 | 0x67 | 0x68 | 0x69 | 0x6A | 0x6B | 0x6C | 0x6D")]
-    Type20 | 0x21 | 0x46 | 0x54 | 0x55 | 0x56 | 0x59 | 0x66 | 0x67 | 0x68 | 0x69 | 0x6A | 0x6B | 0x6C | 0x6D {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Message")]
-        message: String,
-        #[serde(rename = "Amount")]
-        amount: u32,
-    },
-    #[serde(rename = "0x70 | 0x71")]
-    Type70 | 0x71 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Amount64")]
-        amount64: u64,
-    },
-    #[serde(rename = "0x2 | 0x3E")]
-    Type2 | 0x3E {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Amount64")]
-        amount64: u64,
-        #[serde(rename = "HeroXP64")]
-        hero_xp64: u64,
-    },
-    #[serde(rename = "0x72")]
-    Type72 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Message")]
-        message: String,
-        #[serde(rename = "Min64")]
-        min64: u64,
-        #[serde(rename = "Max64")]
-        max64: u64,
-        #[serde(rename = "Stat")]
-        stat: u32,
-    },
-    #[serde(rename = "0x4C")]
-    Type4C {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        msg: String,
-        #[serde(rename = "CProfile")]
-        c_profile: CreationProfile,
-    },
-    #[serde(rename = "0x25")]
-    Type25 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Message")]
-        message: String,
-        #[serde(rename = "FMin")]
-        f_min: f64,
-        #[serde(rename = "FMax")]
-        f_max: f64,
-        #[serde(rename = "Stat")]
-        stat: u32,
-    },
-    #[serde(rename = "0x38")]
-    Type38 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "WealthRating")]
-        wealth_rating: i32,
-        #[serde(rename = "TreasureClass")]
-        treasure_class: i32,
-        #[serde(rename = "TreasureType")]
-        treasure_type: i32,
-    },
-    #[serde(rename = "0x3F | 0x63 | 0x64")]
-    Type3F | 0x63 | 0x64 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Position")]
-        position: Position,
-    },
-    #[serde(rename = "0x4 | 0x6 | 0xB | 0x57")]
-    Type4 | 0x6 | 0xB | 0x57 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Frame")]
-        frame: Frame,
-    },
-    #[serde(rename = "0xE | 0x13 | 0x1B | 0x49")]
-    TypeE | 0x13 | 0x1B | 0x49 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "SpellId")]
-        spell_id: u32,
-    },
-    #[serde(rename = "0x7")]
-    Type7 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "PhysicsScript")]
-        physics_script: u32,
-    },
-    #[serde(rename = "0x6F")]
-    Type6F {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Amount")]
-        amount: u32,
-    },
     #[serde(rename = "0x32")]
     Type32 {
         #[serde(rename = "Delay")]
@@ -5989,8 +5951,11 @@ pub enum Emote {
         #[serde(rename = "Display")]
         display: bool,
     },
-    #[serde(rename = "0x35 | 0x36 | 0x37 | 0x45")]
-    Type35 | 0x36 | 0x37 | 0x45 {
+    #[serde(rename = "0x35")]
+    #[serde(alias = "0x36")]
+    #[serde(alias = "0x37")]
+    #[serde(alias = "0x45")]
+    Type35 {
         #[serde(rename = "Delay")]
         delay: f32,
         #[serde(rename = "Extent")]
@@ -6000,8 +5965,54 @@ pub enum Emote {
         #[serde(rename = "Amount")]
         amount: u32,
     },
-    #[serde(rename = "0x1E | 0x3B | 0x47 | 0x52")]
-    Type1E | 0x3B | 0x47 | 0x52 {
+    #[serde(rename = "0x38")]
+    Type38 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "WealthRating")]
+        wealth_rating: i32,
+        #[serde(rename = "TreasureClass")]
+        treasure_class: i32,
+        #[serde(rename = "TreasureType")]
+        treasure_type: i32,
+    },
+    #[serde(rename = "0x3")]
+    #[serde(alias = "0x4A")]
+    Type3 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "CProfile")]
+        c_profile: CreationProfile,
+    },
+    #[serde(rename = "0x4C")]
+    Type4C {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        msg: String,
+        #[serde(rename = "CProfile")]
+        c_profile: CreationProfile,
+    },
+    #[serde(rename = "0x34")]
+    #[serde(alias = "0x5")]
+    Type34 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Motion")]
+        motion: u32,
+    },
+    #[serde(rename = "0x1E")]
+    #[serde(alias = "0x3B")]
+    #[serde(alias = "0x47")]
+    #[serde(alias = "0x52")]
+    Type1E {
         #[serde(rename = "Delay")]
         delay: f32,
         #[serde(rename = "Extent")]
@@ -6012,6 +6023,123 @@ pub enum Emote {
         min: u32,
         #[serde(rename = "Max")]
         max: u32,
+    },
+    #[serde(rename = "0x01")]
+    #[serde(alias = "0x08")]
+    #[serde(alias = "0x0A")]
+    #[serde(alias = "0x0D")]
+    #[serde(alias = "0x10")]
+    #[serde(alias = "0x11")]
+    #[serde(alias = "0x12")]
+    #[serde(alias = "0x14")]
+    #[serde(alias = "0x15")]
+    #[serde(alias = "0x16")]
+    #[serde(alias = "0x17")]
+    #[serde(alias = "0x18")]
+    #[serde(alias = "0x19")]
+    #[serde(alias = "0x1A")]
+    #[serde(alias = "0x1F")]
+    #[serde(alias = "0x33")]
+    #[serde(alias = "0x3A")]
+    #[serde(alias = "0x3C")]
+    #[serde(alias = "0x3D")]
+    #[serde(alias = "0x40")]
+    #[serde(alias = "0x41")]
+    #[serde(alias = "0x43")]
+    #[serde(alias = "0x44")]
+    #[serde(alias = "0x4F")]
+    #[serde(alias = "0x50")]
+    #[serde(alias = "0x51")]
+    #[serde(alias = "0x53")]
+    #[serde(alias = "0x58")]
+    #[serde(alias = "0x79")]
+    Type01 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Message")]
+        message: String,
+    },
+    #[serde(rename = "0x3F")]
+    #[serde(alias = "0x63")]
+    #[serde(alias = "0x64")]
+    Type3F {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Position")]
+        position: Position,
+    },
+    #[serde(rename = "0x20")]
+    #[serde(alias = "0x21")]
+    #[serde(alias = "0x46")]
+    #[serde(alias = "0x54")]
+    #[serde(alias = "0x55")]
+    #[serde(alias = "0x56")]
+    #[serde(alias = "0x59")]
+    #[serde(alias = "0x66")]
+    #[serde(alias = "0x67")]
+    #[serde(alias = "0x68")]
+    #[serde(alias = "0x69")]
+    #[serde(alias = "0x6A")]
+    #[serde(alias = "0x6B")]
+    #[serde(alias = "0x6C")]
+    #[serde(alias = "0x6D")]
+    Type20 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Message")]
+        message: String,
+        #[serde(rename = "Amount")]
+        amount: u32,
+    },
+    #[serde(rename = "0x7")]
+    Type7 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "PhysicsScript")]
+        physics_script: u32,
+    },
+    #[serde(rename = "0x70")]
+    #[serde(alias = "0x71")]
+    Type70 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Amount64")]
+        amount64: u64,
+    },
+    #[serde(rename = "0x72")]
+    Type72 {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Message")]
+        message: String,
+        #[serde(rename = "Min64")]
+        min64: u64,
+        #[serde(rename = "Max64")]
+        max64: u64,
+        #[serde(rename = "Stat")]
+        stat: u32,
+    },
+    #[serde(rename = "0x6E")]
+    #[serde(alias = "0x73")]
+    Type6E {
+        #[serde(rename = "Delay")]
+        delay: f32,
+        #[serde(rename = "Extent")]
+        extent: f32,
+        #[serde(rename = "Stat")]
+        stat: u32,
     },
     #[serde(rename = "0x76")]
     Type76 {
@@ -6024,23 +6152,20 @@ pub enum Emote {
         #[serde(rename = "Percent")]
         percent: f64,
     },
-    #[serde(rename = "0x3 | 0x4A")]
-    Type3 | 0x4A {
+    #[serde(rename = "0x22")]
+    #[serde(alias = "0x2F")]
+    #[serde(alias = "0x30")]
+    #[serde(alias = "0x5A")]
+    #[serde(alias = "0x6F")]
+    #[serde(alias = "0x77")]
+    #[serde(alias = "0x78")]
+    Type22 {
         #[serde(rename = "Delay")]
         delay: f32,
         #[serde(rename = "Extent")]
         extent: f32,
-        #[serde(rename = "CProfile")]
-        c_profile: CreationProfile,
-    },
-    #[serde(rename = "0x5 | 0x34")]
-    Type5 | 0x34 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Motion")]
-        motion: u32,
+        #[serde(rename = "Amount")]
+        amount: u32,
     },
     #[serde(rename = "0x9")]
     Type9 {
@@ -6051,67 +6176,17 @@ pub enum Emote {
         #[serde(rename = "Sound")]
         sound: u32,
     },
-    #[serde(rename = "0x1C | 0x1D")]
-    Type1C | 0x1D {
+    #[serde(rename = "0x4")]
+    #[serde(alias = "0x57")]
+    #[serde(alias = "0x6")]
+    #[serde(alias = "0xB")]
+    Type4 {
         #[serde(rename = "Delay")]
         delay: f32,
         #[serde(rename = "Extent")]
         extent: f32,
-        #[serde(rename = "Amount")]
-        amount: u32,
-        #[serde(rename = "Stat")]
-        stat: u32,
-    },
-    #[serde(rename = "0x23 | 0x2D | 0x2E")]
-    Type23 | 0x2D | 0x2E {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Message")]
-        message: String,
-        #[serde(rename = "Stat")]
-        stat: u32,
-    },
-    #[serde(rename = "0x26 | 0x4B")]
-    Type26 | 0x4B {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Message")]
-        message: String,
-        #[serde(rename = "TestString")]
-        test_string: String,
-        #[serde(rename = "Stat")]
-        stat: u32,
-    },
-    #[serde(rename = "0x73")]
-    Type73 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Stat")]
-        stat: u32,
-    },
-    #[serde(rename = "0x22 | 0x2F | 0x30 | 0x5A | 0x77 | 0x78")]
-    Type22 | 0x2F | 0x30 | 0x5A | 0x77 | 0x78 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Amount")]
-        amount: u32,
-    },
-    #[serde(rename = "0x01 | 0x08 | 0x0A | 0x0D | 0x10 | 0x11 | 0x12 | 0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1A | 0x1F | 0x33 | 0x3A | 0x3C | 0x3D | 0x40 | 0x41 | 0x43 | 0x44 | 0x4F | 0x50 | 0x51 | 0x53 | 0x58 | 0x79")]
-    Type01 | 0x08 | 0x0A | 0x0D | 0x10 | 0x11 | 0x12 | 0x14 | 0x15 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1A | 0x1F | 0x33 | 0x3A | 0x3C | 0x3D | 0x40 | 0x41 | 0x43 | 0x44 | 0x4F | 0x50 | 0x51 | 0x53 | 0x58 | 0x79 {
-        #[serde(rename = "Delay")]
-        delay: f32,
-        #[serde(rename = "Extent")]
-        extent: f32,
-        #[serde(rename = "Message")]
-        message: String,
+        #[serde(rename = "Frame")]
+        frame: Frame,
     },
 }
 
@@ -6255,41 +6330,6 @@ pub struct GeneratorQueueNode {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "TitleSource")]
 pub enum WindowProperty {
-    #[serde(rename = "0x01")]
-    Type01 {
-        #[serde(rename = "Key_a")]
-        key_a: u32,
-        #[serde(rename = "Unknown_1b")]
-        unknown_1b: u32,
-        #[serde(rename = "Unknown_1c")]
-        unknown_1c: u16,
-        #[serde(rename = "Unknown_d")]
-        unknown_d: u32,
-        #[serde(rename = "Value_d")]
-        value_d: u8,
-        #[serde(rename = "Unknown_e")]
-        unknown_e: u32,
-        #[serde(rename = "Value_e")]
-        value_e: u32,
-        #[serde(rename = "Unknown_f")]
-        unknown_f: u32,
-        #[serde(rename = "Value_f")]
-        value_f: u32,
-        #[serde(rename = "Unknown_h")]
-        unknown_h: u32,
-        #[serde(rename = "Value_h")]
-        value_h: u32,
-        #[serde(rename = "Unknown_i")]
-        unknown_i: u32,
-        #[serde(rename = "Value_i")]
-        value_i: u32,
-        #[serde(rename = "Unknown_j")]
-        unknown_j: u32,
-        #[serde(rename = "Value_j")]
-        value_j: u64,
-        #[serde(rename = "Value_a")]
-        value_a: String,
-    },
     #[serde(rename = "0x00")]
     Type00 {
         #[serde(rename = "Key_a")]
@@ -6327,13 +6367,48 @@ pub enum WindowProperty {
         #[serde(rename = "FileId")]
         file_id: u32,
     },
+    #[serde(rename = "0x01")]
+    Type01 {
+        #[serde(rename = "Key_a")]
+        key_a: u32,
+        #[serde(rename = "Unknown_1b")]
+        unknown_1b: u32,
+        #[serde(rename = "Unknown_1c")]
+        unknown_1c: u16,
+        #[serde(rename = "Unknown_d")]
+        unknown_d: u32,
+        #[serde(rename = "Value_d")]
+        value_d: u8,
+        #[serde(rename = "Unknown_e")]
+        unknown_e: u32,
+        #[serde(rename = "Value_e")]
+        value_e: u32,
+        #[serde(rename = "Unknown_f")]
+        unknown_f: u32,
+        #[serde(rename = "Value_f")]
+        value_f: u32,
+        #[serde(rename = "Unknown_h")]
+        unknown_h: u32,
+        #[serde(rename = "Value_h")]
+        value_h: u32,
+        #[serde(rename = "Unknown_i")]
+        unknown_i: u32,
+        #[serde(rename = "Value_i")]
+        value_i: u32,
+        #[serde(rename = "Unknown_j")]
+        unknown_j: u32,
+        #[serde(rename = "Value_j")]
+        value_j: u64,
+        #[serde(rename = "Value_a")]
+        value_a: String,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type_a")]
 pub enum WindowOption {
     #[serde(rename = "0x1000008b")]
-    Type1000008b {
+    Type1000008B {
         #[serde(rename = "Unknown_b")]
         unknown_b: u8,
         #[serde(rename = "PropertyCount")]
@@ -6344,20 +6419,20 @@ pub enum WindowOption {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type")]
 pub enum OptionProperty {
-    #[serde(rename = "0x10000081")]
-    Type10000081 {
-        unknown_k: u32,
-        #[serde(rename = "activeOpacity")]
-        active_opacity: f32,
-    },
     #[serde(rename = "0x10000080")]
     Type10000080 {
         unknown_l: u32,
         #[serde(rename = "inactiveOpacity")]
         inactive_opacity: f32,
     },
+    #[serde(rename = "0x10000081")]
+    Type10000081 {
+        unknown_k: u32,
+        #[serde(rename = "activeOpacity")]
+        active_opacity: f32,
+    },
     #[serde(rename = "0x1000008c")]
-    Type1000008c {
+    Type1000008C {
         #[serde(rename = "Unknown_a")]
         unknown_a: u32,
         #[serde(rename = "WindowOptions")]
@@ -6571,6 +6646,15 @@ pub struct FriendData {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "PwdType")]
 pub enum ItemProfile {
+    #[serde(rename = "-1")]
+    TypeNeg1 {
+        #[serde(rename = "PackedAmount")]
+        packed_amount: u32,
+        #[serde(rename = "ObjectId")]
+        object_id: ObjectId,
+        #[serde(rename = "WeenieDescription")]
+        weenie_description: PublicWeenieDesc,
+    },
     #[serde(rename = "1")]
     Type1 {
         #[serde(rename = "PackedAmount")]
@@ -6579,15 +6663,6 @@ pub enum ItemProfile {
         object_id: ObjectId,
         #[serde(rename = "OldWeenieDescription")]
         old_weenie_description: OldPublicWeenieDesc,
-    },
-    #[serde(rename = "-1")]
-    Type-1 {
-        #[serde(rename = "PackedAmount")]
-        packed_amount: u32,
-        #[serde(rename = "ObjectId")]
-        object_id: ObjectId,
-        #[serde(rename = "WeenieDescription")]
-        weenie_description: PublicWeenieDesc,
     },
 }
 
@@ -6918,8 +6993,8 @@ pub struct PositionPack {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "MovementType")]
 pub enum MovementData {
-    #[serde(rename = "0x0009")]
-    Type0009 {
+    #[serde(rename = "0x0000")]
+    Type0000 {
         #[serde(rename = "ObjectMovementSequence")]
         object_movement_sequence: u16,
         #[serde(rename = "ObjectServerControlSequence")]
@@ -6930,8 +7005,10 @@ pub enum MovementData {
         option_flags: MovementOption,
         #[serde(rename = "Stance")]
         stance: StanceMode,
-        #[serde(rename = "TurnToParams")]
-        turn_to_params: TurnToMovementParameters,
+        #[serde(rename = "State")]
+        state: InterpertedMotionState,
+        #[serde(rename = "StickyObject")]
+        sticky_object: ObjectId,
     },
     #[serde(rename = "0x0006")]
     Type0006 {
@@ -6953,23 +7030,6 @@ pub enum MovementData {
         move_to_params: MoveToMovementParameters,
         #[serde(rename = "MyRunRate")]
         my_run_rate: f32,
-    },
-    #[serde(rename = "0x0000")]
-    Type0000 {
-        #[serde(rename = "ObjectMovementSequence")]
-        object_movement_sequence: u16,
-        #[serde(rename = "ObjectServerControlSequence")]
-        object_server_control_sequence: u16,
-        #[serde(rename = "Autonomous")]
-        autonomous: u16,
-        #[serde(rename = "OptionFlags")]
-        option_flags: MovementOption,
-        #[serde(rename = "Stance")]
-        stance: StanceMode,
-        #[serde(rename = "State")]
-        state: InterpertedMotionState,
-        #[serde(rename = "StickyObject")]
-        sticky_object: ObjectId,
     },
     #[serde(rename = "0x0007")]
     Type0007 {
@@ -7006,6 +7066,21 @@ pub enum MovementData {
         target_id: ObjectId,
         #[serde(rename = "DesiredHeading")]
         desired_heading: f32,
+        #[serde(rename = "TurnToParams")]
+        turn_to_params: TurnToMovementParameters,
+    },
+    #[serde(rename = "0x0009")]
+    Type0009 {
+        #[serde(rename = "ObjectMovementSequence")]
+        object_movement_sequence: u16,
+        #[serde(rename = "ObjectServerControlSequence")]
+        object_server_control_sequence: u16,
+        #[serde(rename = "Autonomous")]
+        autonomous: u16,
+        #[serde(rename = "OptionFlags")]
+        option_flags: MovementOption,
+        #[serde(rename = "Stance")]
+        stance: StanceMode,
         #[serde(rename = "TurnToParams")]
         turn_to_params: TurnToMovementParameters,
     },
@@ -7537,15 +7612,6 @@ pub enum GameMoveData {
         #[serde(rename = "YGrid")]
         y_grid: i32,
     },
-    #[serde(rename = "0x6")]
-    Type6 {
-        #[serde(rename = "PlayerId")]
-        player_id: ObjectId,
-        #[serde(rename = "Team")]
-        team: i32,
-        #[serde(rename = "IdPieceToMove")]
-        id_piece_to_move: i32,
-    },
     #[serde(rename = "0x5")]
     Type5 {
         #[serde(rename = "PlayerId")]
@@ -7560,6 +7626,15 @@ pub enum GameMoveData {
         x_to: i32,
         #[serde(rename = "YTo")]
         y_to: i32,
+    },
+    #[serde(rename = "0x6")]
+    Type6 {
+        #[serde(rename = "PlayerId")]
+        player_id: ObjectId,
+        #[serde(rename = "Team")]
+        team: i32,
+        #[serde(rename = "IdPieceToMove")]
+        id_piece_to_move: i32,
     },
 }
 
@@ -9818,34 +9893,8 @@ pub struct Admin_SendAdminRestoreCharacter {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "BlobDispatchType")]
 pub enum Communication_TurbineChat {
-    #[serde(rename = "0x02")]
-    Type02 {
-        #[serde(rename = "MmessageSize")]
-        mmessage_size: u32,
-        #[serde(rename = "Type")]
-        type_: TurbineChatType,
-        #[serde(rename = "TargetType")]
-        target_type: i32,
-        #[serde(rename = "TargetId")]
-        target_id: i32,
-        #[serde(rename = "TransportType")]
-        transport_type: i32,
-        #[serde(rename = "TransportId")]
-        transport_id: i32,
-        #[serde(rename = "Cookie")]
-        cookie: i32,
-        #[serde(rename = "PayloadSize")]
-        payload_size: u32,
-        #[serde(rename = "ContextId")]
-        context_id: u32,
-        #[serde(rename = "ResponseId")]
-        response_id: u32,
-        #[serde(rename = "MethodId")]
-        method_id: u32,
-        #[serde(rename = "HResult")]
-        h_result: i32,
-    },
     #[serde(rename = "0x01")]
+    #[serde(alias = "0x02")]
     Type01 {
         #[serde(rename = "MmessageSize")]
         mmessage_size: u32,
@@ -10801,34 +10850,8 @@ pub struct Login_AccountBooted {
 #[serde(tag = "BlobDispatchType")]
 pub enum Communication_TurbineChat {
     #[serde(rename = "0x01")]
+    #[serde(alias = "0x02")]
     Type01 {
-        #[serde(rename = "MessageSize")]
-        message_size: u32,
-        #[serde(rename = "Type")]
-        type_: TurbineChatType,
-        #[serde(rename = "TargetType")]
-        target_type: i32,
-        #[serde(rename = "TargetId")]
-        target_id: i32,
-        #[serde(rename = "TransportType")]
-        transport_type: i32,
-        #[serde(rename = "TransportId")]
-        transport_id: i32,
-        #[serde(rename = "Cookie")]
-        cookie: i32,
-        #[serde(rename = "PayloadSize")]
-        payload_size: u32,
-        #[serde(rename = "ContextId")]
-        context_id: u32,
-        #[serde(rename = "ResponseId")]
-        response_id: u32,
-        #[serde(rename = "MethodId")]
-        method_id: u32,
-        #[serde(rename = "HResult")]
-        h_result: i32,
-    },
-    #[serde(rename = "0x02")]
-    Type02 {
         #[serde(rename = "MessageSize")]
         message_size: u32,
         #[serde(rename = "Type")]
