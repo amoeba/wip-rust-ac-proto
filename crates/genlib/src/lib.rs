@@ -57,7 +57,7 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     let Some(field_set) = &protocol_type.fields else {
         // No fields, generate empty struct
         out.push_str(&format!(
-            "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+            "#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct {type_name} {{}}\n\n"
         ));
         return out;
@@ -68,7 +68,7 @@ pub struct {type_name} {{}}\n\n"
         // Generate enum
         let switch_field = field_set.switch_field.as_ref().unwrap();
         out.push_str(&format!(
-            "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+            "#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = \"{switch_field}\")]
 pub enum {type_name} {{\n"
         ));
@@ -113,7 +113,7 @@ pub enum {type_name} {{\n"
         let fields_out: String = field_out.join(",\n");
 
         out.push_str(&format!(
-            "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+            "#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct {type_name} {{
 {fields_out}
 }}\n\n"
@@ -268,6 +268,9 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
     let mut out = String::new();
+
+    // Add preamble with necessary imports
+    out.push_str("use serde::{Serialize, Deserialize};\n\n");
 
     let mut types: Vec<ProtocolType> = Vec::new();
     let mut current_type: Option<ProtocolType> = None;
