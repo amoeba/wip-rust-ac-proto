@@ -17,6 +17,21 @@ pub struct FieldSet {
 }
 
 #[derive(Debug)]
+pub struct EnumValue {
+    pub(crate) name: String,
+    pub(crate) value: String,
+}
+
+#[derive(Debug)]
+pub struct ProtocolEnum {
+    pub(crate) name: String,
+    pub(crate) text: Option<String>,
+    pub(crate) parent: String,
+    pub(crate) values: Vec<EnumValue>,
+    pub(crate) is_mask: bool,
+}
+
+#[derive(Debug)]
 pub struct ProtocolType {
     pub(crate) name: String,
     pub(crate) text: Option<String>,
@@ -27,4 +42,18 @@ pub struct ProtocolType {
     pub(crate) rust_type: Option<String>,
     /// Parent type for type aliases (e.g., DWORD parent="uint")
     pub(crate) parent: Option<String>,
+}
+
+impl ProtocolType {
+    /// Check if this type supports the Eq trait derivation (i.e., has no float fields)
+    pub fn supports_trait_eq(&self) -> bool {
+        if let Some(ref field_set) = self.fields {
+            !field_set.common_fields.iter().any(|field| {
+                let rust_type = crate::get_rust_type(&field.field_type);
+                rust_type == "f32" || rust_type == "f64"
+            })
+        } else {
+            true
+        }
+    }
 }

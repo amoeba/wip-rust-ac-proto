@@ -25,6 +25,25 @@ pub fn to_snake_case(name: &str) -> String {
     result
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum IdentifierType {
+    Field,      // snake_case
+    EnumVariant, // PascalCase
+    Type,       // PascalCase
+}
+
+#[derive(Debug, Clone)]
+pub struct SafeIdentifier {
+    pub name: String,
+    pub needs_rename: bool,
+}
+
+impl SafeIdentifier {
+    pub fn new(name: String, needs_rename: bool) -> Self {
+        Self { name, needs_rename }
+    }
+}
+
 const RUST_RESERVED_WORDS: &[&str] = &["self", "Self", "type"];
 
 /// Check if a field name is a Rust reserved word
@@ -32,17 +51,39 @@ pub fn is_reserved_word(name: &str) -> bool {
     RUST_RESERVED_WORDS.contains(&name)
 }
 
-/// Convert a field name to a safe Rust identifier in snake_case
-pub fn safe_field_name(name: &str) -> (String, bool) {
-    let snake_case = to_snake_case(name);
+/// Convert a name to a safe Rust identifier based on the specified type
+pub fn safe_identifier(name: &str, identifier_type: IdentifierType) -> SafeIdentifier {
+    let safe_name = match identifier_type {
+        IdentifierType::Field => {
+            let snake_case = to_snake_case(name);
+            if is_reserved_word(&snake_case) {
+                format!("{snake_case}_")
+            } else {
+                snake_case
+            }
+        }
+        IdentifierType::EnumVariant | IdentifierType::Type => {
+            // For PascalCase, check original name
+            if is_reserved_word(name) {
+                format!("{name}_")
+            } else {
+                name.to_string()
+            }
+        }
+    };
+    
+    let needs_rename = safe_name != name;
+    SafeIdentifier::new(safe_name, needs_rename)
+}
 
-    if is_reserved_word(&snake_case) {
-        let safe_name = format!("{snake_case}_");
-        (safe_name, true)
-    } else {
-        let needs_rename = name != snake_case;
-        (snake_case, needs_rename)
-    }
+/// Convert a field name to a safe Rust identifier in snake_case
+pub fn safe_field_name(name: &str) -> SafeIdentifier {
+    safe_identifier(name, IdentifierType::Field)
+}
+
+/// Convert an enum variant name to a safe Rust identifier in PascalCase
+pub fn safe_enum_variant_name(name: &str) -> SafeIdentifier {
+    safe_identifier(name, IdentifierType::EnumVariant)
 }
 
 #[cfg(test)]

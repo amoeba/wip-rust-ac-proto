@@ -5,12 +5,12 @@ use log::debug;
 use quick_xml::{Reader, events::Event};
 
 use crate::{
-    types::{Field, FieldSet, ProtocolType},
-    util::safe_field_name,
+    types::{EnumValue, Field, FieldSet, ProtocolEnum, ProtocolType},
+    identifiers::{safe_identifier, safe_enum_variant_name, IdentifierType},
 };
 
 mod types;
-mod util;
+mod identifiers;
 
 /// Map an XML type name to a Rust type name.
 pub fn get_rust_type(xml_type: &str) -> &str {
@@ -32,16 +32,77 @@ pub fn get_rust_type(xml_type: &str) -> &str {
     }
 }
 
+
+
 fn generate_field_line(field: &Field) -> String {
     let original_name = &field.name;
-    let (safe_name, needs_rename) = safe_field_name(original_name);
+    let safe_id = safe_identifier(original_name, IdentifierType::Field);
     let rust_type = get_rust_type(&field.field_type);
 
-    if needs_rename {
-        format!("        #[serde(rename = \"{original_name}\")]\n        {safe_name}: {rust_type}")
+    if safe_id.needs_rename {
+        format!("        #[serde(rename = \"{original_name}\")]\n        {}: {rust_type}", safe_id.name)
     } else {
-        format!("        {safe_name}: {rust_type}")
+        format!("        {}: {rust_type}", safe_id.name)
     }
+}
+
+fn generate_enum(protocol_enum: &ProtocolEnum) -> String {
+    let enum_name = &protocol_enum.name;
+    let mut out = String::new();
+
+    if let Some(text_str) = &protocol_enum.text {
+        out.push_str(&format!("/// {text_str}\n"));
+    }
+
+    // For mask enums, generate as a struct with bitflags
+    if protocol_enum.is_mask {
+        out.push_str(&format!(
+            "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct {enum_name} {{\n        pub bits: {},\n}}\n\n",
+            get_rust_type(&protocol_enum.parent)
+        ));
+    } else {
+        // Enums don't have float fields, so we can safely derive Eq
+        let derives = "Clone, Debug, Eq, PartialEq, Serialize, Deserialize";
+
+        // Generate regular enum
+        out.push_str(&format!("#[derive({derives})]\npub enum "));
+        out.push_str(enum_name);
+        out.push_str(" {\n");
+
+        for enum_value in &protocol_enum.values {
+            let variant_name = if enum_value.name.starts_with("0x") {
+                format!("Type{}", &enum_value.name[2..])
+            } else {
+                enum_value.name.clone()
+            };
+
+            // Check if variant name is a reserved word
+            let safe_variant = safe_enum_variant_name(&variant_name);
+
+            if enum_value.value.starts_with("0x") {
+                // Hex value
+                if safe_variant.needs_rename {
+                    out.push_str(&format!("    #[serde(rename = \"{}\")]\n    {} = {},\n", 
+                        variant_name, safe_variant.name, enum_value.value));
+                } else {
+                    out.push_str(&format!("    {} = {},\n", safe_variant.name, enum_value.value));
+                }
+            } else {
+                // Decimal value
+                if safe_variant.needs_rename {
+                    out.push_str(&format!("    #[serde(rename = \"{}\")]\n    {} = {},\n", 
+                        variant_name, safe_variant.name, enum_value.value));
+                } else {
+                    out.push_str(&format!("    {} = {},\n", safe_variant.name, enum_value.value));
+                }
+            }
+        }
+
+        out.push_str("}\n\n");
+    }
+
+    out
 }
 
 fn generate_type(protocol_type: &ProtocolType) -> String {
@@ -57,12 +118,10 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     // Handle parent types as type aliases
     if let Some(parent_type) = &protocol_type.parent {
         let rust_type = get_rust_type(parent_type);
-
+        
         // Only generate alias if the rust type differs from the XML type name
         if rust_type != type_name {
-            out.push_str(&format!(
-                "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
-            ));
+            out.push_str(&format!("#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"));
         }
         return out;
     }
@@ -70,7 +129,7 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     let Some(field_set) = &protocol_type.fields else {
         // No fields, generate empty struct
         out.push_str(&format!(
-            "#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+            "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct {type_name} {{}}\n\n"
         ));
         return out;
@@ -125,8 +184,15 @@ pub enum {type_name} {{\n"
 
         let fields_out: String = field_out.join(",\n");
 
+        // Check if this type supports the Eq trait derivation
+        let derives = if protocol_type.supports_trait_eq() {
+            "Clone, Debug, Eq, PartialEq, Serialize, Deserialize"
+        } else {
+            "Clone, Debug, PartialEq, Serialize, Deserialize"
+        };
+
         out.push_str(&format!(
-            "#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+            "#[derive({derives})]
 pub struct {type_name} {{
 {fields_out}
 }}\n\n"
@@ -172,6 +238,78 @@ fn process_case_tag(e: &quick_xml::events::BytesStart) -> Option<String> {
 
     debug!("current_case_value is now {value:?}");
     value
+}
+
+fn process_enum_start_tag(
+    e: &quick_xml::events::BytesStart,
+    current_enum: &mut Option<ProtocolEnum>,
+) {
+    let mut name = None;
+    let mut text = None;
+    let mut parent = None;
+    let mut is_mask = false;
+
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"name" => name = Some(attr.unescape_value().unwrap().into_owned()),
+            b"text" => {
+                text = Some(attr.unescape_value().unwrap().into_owned());
+            }
+            b"parent" => {
+                parent = Some(attr.unescape_value().unwrap().into_owned());
+            }
+            b"mask" => {
+                is_mask = attr.unescape_value().unwrap() == "true";
+            }
+            _ => {}
+        }
+    }
+
+    if let Some(name) = name {
+        if let Some(parent) = parent {
+            let new_enum = ProtocolEnum {
+                name,
+                text,
+                parent,
+                values: Vec::new(),
+                is_mask,
+            };
+            *current_enum = Some(new_enum);
+        }
+    }
+}
+
+fn process_enum_value_tag(
+    e: &quick_xml::events::BytesStart,
+    current_enum: &mut Option<ProtocolEnum>,
+) {
+    let mut name = None;
+    let mut value = None;
+
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"name" => name = Some(attr.unescape_value().unwrap().into_owned()),
+            b"value" => value = Some(attr.unescape_value().unwrap().into_owned()),
+            _ => {}
+        }
+    }
+
+    if let (Some(name), Some(value), Some(current_enum)) = (name, value, current_enum) {
+        // Handle multiple values in a single attribute (e.g., "0x0C | 0x0D")
+        if let Some(value) = value {
+            let values: Vec<&str> = value.split('|').collect();
+            for val in values {
+                let trimmed_val = val.trim();
+                if !trimmed_val.is_empty() {
+                    let enum_value = EnumValue { 
+                        name: name.clone(), 
+                        value: trimmed_val.to_string()
+                    };
+                    current_enum.values.push(enum_value);
+                }
+            }
+        }
+    }
 }
 
 fn process_field_tag(
@@ -291,7 +429,9 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
     out.push_str("use serde::{Serialize, Deserialize};\n\n");
 
     let mut types: Vec<ProtocolType> = Vec::new();
+    let mut enums: Vec<ProtocolEnum> = Vec::new();
     let mut current_type: Option<ProtocolType> = None;
+    let mut current_enum: Option<ProtocolEnum> = None;
     let mut current_field_set: Option<FieldSet> = None;
     let mut current_case_value: Option<String> = None;
     let mut in_switch = false;
@@ -313,6 +453,8 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         &mut current_field_set,
                         &filter_types,
                     );
+                } else if tag_name == "enum" {
+                    process_enum_start_tag(&e, &mut current_enum);
                 } else if tag_name == "field" {
                     process_field_tag(&e, &mut current_field_set, in_switch, &current_case_value);
                 } else if tag_name == "switch" {
@@ -336,6 +478,8 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     );
                 } else if tag_name == "field" {
                     process_field_tag(&e, &mut current_field_set, in_switch, &current_case_value);
+                } else if tag_name == "value" {
+                    process_enum_value_tag(&e, &mut current_enum);
                 }
             }
             Ok(Event::End(e)) => {
@@ -350,6 +494,11 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     }
                     in_switch = false;
                     current_case_value = None;
+                } else if e.name().as_ref() == b"enum" {
+                    // Close out enum
+                    if let Some(en) = current_enum.take() {
+                        enums.push(en);
+                    }
                 } else if e.name().as_ref() == b"switch" {
                     in_switch = false;
                     debug!("Exited switch");
@@ -364,6 +513,11 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
         buf.clear();
     }
 
+// Generate code for all enums
+    for protocol_enum in &enums {
+        out.push_str(&generate_enum(protocol_enum));
+    }
+
     // Generate code for all types
     for protocol_type in &types {
         if protocol_type.is_primitive {
@@ -376,9 +530,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                 if let Some(ref text) = protocol_type.text {
                     out.push_str(&format!("/// {text}\n"));
                 }
-                out.push_str(&format!(
-                    "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
-                ));
+                out.push_str(&format!("#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"));
             }
         } else {
             out.push_str(&generate_type(protocol_type));
