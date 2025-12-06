@@ -21,4 +21,8 @@ pub struct ProtocolType {
     pub(crate) name: String,
     pub(crate) text: Option<String>,
     pub(crate) fields: Option<FieldSet>,
+    /// If true, this is a primitive type (e.g., int, ushort) not a composite type
+    pub(crate) is_primitive: bool,
+    /// Optional Rust type mapping (e.g., "i32" for "int"). Used by map_type.
+    pub(crate) rust_type: Option<String>,
 }
