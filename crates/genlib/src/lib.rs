@@ -5,12 +5,12 @@ use log::debug;
 use quick_xml::{Reader, events::Event};
 
 use crate::{
+    identifiers::{IdentifierType, safe_enum_variant_name, safe_identifier},
     types::{EnumValue, Field, FieldSet, ProtocolEnum, ProtocolType},
-    identifiers::{safe_identifier, safe_enum_variant_name, IdentifierType},
 };
 
-mod types;
 mod identifiers;
+mod types;
 
 /// Map an XML type name to a Rust type name.
 pub fn get_rust_type(xml_type: &str) -> &str {
@@ -32,15 +32,16 @@ pub fn get_rust_type(xml_type: &str) -> &str {
     }
 }
 
-
-
 fn generate_field_line(field: &Field) -> String {
     let original_name = &field.name;
     let safe_id = safe_identifier(original_name, IdentifierType::Field);
     let rust_type = get_rust_type(&field.field_type);
 
     if safe_id.needs_rename {
-        format!("        #[serde(rename = \"{original_name}\")]\n        {}: {rust_type}", safe_id.name)
+        format!(
+            "        #[serde(rename = \"{original_name}\")]\n        {}: {rust_type}",
+            safe_id.name
+        )
     } else {
         format!("        {}: {rust_type}", safe_id.name)
     }
@@ -83,18 +84,28 @@ pub struct {enum_name} {{\n        pub bits: {},\n}}\n\n",
             if enum_value.value.starts_with("0x") {
                 // Hex value
                 if safe_variant.needs_rename {
-                    out.push_str(&format!("    #[serde(rename = \"{}\")]\n    {} = {},\n", 
-                        variant_name, safe_variant.name, enum_value.value));
+                    out.push_str(&format!(
+                        "    #[serde(rename = \"{}\")]\n    {} = {},\n",
+                        variant_name, safe_variant.name, enum_value.value
+                    ));
                 } else {
-                    out.push_str(&format!("    {} = {},\n", safe_variant.name, enum_value.value));
+                    out.push_str(&format!(
+                        "    {} = {},\n",
+                        safe_variant.name, enum_value.value
+                    ));
                 }
             } else {
                 // Decimal value
                 if safe_variant.needs_rename {
-                    out.push_str(&format!("    #[serde(rename = \"{}\")]\n    {} = {},\n", 
-                        variant_name, safe_variant.name, enum_value.value));
+                    out.push_str(&format!(
+                        "    #[serde(rename = \"{}\")]\n    {} = {},\n",
+                        variant_name, safe_variant.name, enum_value.value
+                    ));
                 } else {
-                    out.push_str(&format!("    {} = {},\n", safe_variant.name, enum_value.value));
+                    out.push_str(&format!(
+                        "    {} = {},\n",
+                        safe_variant.name, enum_value.value
+                    ));
                 }
             }
         }
@@ -118,10 +129,12 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     // Handle parent types as type aliases
     if let Some(parent_type) = &protocol_type.parent {
         let rust_type = get_rust_type(parent_type);
-        
+
         // Only generate alias if the rust type differs from the XML type name
         if rust_type != type_name {
-            out.push_str(&format!("#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"));
+            out.push_str(&format!(
+                "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
+            ));
         }
         return out;
     }
@@ -151,7 +164,8 @@ pub enum {type_name} {{\n"
 
         for (case_value, case_fields) in variant_fields {
             // Create a signature for these fields to group identical field sets
-            let field_sig = case_fields.iter()
+            let field_sig = case_fields
+                .iter()
                 .map(|f| format!("{}:{}", f.name, f.field_type))
                 .collect::<Vec<_>>()
                 .join(";");
@@ -352,7 +366,7 @@ fn process_enum_value_tag(
             if !trimmed_val.is_empty() {
                 let enum_value = EnumValue {
                     name: name.clone(),
-                    value: trimmed_val.to_string()
+                    value: trimmed_val.to_string(),
                 };
                 current_enum.values.push(enum_value);
             }
@@ -564,7 +578,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
         buf.clear();
     }
 
-// Generate code for all enums
+    // Generate code for all enums
     for protocol_enum in &enums {
         out.push_str(&generate_enum(protocol_enum));
     }
@@ -581,7 +595,9 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                 if let Some(ref text) = protocol_type.text {
                     out.push_str(&format!("/// {text}\n"));
                 }
-                out.push_str(&format!("#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"));
+                out.push_str(&format!(
+                    "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
+                ));
             }
         } else {
             out.push_str(&generate_type(protocol_type));
