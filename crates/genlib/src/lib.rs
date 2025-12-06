@@ -247,10 +247,10 @@ fn process_type_tag(
     }
 
     if let Some(name) = name {
-        let should_skip = filter_types.as_ref().map_or(false, |filters| !filters.contains(&name));
+        let should_skip = filter_types.as_ref().map_or(false, |filters| filters.contains(&name));
 
         if should_skip {
-            debug!("Skipping type {name} because it's not in filter list.");
+            debug!("Skipping type {name} because it's in exclusion list.");
             return;
         }
 
