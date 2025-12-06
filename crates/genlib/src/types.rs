@@ -6,18 +6,14 @@ pub struct Field {
     pub(crate) field_type: String,
 }
 
-pub type SimpleFieldSet = Vec<Field>;
-
 #[derive(Debug)]
-pub enum FieldSet {
-    SimpleFieldSet(Vec<Field>),
-    VariantFieldSet(VariantFieldSet),
-}
-
-#[derive(Debug)]
-pub struct VariantFieldSet {
-    pub(crate) name: String,
-    pub(crate) fields: HashMap<String, Vec<Field>>,
+pub struct FieldSet {
+    /// The field being switched on, if any (e.g., "Type")
+    pub(crate) switch_field: Option<String>,
+    /// Fields before the switch (or all fields if no switch)
+    pub(crate) common_fields: Vec<Field>,
+    /// Per-variant fields, keyed by case value. None if no switch.
+    pub(crate) variant_fields: Option<HashMap<String, Vec<Field>>>,
 }
 
 #[derive(Debug)]

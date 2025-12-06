@@ -5,12 +5,23 @@ use log::debug;
 use quick_xml::{Reader, events::Event};
 
 use crate::{
-    types::{Field, FieldSet, ProtocolType, VariantFieldSet},
+    types::{Field, FieldSet, ProtocolType},
     util::safe_field_name,
 };
 
 mod types;
 mod util;
+
+fn generate_field_line(field: &Field) -> String {
+    let original_name = &field.name;
+    let (safe_name, needs_rename) = safe_field_name(original_name);
+
+    if needs_rename {
+        format!("        #[serde(rename = \"{original_name}\")]\n        {safe_name}: String")
+    } else {
+        format!("        {safe_name}: String")
+    }
+}
 
 fn generate_type(protocol_type: &ProtocolType) -> String {
     let type_name = &protocol_type.name;
@@ -21,54 +32,72 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     if let Some(text_str) = &protocol_type.text {
         out.push_str(format!("// {text_str}\n").as_str());
     }
-    let mut field_out: Vec<String> = Vec::new();
 
-    if let Some(field_set) = &protocol_type.fields {
-        match field_set {
-            FieldSet::SimpleFieldSet(fields) => {
-                for field in fields {
-                    let original_name = &field.name;
-                    let (safe_name, needs_rename) = safe_field_name(original_name);
+    let Some(field_set) = &protocol_type.fields else {
+        // No fields, generate empty struct
+        out.push_str(&format!(
+            "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct {type_name} {{}}\n\n"
+        ));
+        return out;
+    };
 
-                    if needs_rename {
-                        field_out.push(format!(
-                            "    #[serde(rename = \"{original_name}\")]\n    {safe_name}: String"
-                        ));
-                    } else {
-                        field_out.push(format!("    {safe_name}: String"));
-                    }
+    // Check if this is a variant type (has switch) or simple type
+    if let Some(ref variant_fields) = field_set.variant_fields {
+        // Generate enum
+        let switch_field = field_set.switch_field.as_ref().unwrap();
+        out.push_str(&format!(
+            "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(tag = \"{switch_field}\")]
+pub enum {type_name} {{\n"
+        ));
+
+        for (case_value, case_fields) in variant_fields {
+            // Generate variant name from case value (e.g., "0x4" -> "Type4")
+            let variant_name = if case_value.starts_with("0x") {
+                format!("Type{}", &case_value[2..])
+            } else {
+                format!("Type{}", case_value)
+            };
+
+            out.push_str(&format!("    #[serde(rename = \"{case_value}\")]\n"));
+            out.push_str(&format!("    {variant_name} {{\n"));
+
+            // Add common fields first (excluding the switch field itself, as serde uses it as the tag)
+            for field in &field_set.common_fields {
+                if field.name != *switch_field {
+                    out.push_str(&generate_field_line(field));
+                    out.push_str(",\n");
                 }
             }
-            FieldSet::VariantFieldSet(variant_field_set) => {
-                // TODO: This is actually just the above code and I did this just so we can compile
-                for (name, fields) in &variant_field_set.fields {
-                    for field in fields {
-                        let original_name = &field.name;
-                        let (safe_name, needs_rename) = safe_field_name(original_name);
 
-                        if needs_rename {
-                            field_out.push(format!(
-                            "    #[serde(rename = \"{original_name}\")]\n    {safe_name}: String"
-                        ));
-                        } else {
-                            field_out.push(format!("    {safe_name}: String"));
-                        }
-                    }
-                }
+            // Add variant-specific fields
+            for field in case_fields {
+                out.push_str(&generate_field_line(field));
+                out.push_str(",\n");
             }
+
+            out.push_str("    },\n");
         }
-    }
-    let fields_out: String = field_out.join(",\n");
 
-    out.push_str(
-        format!(
+        out.push_str("}\n\n");
+    } else {
+        // Generate struct
+        let mut field_out: Vec<String> = Vec::new();
+
+        for field in &field_set.common_fields {
+            field_out.push(generate_field_line(field));
+        }
+
+        let fields_out: String = field_out.join(",\n");
+
+        out.push_str(&format!(
             "#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct {type_name} {{
 {fields_out}
-}}\n\n",
-        )
-        .as_str(),
-    );
+}}\n\n"
+        ));
+    }
 
     out
 }
@@ -76,14 +105,13 @@ pub struct {type_name} {{
 pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
-    // TODO: Use a better data structure?
     let mut out = String::new();
 
     let mut types: Vec<ProtocolType> = Vec::new();
     let mut current_type: Option<ProtocolType> = None;
-    // Not 100% sure I need these two since we have current_type
-    let mut current_variant_field_id: Option<String> = None;
-    let mut current_variant_fieldset: Option<VariantFieldSet> = None;
+    let mut current_field_set: Option<FieldSet> = None;
+    let mut current_case_value: Option<String> = None;
+    let mut in_switch = false;
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -105,7 +133,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         }
                     }
 
-                    if let (Some(name)) = name {
+                    if let Some(name) = name {
                         // Skip type name based on active filters
                         if let Some(ref filters) = filter_types {
                             if !filters.contains(&name) {
@@ -118,13 +146,18 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                             text,
                             fields: None,
                         });
+                        // Initialize a new FieldSet for this type
+                        current_field_set = Some(FieldSet {
+                            switch_field: None,
+                            common_fields: Vec::new(),
+                            variant_fields: None,
+                        });
 
                         debug!("current_type is now {current_type:?}");
                     }
                 } else if tag_name == "field" {
                     let mut field_type = None;
                     let mut field_name = None;
-                    let mut field_text = None;
 
                     for attr in e.attributes().flatten() {
                         match attr.key.as_ref() {
@@ -134,44 +167,35 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                             b"name" => {
                                 field_name = Some(attr.unescape_value().unwrap().into_owned())
                             }
-                            b"text" => {
-                                field_text = Some(attr.unescape_value().unwrap().into_owned());
-                            }
                             _ => {}
                         }
                     }
 
                     debug!("Processing field {field_name:?}");
 
-                    if let (Some(fname), Some(ftype)) = (field_name, field_type) {
-                        // Handle VariantFieldSet first
-                        if let Some(ref mut var) = current_variant_fieldset {
-                            debug!("Processing field as variant field...");
-                            let new_field = Field {
-                                name: fname,
-                                field_type: ftype,
-                            };
+                    if let (Some(fname), Some(ftype), Some(field_set)) =
+                        (field_name, field_type, &mut current_field_set)
+                    {
+                        let new_field = Field {
+                            name: fname,
+                            field_type: ftype,
+                        };
 
-                            if let Some(ref id) = current_variant_field_id {
-                                let variant_fieldset =
-                                    var.fields.entry(id.to_string()).or_insert(Vec::new());
-                                variant_fieldset.push(new_field);
+                        if in_switch {
+                            // We're inside a switch, add to variant fields
+                            if let (Some(case_val), Some(variant_fields)) =
+                                (&current_case_value, &mut field_set.variant_fields)
+                            {
+                                variant_fields
+                                    .entry(case_val.clone())
+                                    .or_insert_with(Vec::new)
+                                    .push(new_field);
+                                debug!("Added field to variant case {case_val}");
                             }
-                        }
-                        // SimpleFieldSet behavior below
-                        else if let Some(ref mut ty) = current_type {
-                            debug!("Processing field as normal field...");
-                            let fields = ty
-                                .fields
-                                .get_or_insert_with(|| FieldSet::SimpleFieldSet(Vec::new()));
-                            if let FieldSet::SimpleFieldSet(vec) = fields {
-                                vec.push(Field {
-                                    name: fname,
-                                    field_type: ftype,
-                                });
-                            }
-
-                            debug!("after adding fields, current_type is now {ty:?}");
+                        } else {
+                            // Not in switch, add to common fields
+                            field_set.common_fields.push(new_field);
+                            debug!("Added field to common_fields");
                         }
                     }
                 } else if tag_name == "switch" {
@@ -183,15 +207,12 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         }
                     }
 
-                    // Set a variant so we accumulate fields into the variant for now
-                    if let Some(name) = name {
-                        current_variant_fieldset = Some(VariantFieldSet {
-                            name,
-                            fields: HashMap::new(),
-                        });
+                    if let (Some(switch_name), Some(field_set)) = (name, &mut current_field_set) {
+                        field_set.switch_field = Some(switch_name);
+                        field_set.variant_fields = Some(HashMap::new());
+                        in_switch = true;
+                        debug!("Entered switch, switch_field = {:?}", field_set.switch_field);
                     }
-
-                    debug!("current_variant_fieldset is now {current_variant_fieldset:?}");
                 } else if tag_name == "case" {
                     let mut value = None;
 
@@ -201,31 +222,25 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         }
                     }
 
-                    debug!("TODO: Need to handle <case> element");
-                    current_variant_field_id = value;
-                    debug!("current_variant_field_id is now {current_variant_field_id:?}");
-                    // if let (Some(val), Some(ref mut current)) = (value, current_variant_fieldset) {
-                    //     current.fields.insert(val, Vec::new());
-                    // }
+                    current_case_value = value;
+                    debug!("current_case_value is now {current_case_value:?}");
                 }
             }
             Ok(Event::End(e)) => {
-                // closing </type>
                 if e.name().as_ref() == b"type" {
                     // Close out type
-                    if let Some(ty) = current_type.take() {
+                    if let Some(mut ty) = current_type.take() {
+                        ty.fields = current_field_set.take();
                         types.push(ty);
                         debug!("DONE: {types:?}");
                     }
+                    in_switch = false;
+                    current_case_value = None;
                 } else if e.name().as_ref() == b"switch" {
-                    // Set current variant on current type and reset current_variant_fieldset
-                    if let (Some(ty), Some(variant)) =
-                        (&mut current_type, current_variant_fieldset.take())
-                    {
-                        ty.fields = Some(FieldSet::VariantFieldSet(variant));
-                    }
+                    in_switch = false;
+                    debug!("Exited switch");
                 } else if e.name().as_ref() == b"case" {
-                    // TODO
+                    current_case_value = None;
                 }
             }
             Ok(Event::Eof) => break,
