@@ -36,7 +36,10 @@ fn main() {
         .collect::<Vec<_>>();
 
     if !filter_types.is_empty() {
-        println!("cargo:warning=Generating readers for types: {:?}", filter_types);
+        println!(
+            "cargo:warning=Generating readers for types: {:?}",
+            filter_types
+        );
     }
 
     let xml = fs::read_to_string(&protocol_path).unwrap();
