@@ -602,16 +602,6 @@ pub struct EmoteSetType5 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteSetTypeC {
-    #[serde(rename = "Probability")]
-    pub probability: f32,
-    #[serde(rename = "Emotes")]
-    pub emotes: PackableList<Emote>,
-    #[serde(rename = "Quest")]
-    pub quest: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmoteSetTypeF {
     #[serde(rename = "Probability")]
     pub probability: f32,
@@ -624,6 +614,16 @@ pub struct EmoteSetTypeF {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteSetTypeC {
+    #[serde(rename = "Probability")]
+    pub probability: f32,
+    #[serde(rename = "Emotes")]
+    pub emotes: PackableList<Emote>,
+    #[serde(rename = "Quest")]
+    pub quest: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Category")]
 pub enum EmoteSet {
     #[serde(rename = "0x01")]
@@ -633,6 +633,8 @@ pub enum EmoteSet {
     Type2(EmoteSetType2),
     #[serde(rename = "0x05")]
     Type5(EmoteSetType5),
+    #[serde(rename = "0x0F")]
+    TypeF(EmoteSetTypeF),
     #[serde(rename = "0x0C")]
     #[serde(alias = "0x0D")]
     #[serde(alias = "0x16")]
@@ -650,18 +652,6 @@ pub enum EmoteSet {
     #[serde(alias = "0x25")]
     #[serde(alias = "0x26")]
     TypeC(EmoteSetTypeC),
-    #[serde(rename = "0x0F")]
-    TypeF(EmoteSetTypeF),
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType1 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Message")]
-    pub message: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -684,16 +674,6 @@ pub struct EmoteType3 {
     pub extent: f32,
     #[serde(rename = "CProfile")]
     pub c_profile: CreationProfile,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType4 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Frame")]
-    pub frame: Frame,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -749,67 +729,13 @@ pub struct EmoteType1C {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType1E {
+pub struct EmoteType1 {
     #[serde(rename = "Delay")]
     pub delay: f32,
     #[serde(rename = "Extent")]
     pub extent: f32,
     #[serde(rename = "Message")]
     pub message: String,
-    #[serde(rename = "Min")]
-    pub min: u32,
-    #[serde(rename = "Max")]
-    pub max: u32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType20 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Message")]
-    pub message: String,
-    #[serde(rename = "Amount")]
-    pub amount: u32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType22 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Amount")]
-    pub amount: u32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType23 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Message")]
-    pub message: String,
-    #[serde(rename = "Stat")]
-    pub stat: u32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType24 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Message")]
-    pub message: String,
-    #[serde(rename = "Min")]
-    pub min: u32,
-    #[serde(rename = "Max")]
-    pub max: u32,
-    #[serde(rename = "Stat")]
-    pub stat: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -840,6 +766,44 @@ pub struct EmoteType26 {
     pub test_string: String,
     #[serde(rename = "Stat")]
     pub stat: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType24 {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Message")]
+    pub message: String,
+    #[serde(rename = "Min")]
+    pub min: u32,
+    #[serde(rename = "Max")]
+    pub max: u32,
+    #[serde(rename = "Stat")]
+    pub stat: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType23 {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Message")]
+    pub message: String,
+    #[serde(rename = "Stat")]
+    pub stat: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType22 {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Amount")]
+    pub amount: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -875,18 +839,6 @@ pub struct EmoteType32 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType35 {
-    #[serde(rename = "Delay")]
-    pub delay: f32,
-    #[serde(rename = "Extent")]
-    pub extent: f32,
-    #[serde(rename = "Stat")]
-    pub stat: u32,
-    #[serde(rename = "Amount")]
-    pub amount: u32,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmoteType38 {
     #[serde(rename = "Delay")]
     pub delay: f32,
@@ -901,13 +853,29 @@ pub struct EmoteType38 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType3F {
+pub struct EmoteType35 {
     #[serde(rename = "Delay")]
     pub delay: f32,
     #[serde(rename = "Extent")]
     pub extent: f32,
-    #[serde(rename = "Position")]
-    pub position: Position,
+    #[serde(rename = "Stat")]
+    pub stat: u32,
+    #[serde(rename = "Amount")]
+    pub amount: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType1E {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Message")]
+    pub message: String,
+    #[serde(rename = "Min")]
+    pub min: u32,
+    #[serde(rename = "Max")]
+    pub max: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -922,13 +890,35 @@ pub struct EmoteType4C {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EmoteType6E {
+pub struct EmoteType4 {
     #[serde(rename = "Delay")]
     pub delay: f32,
     #[serde(rename = "Extent")]
     pub extent: f32,
-    #[serde(rename = "Stat")]
-    pub stat: u32,
+    #[serde(rename = "Frame")]
+    pub frame: Frame,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType20 {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Message")]
+    pub message: String,
+    #[serde(rename = "Amount")]
+    pub amount: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType3F {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Position")]
+    pub position: Position,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -958,6 +948,16 @@ pub struct EmoteType72 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct EmoteType6E {
+    #[serde(rename = "Delay")]
+    pub delay: f32,
+    #[serde(rename = "Extent")]
+    pub extent: f32,
+    #[serde(rename = "Stat")]
+    pub stat: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmoteType76 {
     #[serde(rename = "Delay")]
     pub delay: f32,
@@ -972,6 +972,27 @@ pub struct EmoteType76 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type")]
 pub enum Emote {
+    #[serde(rename = "0x02")]
+    #[serde(alias = "0x3E")]
+    Type2(EmoteType2),
+    #[serde(rename = "0x03")]
+    #[serde(alias = "0x4A")]
+    Type3(EmoteType3),
+    #[serde(rename = "0x05")]
+    #[serde(alias = "0x34")]
+    Type5(EmoteType5),
+    #[serde(rename = "0x07")]
+    Type7(EmoteType7),
+    #[serde(rename = "0x09")]
+    Type9(EmoteType9),
+    #[serde(rename = "0x0E")]
+    #[serde(alias = "0x13")]
+    #[serde(alias = "0x1B")]
+    #[serde(alias = "0x49")]
+    TypeE(EmoteTypeE),
+    #[serde(rename = "0x1C")]
+    #[serde(alias = "0x1D")]
+    Type1C(EmoteType1C),
     #[serde(rename = "0x01")]
     #[serde(alias = "0x08")]
     #[serde(alias = "0x0A")]
@@ -1002,37 +1023,54 @@ pub enum Emote {
     #[serde(alias = "0x58")]
     #[serde(alias = "0x79")]
     Type1(EmoteType1),
-    #[serde(rename = "0x02")]
-    #[serde(alias = "0x3E")]
-    Type2(EmoteType2),
-    #[serde(rename = "0x03")]
-    #[serde(alias = "0x4A")]
-    Type3(EmoteType3),
-    #[serde(rename = "0x04")]
-    #[serde(alias = "0x06")]
-    #[serde(alias = "0x0B")]
-    #[serde(alias = "0x57")]
-    Type4(EmoteType4),
-    #[serde(rename = "0x05")]
-    #[serde(alias = "0x34")]
-    Type5(EmoteType5),
-    #[serde(rename = "0x07")]
-    Type7(EmoteType7),
-    #[serde(rename = "0x09")]
-    Type9(EmoteType9),
-    #[serde(rename = "0x0E")]
-    #[serde(alias = "0x13")]
-    #[serde(alias = "0x1B")]
-    #[serde(alias = "0x49")]
-    TypeE(EmoteTypeE),
-    #[serde(rename = "0x1C")]
-    #[serde(alias = "0x1D")]
-    Type1C(EmoteType1C),
+    #[serde(rename = "0x25")]
+    Type25(EmoteType25),
+    #[serde(rename = "0x26")]
+    #[serde(alias = "0x4B")]
+    Type26(EmoteType26),
+    #[serde(rename = "0x24")]
+    #[serde(alias = "0x27")]
+    #[serde(alias = "0x28")]
+    #[serde(alias = "0x29")]
+    #[serde(alias = "0x2A")]
+    #[serde(alias = "0x2B")]
+    #[serde(alias = "0x2C")]
+    Type24(EmoteType24),
+    #[serde(rename = "0x23")]
+    #[serde(alias = "0x2D")]
+    #[serde(alias = "0x2E")]
+    Type23(EmoteType23),
+    #[serde(rename = "0x22")]
+    #[serde(alias = "0x2F")]
+    #[serde(alias = "0x30")]
+    #[serde(alias = "0x5A")]
+    #[serde(alias = "0x6F")]
+    #[serde(alias = "0x77")]
+    #[serde(alias = "0x78")]
+    Type22(EmoteType22),
+    #[serde(rename = "0x31")]
+    Type31(EmoteType31),
+    #[serde(rename = "0x32")]
+    Type32(EmoteType32),
+    #[serde(rename = "0x38")]
+    Type38(EmoteType38),
+    #[serde(rename = "0x35")]
+    #[serde(alias = "0x36")]
+    #[serde(alias = "0x37")]
+    #[serde(alias = "0x45")]
+    Type35(EmoteType35),
     #[serde(rename = "0x1E")]
     #[serde(alias = "0x3B")]
     #[serde(alias = "0x47")]
     #[serde(alias = "0x52")]
     Type1E(EmoteType1E),
+    #[serde(rename = "0x4C")]
+    Type4C(EmoteType4C),
+    #[serde(rename = "0x04")]
+    #[serde(alias = "0x06")]
+    #[serde(alias = "0x0B")]
+    #[serde(alias = "0x57")]
+    Type4(EmoteType4),
     #[serde(rename = "0x20")]
     #[serde(alias = "0x21")]
     #[serde(alias = "0x46")]
@@ -1049,56 +1087,18 @@ pub enum Emote {
     #[serde(alias = "0x6C")]
     #[serde(alias = "0x6D")]
     Type20(EmoteType20),
-    #[serde(rename = "0x22")]
-    #[serde(alias = "0x2F")]
-    #[serde(alias = "0x30")]
-    #[serde(alias = "0x5A")]
-    #[serde(alias = "0x6F")]
-    #[serde(alias = "0x77")]
-    #[serde(alias = "0x78")]
-    Type22(EmoteType22),
-    #[serde(rename = "0x23")]
-    #[serde(alias = "0x2D")]
-    #[serde(alias = "0x2E")]
-    Type23(EmoteType23),
-    #[serde(rename = "0x24")]
-    #[serde(alias = "0x27")]
-    #[serde(alias = "0x28")]
-    #[serde(alias = "0x29")]
-    #[serde(alias = "0x2A")]
-    #[serde(alias = "0x2B")]
-    #[serde(alias = "0x2C")]
-    Type24(EmoteType24),
-    #[serde(rename = "0x25")]
-    Type25(EmoteType25),
-    #[serde(rename = "0x26")]
-    #[serde(alias = "0x4B")]
-    Type26(EmoteType26),
-    #[serde(rename = "0x31")]
-    Type31(EmoteType31),
-    #[serde(rename = "0x32")]
-    Type32(EmoteType32),
-    #[serde(rename = "0x35")]
-    #[serde(alias = "0x36")]
-    #[serde(alias = "0x37")]
-    #[serde(alias = "0x45")]
-    Type35(EmoteType35),
-    #[serde(rename = "0x38")]
-    Type38(EmoteType38),
     #[serde(rename = "0x3F")]
     #[serde(alias = "0x63")]
     #[serde(alias = "0x64")]
     Type3F(EmoteType3F),
-    #[serde(rename = "0x4C")]
-    Type4C(EmoteType4C),
-    #[serde(rename = "0x6E")]
-    #[serde(alias = "0x73")]
-    Type6E(EmoteType6E),
     #[serde(rename = "0x70")]
     #[serde(alias = "0x71")]
     Type70(EmoteType70),
     #[serde(rename = "0x72")]
     Type72(EmoteType72),
+    #[serde(rename = "0x6E")]
+    #[serde(alias = "0x73")]
+    Type6E(EmoteType6E),
     #[serde(rename = "0x76")]
     Type76(EmoteType76),
 }

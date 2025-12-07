@@ -1391,9 +1391,137 @@ pub struct AdminSendAdminRestoreCharacter {
 
 // Send or receive a message using Turbine Chat.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CommunicationTurbineChatType1 {
+    #[serde(rename = "MmessageSize")]
+    pub mmessage_size: u32,
+    #[serde(rename = "TargetType")]
+    pub target_type: i32,
+    #[serde(rename = "TargetId")]
+    pub target_id: i32,
+    #[serde(rename = "TransportType")]
+    pub transport_type: i32,
+    #[serde(rename = "TransportId")]
+    pub transport_id: i32,
+    #[serde(rename = "Cookie")]
+    pub cookie: i32,
+    #[serde(rename = "PayloadSize")]
+    pub payload_size: u32,
+    pub blob_dispatch_type: CommunicationTurbineChatType1BlobDispatchTypeVariant,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "BlobDispatchType")]
+pub enum CommunicationTurbineChatType1BlobDispatchTypeVariant {
+    #[serde(rename = "0x01")]
+    Type1 {
+    #[serde(rename = "RoomId")]
+    room_id: u32,
+    #[serde(rename = "DisplayName")]
+    display_name: WString,
+    #[serde(rename = "Text")]
+    text: WString,
+    #[serde(rename = "ExtraDataSize")]
+    extra_data_size: u32,
+    #[serde(rename = "SpeakerId")]
+    speaker_id: ObjectId,
+    #[serde(rename = "HResult")]
+    h_result: i32,
+    #[serde(rename = "ChatType")]
+    chat_type: u32,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CommunicationTurbineChatType3 {
+    #[serde(rename = "MmessageSize")]
+    pub mmessage_size: u32,
+    #[serde(rename = "TargetType")]
+    pub target_type: i32,
+    #[serde(rename = "TargetId")]
+    pub target_id: i32,
+    #[serde(rename = "TransportType")]
+    pub transport_type: i32,
+    #[serde(rename = "TransportId")]
+    pub transport_id: i32,
+    #[serde(rename = "Cookie")]
+    pub cookie: i32,
+    #[serde(rename = "PayloadSize")]
+    pub payload_size: u32,
+    pub blob_dispatch_type: CommunicationTurbineChatType3BlobDispatchTypeVariant,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "BlobDispatchType")]
+pub enum CommunicationTurbineChatType3BlobDispatchTypeVariant {
+    #[serde(rename = "0x02")]
+    Type2 {
+    #[serde(rename = "ContextId")]
+    context_id: u32,
+    #[serde(rename = "ResponseId")]
+    response_id: u32,
+    #[serde(rename = "MethodId")]
+    method_id: u32,
+    #[serde(rename = "RoomId")]
+    room_id: u32,
+    #[serde(rename = "Text")]
+    text: WString,
+    #[serde(rename = "ExtraDataSize")]
+    extra_data_size: u32,
+    #[serde(rename = "SpeakerId")]
+    speaker_id: ObjectId,
+    #[serde(rename = "HResult")]
+    h_result: i32,
+    #[serde(rename = "ChatType")]
+    chat_type: u32,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CommunicationTurbineChatType5 {
+    #[serde(rename = "MmessageSize")]
+    pub mmessage_size: u32,
+    #[serde(rename = "TargetType")]
+    pub target_type: i32,
+    #[serde(rename = "TargetId")]
+    pub target_id: i32,
+    #[serde(rename = "TransportType")]
+    pub transport_type: i32,
+    #[serde(rename = "TransportId")]
+    pub transport_id: i32,
+    #[serde(rename = "Cookie")]
+    pub cookie: i32,
+    #[serde(rename = "PayloadSize")]
+    pub payload_size: u32,
+    pub blob_dispatch_type: CommunicationTurbineChatType5BlobDispatchTypeVariant,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "BlobDispatchType")]
+pub enum CommunicationTurbineChatType5BlobDispatchTypeVariant {
+    #[serde(rename = "0x01")]
+    #[serde(alias = "0x02")]
+    Type1 {
+    #[serde(rename = "ContextId")]
+    context_id: u32,
+    #[serde(rename = "ResponseId")]
+    response_id: u32,
+    #[serde(rename = "MethodId")]
+    method_id: u32,
+    #[serde(rename = "HResult")]
+    h_result: i32,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Communication_TurbineChat")]
 #[serde(tag = "Type")]
 pub enum CommunicationTurbineChat {
+    #[serde(rename = "0x01")]
+    Type1(CommunicationTurbineChatType1),
+    #[serde(rename = "0x03")]
+    Type3(CommunicationTurbineChatType3),
+    #[serde(rename = "0x05")]
+    Type5(CommunicationTurbineChatType5),
 }
 
 // DDD request for data

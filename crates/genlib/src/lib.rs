@@ -512,15 +512,6 @@ fn generate_variant_struct(
     out.push_str(&format!("{derives}\n"));
     out.push_str(&format!("pub struct {struct_name} {{\n"));
 
-    // Add common fields first (excluding the switch field itself, as serde uses it as the tag)
-    for field in &field_set.common_fields {
-        // Skip alignment marker fields - they're only for reading
-        if field.name != switch_field && !field.name.starts_with("__alignment_marker_") {
-            out.push_str(&generate_field_line(field, false)); // false = struct field
-            out.push_str(",\n");
-        }
-    }
-
     // Check if this case has a nested switch
     let has_nested_switch = if let Some(ref nested_switches) = field_set.nested_switches {
         nested_switches.contains_key(&case_value)
@@ -528,25 +519,39 @@ fn generate_variant_struct(
         false
     };
 
-    // Add variant-specific fields before the nested switch
-    // If there's a nested switch, skip the switch discriminator field (it will be part of the enum)
+    // Get the nested switch field name to skip it in common fields
     let nested_switch_field_name = if has_nested_switch {
         field_set
             .nested_switches
             .as_ref()
             .unwrap()
             .get(&case_value)
-            .map(|ns| ns.switch_field.as_str())
+            .map(|ns| ns.switch_field.clone())
     } else {
         None
     };
 
+    // Add common fields first (excluding the switch fields)
+    for field in &field_set.common_fields {
+        // Skip the outer switch field, nested switch field, and alignment marker fields
+        if field.name != switch_field
+            && Some(field.name.clone()) != nested_switch_field_name
+            && !field.name.starts_with("__alignment_marker_")
+        {
+            out.push_str(&generate_field_line(field, false)); // false = struct field
+            out.push_str(",\n");
+        }
+    }
+
+    // Add variant-specific fields before the nested switch
+    // We already have nested_switch_field_name from above
     for field in case_fields {
         // Skip the nested switch discriminator field - it will be represented by the enum
         // Also skip alignment marker fields - they're only for reading
-        if Some(field.name.as_str()) != nested_switch_field_name
-            && !field.name.starts_with("__alignment_marker_")
-        {
+        let skip_field = nested_switch_field_name
+            .as_ref()
+            .map_or(false, |nsf| nsf == &field.name);
+        if !skip_field && !field.name.starts_with("__alignment_marker_") {
             out.push_str(&generate_field_line(field, false));
             out.push_str(",\n");
         }
@@ -771,18 +776,71 @@ pub struct {type_name}{type_generics} {{}}\n\n"
 
     // Check if this is a variant type (has switch) or simple type
     if let Some(ref variant_fields) = field_set.variant_fields {
+        if type_name.contains("TurbineChat") {
+            use std::fs::OpenOptions;
+            use std::io::Write;
+            let mut file = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open("/tmp/turbine_debug.txt")
+                .unwrap();
+            writeln!(
+                file,
+                "DEBUG: Type {} has variant_fields with {} cases",
+                type_name,
+                variant_fields.len()
+            )
+            .unwrap();
+            for (case_val, fields) in variant_fields {
+                writeln!(file, "  Case {}: {} fields", case_val, fields.len()).unwrap();
+            }
+            writeln!(
+                file,
+                "DEBUG: Has nested_switches: {}",
+                field_set.nested_switches.is_some()
+            )
+            .unwrap();
+            if let Some(ref ns) = field_set.nested_switches {
+                writeln!(file, "  Nested switches for {} cases", ns.len()).unwrap();
+            }
+        }
         // First, generate all standalone variant structs
         let switch_field = field_set.switch_field.as_ref().unwrap();
+
+        // Collect all case values from both variant_fields and nested_switches
+        let mut all_case_values = std::collections::HashSet::new();
+        for case_value in variant_fields.keys() {
+            all_case_values.insert(*case_value);
+        }
+        if let Some(ref nested_switches) = field_set.nested_switches {
+            for case_value in nested_switches.keys() {
+                all_case_values.insert(*case_value);
+            }
+        }
 
         // Group case values by their field sets (to handle multi-value cases)
         let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
 
-        for (case_value, case_fields) in variant_fields {
-            let field_sig = case_fields
+        for case_value in &all_case_values {
+            let case_fields = variant_fields.get(case_value).cloned().unwrap_or_default();
+            let mut field_sig = case_fields
                 .iter()
                 .map(|f| format!("{}:{}", f.name, f.field_type))
                 .collect::<Vec<_>>()
                 .join(";");
+
+            // Include nested switch structure in signature to avoid grouping cases with different nested switches
+            if let Some(ref nested_switches) = field_set.nested_switches {
+                if let Some(nested_switch) = nested_switches.get(case_value) {
+                    // Add nested switch discriminator and case values to signature
+                    let nested_sig = format!(
+                        "__nested_{}_{:?}",
+                        nested_switch.switch_field,
+                        nested_switch.variant_fields.keys().collect::<Vec<_>>()
+                    );
+                    field_sig.push_str(&nested_sig);
+                }
+            }
 
             field_groups
                 .entry(field_sig)
@@ -799,15 +857,18 @@ pub struct {type_name}{type_generics} {{}}\n\n"
             let mut sorted_values = all_values.clone();
             sorted_values.sort();
             let first_value = sorted_values[0];
-            if let Some(case_fields) = variant_fields.get(&first_value) {
-                out.push_str(&generate_variant_struct(
-                    type_name,
-                    first_value,
-                    field_set,
-                    switch_field,
-                    case_fields,
-                ));
-            }
+            // Get case fields, or use empty vec if this case only has a nested switch
+            let case_fields = variant_fields
+                .get(&first_value)
+                .cloned()
+                .unwrap_or_default();
+            out.push_str(&generate_variant_struct(
+                type_name,
+                first_value,
+                field_set,
+                switch_field,
+                &case_fields,
+            ));
         }
 
         // Now generate the main enum that references these structs
@@ -1648,15 +1709,40 @@ fn generate_variant_struct_readers(
 ) -> String {
     let mut out = String::new();
 
+    // Collect all case values from both variant_fields and nested_switches
+    let mut all_case_values = std::collections::HashSet::new();
+    for case_value in variant_fields.keys() {
+        all_case_values.insert(*case_value);
+    }
+    if let Some(ref nested_switches) = field_set.nested_switches {
+        for case_value in nested_switches.keys() {
+            all_case_values.insert(*case_value);
+        }
+    }
+
     // Group case values by field signature (same as type generator)
     let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
 
-    for (case_value, case_fields) in variant_fields {
-        let field_sig = case_fields
+    for case_value in &all_case_values {
+        let case_fields = variant_fields.get(case_value).cloned().unwrap_or_default();
+        let mut field_sig = case_fields
             .iter()
             .map(|f| format!("{}:{}", f.name, f.field_type))
             .collect::<Vec<_>>()
             .join(";");
+
+        // Include nested switch structure in signature to avoid grouping cases with different nested switches
+        if let Some(ref nested_switches) = field_set.nested_switches {
+            if let Some(nested_switch) = nested_switches.get(case_value) {
+                // Add nested switch discriminator and case values to signature
+                let nested_sig = format!(
+                    "__nested_{}_{:?}",
+                    nested_switch.switch_field,
+                    nested_switch.variant_fields.keys().collect::<Vec<_>>()
+                );
+                field_sig.push_str(&nested_sig);
+            }
+        }
 
         field_groups
             .entry(field_sig)
@@ -1674,16 +1760,19 @@ fn generate_variant_struct_readers(
         sorted_values.sort();
         let first_value = sorted_values[0];
 
-        if let Some(case_fields) = variant_fields.get(&first_value) {
-            let variant_struct_name = generate_variant_struct_name(type_name, first_value);
-            out.push_str(&generate_variant_struct_reader_impl(
-                ctx,
-                &variant_struct_name,
-                field_set,
-                case_fields,
-                first_value,
-            ));
-        }
+        // Get case fields, or use empty vec if this case only has a nested switch
+        let case_fields = variant_fields
+            .get(&first_value)
+            .cloned()
+            .unwrap_or_default();
+        let variant_struct_name = generate_variant_struct_name(type_name, first_value);
+        out.push_str(&generate_variant_struct_reader_impl(
+            ctx,
+            &variant_struct_name,
+            field_set,
+            &case_fields,
+            first_value,
+        ));
     }
 
     // Generate a reader for the main enum that delegates to variant structs
@@ -1748,15 +1837,40 @@ fn generate_enum_reader_impl(
         .find(|f| f.name == *switch_field)
         .map(|f| &f.field_type);
 
+    // Collect all case values from both variant_fields and nested_switches
+    let mut all_case_values = std::collections::HashSet::new();
+    for case_value in variant_fields.keys() {
+        all_case_values.insert(*case_value);
+    }
+    if let Some(ref nested_switches) = field_set.nested_switches {
+        for case_value in nested_switches.keys() {
+            all_case_values.insert(*case_value);
+        }
+    }
+
     // Group case values by field signature
     let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
 
-    for (case_value, case_fields) in variant_fields {
-        let field_sig = case_fields
+    for case_value in &all_case_values {
+        let case_fields = variant_fields.get(case_value).cloned().unwrap_or_default();
+        let mut field_sig = case_fields
             .iter()
             .map(|f| format!("{}:{}", f.name, f.field_type))
             .collect::<Vec<_>>()
             .join(";");
+
+        // Include nested switch structure in signature to avoid grouping cases with different nested switches
+        if let Some(ref nested_switches) = field_set.nested_switches {
+            if let Some(nested_switch) = nested_switches.get(case_value) {
+                // Add nested switch discriminator and case values to signature
+                let nested_sig = format!(
+                    "__nested_{}_{:?}",
+                    nested_switch.switch_field,
+                    nested_switch.variant_fields.keys().collect::<Vec<_>>()
+                );
+                field_sig.push_str(&nested_sig);
+            }
+        }
 
         field_groups
             .entry(field_sig)
@@ -1815,10 +1929,22 @@ fn generate_enum_reader_impl(
 
         // Build the common fields argument list for the variant struct reader
         // Exclude the switch field since it's already been read and matched
+        // Also exclude the nested switch field if this case has one
         let mut common_field_args = Vec::new();
         let switch_field = field_set.switch_field.as_ref().unwrap();
+        let nested_switch_field = if let Some(ref nested_switches) = field_set.nested_switches {
+            nested_switches
+                .get(&first_value)
+                .map(|ns| ns.switch_field.clone())
+        } else {
+            None
+        };
         for field in &field_set.common_fields {
-            if field.name != *switch_field {
+            let skip_field = field.name == *switch_field
+                || nested_switch_field
+                    .as_ref()
+                    .map_or(false, |nsf| nsf == &field.name);
+            if !skip_field {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 common_field_args.push(field_name);
             }
@@ -1866,11 +1992,35 @@ fn generate_variant_struct_reader_impl(
 
     out.push_str(&format!("impl {struct_name} {{\n"));
 
+    // Check if this case has a nested switch and get its field name early
+    let has_nested_switch = if let Some(ref nested_switches) = field_set.nested_switches {
+        nested_switches.contains_key(&case_value)
+    } else {
+        false
+    };
+
+    // Get the nested switch field name if exists (as Option<String> for easier comparisons)
+    let nested_switch_field_name = if has_nested_switch {
+        field_set
+            .nested_switches
+            .as_ref()
+            .unwrap()
+            .get(&case_value)
+            .map(|ns| ns.switch_field.clone())
+    } else {
+        None
+    };
+
     // Build function signature with common fields as parameters
     let mut params = vec!["reader: &mut dyn ACReader".to_string()];
     let switch_field = field_set.switch_field.as_ref().unwrap();
     for field in &field_set.common_fields {
-        if field.name != *switch_field {
+        // Skip both the outer switch field and the nested switch field
+        let skip_field = field.name == *switch_field
+            || nested_switch_field_name
+                .as_ref()
+                .map_or(false, |nsf| nsf == &field.name);
+        if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let field_type = &field.field_type;
             params.push(format!("{}: {}", field_name, field_type));
@@ -1885,28 +2035,13 @@ fn generate_variant_struct_reader_impl(
 
     // Don't read common fields - they're passed in as parameters
 
-    // Check if this case has a nested switch
-    let has_nested_switch = if let Some(ref nested_switches) = field_set.nested_switches {
-        nested_switches.contains_key(&case_value)
-    } else {
-        false
-    };
-
     // Read variant-specific fields
-    let nested_switch_field_name = if has_nested_switch {
-        field_set
-            .nested_switches
-            .as_ref()
-            .unwrap()
-            .get(&case_value)
-            .map(|ns| ns.switch_field.as_str())
-    } else {
-        None
-    };
-
     for field in case_fields {
         // Skip the nested switch discriminator field
-        if Some(field.name.as_str()) != nested_switch_field_name {
+        let skip_field = nested_switch_field_name
+            .as_ref()
+            .map_or(false, |nsf| nsf == &field.name);
+        if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let mut all_fields = field_set.common_fields.clone();
             all_fields.extend(case_fields.iter().cloned());
@@ -1968,8 +2103,13 @@ fn generate_variant_struct_reader_impl(
     out.push_str("\n        Ok(Self {\n");
 
     for field in &field_set.common_fields {
-        // Skip switch field and alignment marker fields
-        if field.name != *switch_field && !field.name.starts_with("__alignment_marker_") {
+        // Skip the outer switch field, nested switch field, and alignment marker fields
+        let skip_field = field.name == *switch_field
+            || nested_switch_field_name
+                .as_ref()
+                .map_or(false, |nsf| nsf == &field.name)
+            || field.name.starts_with("__alignment_marker_");
+        if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             out.push_str(&format!("            {},\n", field_name));
         }
@@ -1977,9 +2117,11 @@ fn generate_variant_struct_reader_impl(
 
     for field in case_fields {
         // Skip nested switch field and alignment marker fields
-        if Some(field.name.as_str()) != nested_switch_field_name
-            && !field.name.starts_with("__alignment_marker_")
-        {
+        let skip_field = nested_switch_field_name
+            .as_ref()
+            .map_or(false, |nsf| nsf == &field.name)
+            || field.name.starts_with("__alignment_marker_");
+        if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             out.push_str(&format!("            {},\n", field_name));
         }
