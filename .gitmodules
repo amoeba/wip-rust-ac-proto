@@ -1,3 +1,4 @@
 [submodule "ACProtocol"]
 	path = ACProtocol
-	url = https://github.com/ACClientLib/ACProtocol
+	url = https://github.com/amoeba/ACProtocol
+	branch = overrides
