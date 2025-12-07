@@ -485,21 +485,35 @@ fn process_type_tag(
     }
 }
 
-pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
+pub struct GeneratedCode {
+    pub common: String,
+    pub c2s: String,
+    pub s2c: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum MessageDirection {
+    None,
+    C2S,            // <c2s> in messages section
+    S2C,            // <s2c> in messages section
+    GameActions,    // <gameactions> section (C2S)
+    GameEvents,     // <gameevents> section (S2C)
+}
+
+pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> GeneratedCode {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
-    let mut out = String::new();
 
-    // Add preamble with necessary imports
-    out.push_str("use serde::{Serialize, Deserialize};\n\n");
-
-    let mut types: Vec<ProtocolType> = Vec::new();
+    let mut common_types: Vec<ProtocolType> = Vec::new();
+    let mut c2s_types: Vec<ProtocolType> = Vec::new();
+    let mut s2c_types: Vec<ProtocolType> = Vec::new();
     let mut enums: Vec<ProtocolEnum> = Vec::new();
     let mut current_type: Option<ProtocolType> = None;
     let mut current_enum: Option<ProtocolEnum> = None;
     let mut current_field_set: Option<FieldSet> = None;
     let mut current_case_values: Option<Vec<String>> = None;
     let mut in_switch = false;
+    let mut current_direction = MessageDirection::None;
 
     loop {
         let event = reader.read_event_into(&mut buf);
@@ -509,11 +523,28 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                 let tag_name =
                     std::str::from_utf8(e.name().0).expect("Failed to to decode tag name");
 
-                if tag_name == "type" {
+                if tag_name == "c2s" {
+                    current_direction = MessageDirection::C2S;
+                    debug!("Entered c2s section");
+                } else if tag_name == "s2c" {
+                    current_direction = MessageDirection::S2C;
+                    debug!("Entered s2c section");
+                } else if tag_name == "gameactions" {
+                    current_direction = MessageDirection::GameActions;
+                    debug!("Entered gameactions section");
+                } else if tag_name == "gameevents" {
+                    current_direction = MessageDirection::GameEvents;
+                    debug!("Entered gameevents section");
+                } else if tag_name == "type" {
+                    let types_vec = match current_direction {
+                        MessageDirection::C2S | MessageDirection::GameActions => &mut c2s_types,
+                        MessageDirection::S2C | MessageDirection::GameEvents => &mut s2c_types,
+                        MessageDirection::None => &mut common_types,
+                    };
                     process_type_tag(
                         &e,
                         false,
-                        &mut types,
+                        types_vec,
                         &mut current_type,
                         &mut current_field_set,
                         &filter_types,
@@ -533,10 +564,15 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     std::str::from_utf8(e.name().0).expect("Failed to to decode tag name");
 
                 if tag_name == "type" {
+                    let types_vec = match current_direction {
+                        MessageDirection::C2S | MessageDirection::GameActions => &mut c2s_types,
+                        MessageDirection::S2C | MessageDirection::GameEvents => &mut s2c_types,
+                        MessageDirection::None => &mut common_types,
+                    };
                     process_type_tag(
                         &e,
                         true,
-                        &mut types,
+                        types_vec,
                         &mut current_type,
                         &mut current_field_set,
                         &filter_types,
@@ -554,8 +590,13 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                         if !ty.is_primitive {
                             ty.fields = current_field_set.take();
                         }
-                        types.push(ty);
-                        debug!("DONE: {types:?}");
+                        let types_vec = match current_direction {
+                            MessageDirection::C2S | MessageDirection::GameActions => &mut c2s_types,
+                            MessageDirection::S2C | MessageDirection::GameEvents => &mut s2c_types,
+                            MessageDirection::None => &mut common_types,
+                        };
+                        types_vec.push(ty);
+                        debug!("DONE with type in {:?} section", current_direction);
                     }
                     in_switch = false;
                     current_case_values = None;
@@ -564,6 +605,18 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
                     if let Some(en) = current_enum.take() {
                         enums.push(en);
                     }
+                } else if e.name().as_ref() == b"c2s" {
+                    current_direction = MessageDirection::None;
+                    debug!("Exited c2s section");
+                } else if e.name().as_ref() == b"s2c" {
+                    current_direction = MessageDirection::None;
+                    debug!("Exited s2c section");
+                } else if e.name().as_ref() == b"gameactions" {
+                    current_direction = MessageDirection::None;
+                    debug!("Exited gameactions section");
+                } else if e.name().as_ref() == b"gameevents" {
+                    current_direction = MessageDirection::None;
+                    debug!("Exited gameevents section");
                 } else if e.name().as_ref() == b"switch" {
                     in_switch = false;
                     debug!("Exited switch");
@@ -578,31 +631,61 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> String {
         buf.clear();
     }
 
-    // Generate code for all enums
+    // Helper function to generate code for a list of types
+    let generate_types_code = |types: &Vec<ProtocolType>| -> String {
+        let mut out = String::new();
+        out.push_str("use serde::{Serialize, Deserialize};\n\n");
+
+        for protocol_type in types {
+            if protocol_type.is_primitive {
+                // Generate type alias for primitive types
+                let type_name = &protocol_type.name;
+                let rust_type = get_rust_type(type_name);
+
+                // Only generate alias if the rust type differs from the XML type name
+                if rust_type != type_name {
+                    if let Some(ref text) = protocol_type.text {
+                        out.push_str(&format!("/// {text}\n"));
+                    }
+                    out.push_str(&format!(
+                        "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
+                    ));
+                }
+            } else {
+                out.push_str(&generate_type(protocol_type));
+            }
+        }
+        out
+    };
+
+    // Generate common code (enums and common types)
+    let mut common_out = String::new();
+    common_out.push_str("use serde::{Serialize, Deserialize};\n\n");
+
     for protocol_enum in &enums {
-        out.push_str(&generate_enum(protocol_enum));
+        common_out.push_str(&generate_enum(protocol_enum));
     }
 
-    // Generate code for all types
-    for protocol_type in &types {
+    for protocol_type in &common_types {
         if protocol_type.is_primitive {
-            // Generate type alias for primitive types
             let type_name = &protocol_type.name;
             let rust_type = get_rust_type(type_name);
-
-            // Only generate alias if the rust type differs from the XML type name
             if rust_type != type_name {
                 if let Some(ref text) = protocol_type.text {
-                    out.push_str(&format!("/// {text}\n"));
+                    common_out.push_str(&format!("/// {text}\n"));
                 }
-                out.push_str(&format!(
+                common_out.push_str(&format!(
                     "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
                 ));
             }
         } else {
-            out.push_str(&generate_type(protocol_type));
+            common_out.push_str(&generate_type(protocol_type));
         }
     }
 
-    out
+    GeneratedCode {
+        common: common_out,
+        c2s: generate_types_code(&c2s_types),
+        s2c: generate_types_code(&s2c_types),
+    }
 }

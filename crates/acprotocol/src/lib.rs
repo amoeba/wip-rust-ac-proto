@@ -1,6 +1,16 @@
 use std::{error::Error, io::Read};
 
-include!("generated.rs");
+pub mod generated {
+    pub mod common {
+        include!("generated/common.rs");
+    }
+    pub mod c2s {
+        include!("generated/c2s.rs");
+    }
+    pub mod s2c {
+        include!("generated/s2c.rs");
+    }
+}
 
 // WIP: this is what I want to generate for a type that uses a switch like
 // GameMoveData. This code is just testing that out.
@@ -26,70 +36,70 @@ include!("generated.rs");
 // 	</switch>
 // </type>
 
-type ObjectId = i32;
+// type ObjectId = i32;
 
-#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
-#[serde(tag = "Type")]
-pub enum GameMoveDataEx {
-    #[serde(rename = "0x4")]
-    Type4 {
-        player_id: ObjectId,
-        team: i32,
-        id_piece_to_move: i32,
-        y_grid: i32,
-    },
-    #[serde(rename = "0x5")]
-    Type5 {
-        player_id: ObjectId,
-        team: i32,
-        id_piece_to_move: i32,
-        y_grid: i32,
-        x_to: i32,
-        y_to: i32,
-    },
-    #[serde(rename = "0x6")]
-    Type6 {
-        player_id: ObjectId,
-        team: i32,
-        id_piece_to_move: i32,
-    },
-}
+// #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+// #[serde(tag = "Type")]
+// pub enum GameMoveDataEx {
+//     #[serde(rename = "0x4")]
+//     Type4 {
+//         player_id: ObjectId,
+//         team: i32,
+//         id_piece_to_move: i32,
+//         y_grid: i32,
+//     },
+//     #[serde(rename = "0x5")]
+//     Type5 {
+//         player_id: ObjectId,
+//         team: i32,
+//         id_piece_to_move: i32,
+//         y_grid: i32,
+//         x_to: i32,
+//         y_to: i32,
+//     },
+//     #[serde(rename = "0x6")]
+//     Type6 {
+//         player_id: ObjectId,
+//         team: i32,
+//         id_piece_to_move: i32,
+//     },
+// }
 
-fn read_game_move_data(reader: &mut impl Read) -> Result<GameMoveDataEx, Box<dyn Error>> {
-    let move_type = read_i32(reader)?;
-    let player_id = read_object_id(reader)?;
-    let team = read_i32(reader)?;
+// fn read_game_move_data(reader: &mut impl Read) -> Result<GameMoveDataEx, Box<dyn Error>> {
+//     let move_type = read_i32(reader)?;
+//     let player_id = read_object_id(reader)?;
+//     let team = read_i32(reader)?;
 
-    let result = match move_type {
-        0x4 => GameMoveDataEx::Type4 {
-            player_id,
-            team,
-            id_piece_to_move: read_i32(reader)?,
-            y_grid: read_i32(reader)?,
-        },
-        0x5 => GameMoveDataEx::Type5 {
-            player_id,
-            team,
-            id_piece_to_move: read_i32(reader)?,
-            y_grid: read_i32(reader)?,
-            x_to: read_i32(reader)?,
-            y_to: read_i32(reader)?,
-        },
-        0x6 => GameMoveDataEx::Type6 {
-            player_id,
-            team,
-            id_piece_to_move: read_i32(reader)?,
-        },
-        _ => panic!("Unknown move type: {:#x}", move_type),
-    };
+//     let result = match move_type {
+//         0x4 => GameMoveDataEx::Type4 {
+//             player_id,
+//             team,
+//             id_piece_to_move: read_i32(reader)?,
+//             y_grid: read_i32(reader)?,
+//         },
+//         0x5 => GameMoveDataEx::Type5 {
+//             player_id,
+//             team,
+//             id_piece_to_move: read_i32(reader)?,
+//             y_grid: read_i32(reader)?,
+//             x_to: read_i32(reader)?,
+//             y_to: read_i32(reader)?,
+//         },
+//         0x6 => GameMoveDataEx::Type6 {
+//             player_id,
+//             team,
+//             id_piece_to_move: read_i32(reader)?,
+//         },
+//         _ => panic!("Unknown move type: {:#x}", move_type),
+//     };
 
-    Ok(result)
-}
+//     Ok(result)
+// }
 
-fn read_object_id(reader: &mut impl Read) -> Result<ObjectId, Box<dyn Error>> {
-    todo!()
-}
+// fn read_object_id(reader: &mut impl Read) -> Result<ObjectId, Box<dyn Error>> {
+//     todo!()
+// }
 
-fn read_i32(reader: &mut impl Read) -> Result<i32, Box<dyn Error>> {
-    todo!()
-}
+// fn read_i32(reader: &mut impl Read) -> Result<i32, Box<dyn Error>> {
+//     todo!()
+// }

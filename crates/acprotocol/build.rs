@@ -7,7 +7,13 @@ fn main() {
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
     let protocol_path = workspace_root.join("ACProtocol/protocol.xml");
-    let dest_path = manifest_dir.join("src/generated.rs");
+
+    let generated_dir = manifest_dir.join("src/generated");
+    fs::create_dir_all(&generated_dir).unwrap();
+
+    let common_path = generated_dir.join("common.rs");
+    let c2s_path = generated_dir.join("c2s.rs");
+    let s2c_path = generated_dir.join("s2c.rs");
 
     // Commented out for testing
     // println!("cargo:rerun-if-changed={}", protocol_path.display());
@@ -25,5 +31,8 @@ fn main() {
 
     let xml = fs::read_to_string(&protocol_path).unwrap();
     let generated_code = genlib::generate(&xml, filter_types);
-    fs::write(dest_path, generated_code).unwrap();
+
+    fs::write(common_path, generated_code.common).unwrap();
+    fs::write(c2s_path, generated_code.c2s).unwrap();
+    fs::write(s2c_path, generated_code.s2c).unwrap();
 }
