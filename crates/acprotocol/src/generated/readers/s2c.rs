@@ -3084,7 +3084,7 @@ impl CharacterCharGenVerificationResponse {
 
         match response_type {
             CharGenResponseType::OK => {
-                let variant_struct = CharacterCharGenVerificationResponseType1::read(reader, )?;
+                let variant_struct = CharacterCharGenVerificationResponseType1::read(reader)?;
                 Ok(Self::Type1(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "response_type", response_type).into()),

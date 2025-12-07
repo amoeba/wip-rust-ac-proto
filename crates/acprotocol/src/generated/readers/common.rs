@@ -1964,31 +1964,31 @@ impl WindowProperty {
 
         match key_a {
             0x1000007F => {
-                let variant_struct = WindowPropertyType1000007F::read(reader, )?;
+                let variant_struct = WindowPropertyType1000007F::read(reader)?;
                 Ok(Self::Type1000007F(variant_struct))
             },
             0x10000086 => {
-                let variant_struct = WindowPropertyType10000086::read(reader, )?;
+                let variant_struct = WindowPropertyType10000086::read(reader)?;
                 Ok(Self::Type10000086(variant_struct))
             },
             0x10000087 => {
-                let variant_struct = WindowPropertyType10000087::read(reader, )?;
+                let variant_struct = WindowPropertyType10000087::read(reader)?;
                 Ok(Self::Type10000087(variant_struct))
             },
             0x10000088 => {
-                let variant_struct = WindowPropertyType10000088::read(reader, )?;
+                let variant_struct = WindowPropertyType10000088::read(reader)?;
                 Ok(Self::Type10000088(variant_struct))
             },
             0x10000089 => {
-                let variant_struct = WindowPropertyType10000089::read(reader, )?;
+                let variant_struct = WindowPropertyType10000089::read(reader)?;
                 Ok(Self::Type10000089(variant_struct))
             },
             0x1000008A => {
-                let variant_struct = WindowPropertyType1000008A::read(reader, )?;
+                let variant_struct = WindowPropertyType1000008A::read(reader)?;
                 Ok(Self::Type1000008A(variant_struct))
             },
             0x1000008D => {
-                let variant_struct = WindowPropertyType1000008D::read(reader, )?;
+                let variant_struct = WindowPropertyType1000008D::read(reader)?;
                 Ok(Self::Type1000008D(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "key_a", key_a).into()),
@@ -2022,7 +2022,7 @@ impl WindowOption {
 
         match type_a {
             0x1000008B => {
-                let variant_struct = WindowOptionType1000008B::read(reader, )?;
+                let variant_struct = WindowOptionType1000008B::read(reader)?;
                 Ok(Self::Type1000008B(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "type_a", type_a).into()),
@@ -2078,15 +2078,15 @@ impl OptionProperty {
 
         match type_ {
             0x10000080 => {
-                let variant_struct = OptionPropertyType10000080::read(reader, )?;
+                let variant_struct = OptionPropertyType10000080::read(reader)?;
                 Ok(Self::Type10000080(variant_struct))
             },
             0x10000081 => {
-                let variant_struct = OptionPropertyType10000081::read(reader, )?;
+                let variant_struct = OptionPropertyType10000081::read(reader)?;
                 Ok(Self::Type10000081(variant_struct))
             },
             0x1000008C => {
-                let variant_struct = OptionPropertyType1000008C::read(reader, )?;
+                let variant_struct = OptionPropertyType1000008C::read(reader)?;
                 Ok(Self::Type1000008C(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),

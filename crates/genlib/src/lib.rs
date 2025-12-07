@@ -1775,10 +1775,14 @@ fn generate_enum_reader_impl(
                 common_field_args.push(field_name);
             }
         }
-        let args_str = common_field_args.join(", ");
+        let args_str = if common_field_args.is_empty() {
+            String::new()
+        } else {
+            format!(", {}", common_field_args.join(", "))
+        };
         
         out.push_str(&format!(
-            "                let variant_struct = {variant_struct_name}::read(reader, {})?;\n",
+            "                let variant_struct = {variant_struct_name}::read(reader{})?;\n",
             args_str
         ));
         out.push_str(&format!(
