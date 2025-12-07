@@ -130,68 +130,58 @@ fn generate_enum(protocol_enum: &ProtocolEnum) -> String {
         out.push_str(&format!("/// {text_str}\n"));
     }
 
-    // For mask enums, generate as a struct with bitflags
-    if protocol_enum.is_mask {
-        let derives = build_derive_string(&protocol_enum.extra_derives);
-        out.push_str(&format!(
-            "{}\npub struct {enum_name} {{\n        pub bits: {},\n}}\n\n",
-            derives,
-            get_rust_type(&protocol_enum.parent)
-        ));
-    } else {
-        // Generate regular enum
-        let derives = build_derive_string(&protocol_enum.extra_derives);
-        out.push_str(&format!("{}\npub enum ", derives));
-        out.push_str(enum_name);
-        out.push_str(" {\n");
+    // Generate all enums as regular enums (including mask enums)
+    let derives = build_derive_string(&protocol_enum.extra_derives);
+    out.push_str(&format!("{}\npub enum ", derives));
+    out.push_str(enum_name);
+    out.push_str(" {\n");
 
-        for enum_value in &protocol_enum.values {
-            let original_name = &enum_value.name;
+    for enum_value in &protocol_enum.values {
+        let original_name = &enum_value.name;
 
-            // Generate variant name - convert to PascalCase if it has underscores
-            let variant_name = if original_name.starts_with("0x") {
-                format!("Type{}", &original_name[2..])
+        // Generate variant name - convert to PascalCase if it has underscores
+        let variant_name = if original_name.starts_with("0x") {
+            format!("Type{}", &original_name[2..])
+        } else {
+            original_name.clone()
+        };
+
+        // Check if variant name is a reserved word or needs conversion
+        let safe_variant = safe_enum_variant_name(&variant_name);
+
+        // Determine if we need serde rename (if the safe name differs from original)
+        let needs_serde_rename = safe_variant.name != *original_name;
+
+        if enum_value.value.starts_with("0x") {
+            // Hex value
+            if needs_serde_rename {
+                out.push_str(&format!(
+                    "    #[serde(rename = \"{}\")]\n    {} = {},\n",
+                    original_name, safe_variant.name, enum_value.value
+                ));
             } else {
-                original_name.clone()
-            };
-
-            // Check if variant name is a reserved word or needs conversion
-            let safe_variant = safe_enum_variant_name(&variant_name);
-
-            // Determine if we need serde rename (if the safe name differs from original)
-            let needs_serde_rename = safe_variant.name != *original_name;
-
-            if enum_value.value.starts_with("0x") {
-                // Hex value
-                if needs_serde_rename {
-                    out.push_str(&format!(
-                        "    #[serde(rename = \"{}\")]\n    {} = {},\n",
-                        original_name, safe_variant.name, enum_value.value
-                    ));
-                } else {
-                    out.push_str(&format!(
-                        "    {} = {},\n",
-                        safe_variant.name, enum_value.value
-                    ));
-                }
+                out.push_str(&format!(
+                    "    {} = {},\n",
+                    safe_variant.name, enum_value.value
+                ));
+            }
+        } else {
+            // Decimal value
+            if needs_serde_rename {
+                out.push_str(&format!(
+                    "    #[serde(rename = \"{}\")]\n    {} = {},\n",
+                    original_name, safe_variant.name, enum_value.value
+                ));
             } else {
-                // Decimal value
-                if needs_serde_rename {
-                    out.push_str(&format!(
-                        "    #[serde(rename = \"{}\")]\n    {} = {},\n",
-                        original_name, safe_variant.name, enum_value.value
-                    ));
-                } else {
-                    out.push_str(&format!(
-                        "    {} = {},\n",
-                        safe_variant.name, enum_value.value
-                    ));
-                }
+                out.push_str(&format!(
+                    "    {} = {},\n",
+                    safe_variant.name, enum_value.value
+                ));
             }
         }
-
-        out.push_str("}\n\n");
     }
+
+    out.push_str("}\n\n");
 
     out
 }

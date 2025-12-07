@@ -1,8 +1,30 @@
 use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PacketHeaderFlags {
-        pub bits: u32,
+pub enum PacketHeaderFlags {
+    None = 0x00000000,
+    Retransmission = 0x00000001,
+    EncryptedChecksum = 0x00000002,
+    BlobFragments = 0x00000004,
+    ServerSwitch = 0x00000100,
+    LogonServerAddr = 0x00000200,
+    EmptyHeader1 = 0x00000400,
+    Referral = 0x00000800,
+    RequestRetransmit = 0x00001000,
+    RejectRetransmit = 0x00002000,
+    AckSequence = 0x00004000,
+    Disconnect = 0x00008000,
+    LoginRequest = 0x00010000,
+    WorldLoginRequest = 0x00020000,
+    ConnectRequest = 0x00040000,
+    ConnectResponse = 0x00080000,
+    NetError = 0x00100000,
+    NetErrorDisconnect = 0x00200000,
+    CICMDCommand = 0x00400000,
+    TimeSync = 0x01000000,
+    EchoRequest = 0x02000000,
+    EchoResponse = 0x04000000,
+    Flow = 0x08000000,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -47,7 +69,6 @@ pub enum GameMessageGroup {
     SecureLogin = 0x0008,
     UIQueue = 0x0009,
     SmartBox = 0x000A,
-    Observer = 0x0008,
 }
 
 /// Client to Server message opcodes
@@ -875,8 +896,16 @@ pub enum WeenieType {
 
 /// Flags that dictate what property tables are included with the ACBaseQuali
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ACBaseQualitiesFlags {
-        pub bits: u32,
+pub enum ACBaseQualitiesFlags {
+    None = 0x0000,
+    PropertyInt = 0x0001,
+    PropertyBool = 0x0002,
+    PropertyFloat = 0x0004,
+    PropertyDataId = 0x0008,
+    PropertyString = 0x0010,
+    PropertyPosition = 0x0020,
+    PropertyInstanceId = 0x0040,
+    PropertyInt64 = 0x0080,
 }
 
 /// Set of predefined error messages that accept interpolated string argument
@@ -1439,8 +1468,14 @@ pub enum WeenieError {
 
 /// The PositionFlags value defines the fields present in the Position structure.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PositionFlags {
-        pub bits: u32,
+pub enum PositionFlags {
+    HasVelocity = 0x0001,
+    HasPlacementId = 0x0002,
+    IsGrounded = 0x0004,
+    OrientationHasNoW = 0x0008,
+    OrientationHasNoX = 0x0010,
+    OrientationHasNoY = 0x0020,
+    OrientationHasNoZ = 0x0040,
 }
 
 /// Height of the attack.  TODO these need to be verified.
@@ -1481,8 +1516,38 @@ pub enum AttackType {
 
 /// The objects type information
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ItemType {
-        pub bits: u32,
+pub enum ItemType {
+    MeleeWeapon = 0x00000001,
+    Armor = 0x00000002,
+    Clothing = 0x00000004,
+    Jewelry = 0x00000008,
+    Creature = 0x00000010,
+    Food = 0x00000020,
+    Money = 0x00000040,
+    Misc = 0x00000080,
+    MissileWeapon = 0x00000100,
+    Container = 0x00000200,
+    Useless = 0x00000400,
+    Gem = 0x00000800,
+    SpellComponents = 0x00001000,
+    Writable = 0x00002000,
+    Key = 0x00004000,
+    Caster = 0x00008000,
+    Portal = 0x00010000,
+    Lockable = 0x00020000,
+    PromissoryNote = 0x00040000,
+    ManaStone = 0x00080000,
+    Service = 0x00100000,
+    MagicWieldable = 0x00200000,
+    CraftCookingBase = 0x00400000,
+    CraftAlchemyBase = 0x00800000,
+    CraftFletchingBase = 0x02000000,
+    CraftAlchemyIntermediate = 0x04000000,
+    CraftFletchingIntermediate = 0x08000000,
+    LifeStone = 0x10000000,
+    TinkeringTool = 0x20000000,
+    TinkeringMaterial = 0x40000000,
+    Gameboard = 0x80000000,
 }
 
 /// The Skill identifies a specific Character skill.
@@ -1567,8 +1632,6 @@ pub enum PropertyAttribute2nd {
 pub enum EmoteType {
     #[serde(rename = "Invalid_EmoteType")]
     InvalidEmoteType = 0x00,
-    #[serde(rename = "Invalid_VendorEmoteType")]
-    InvalidVendorEmoteType = 0x00,
     #[serde(rename = "Act_EmoteType")]
     ActEmoteType = 0x01,
     #[serde(rename = "AwardXP_EmoteType")]
@@ -1898,32 +1961,128 @@ pub enum EmoteCategory {
 
 /// The CharacterOptions1 word contains character options.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CharacterOptions1 {
-        pub bits: u32,
+pub enum CharacterOptions1 {
+    AutoRepeatAttack = 0x00000002,
+    IgnoreAllegianceRequests = 0x00000004,
+    IgnoreFellowshipRequests = 0x00000008,
+    NotUsed2 = 0x00000010,
+    NotUsed3 = 0x00000020,
+    AllowGive = 0x00000040,
+    ViewCombatTarget = 0x00000080,
+    ShowTooltips = 0x00000100,
+    UseDeception = 0x00000200,
+    ToggleRun = 0x00000400,
+    StayInChatMode = 0x00000800,
+    AdvancedCombatUI = 0x00001000,
+    AutoTarget = 0x00002000,
+    NotUsed4 = 0x00004000,
+    VividTargetingIndicator = 0x00008000,
+    DisableMostWeatherEffects = 0x00010000,
+    IgnoreTradeRequests = 0x00020000,
+    FellowshipShareXP = 0x00040000,
+    AcceptLootPermits = 0x00080000,
+    FellowshipShareLoot = 0x00100000,
+    SideBySideVitals = 0x00200000,
+    CoordinatesOnRadar = 0x00400000,
+    SpellDuration = 0x00800000,
+    NotUsed5 = 0x01000000,
+    DisableHouseRestrictionEffects = 0x02000000,
+    DragItemOnPlayerOpensSecureTrade = 0x04000000,
+    DisplayAllegianceLogonNotifications = 0x08000000,
+    UseChargeAttack = 0x10000000,
+    AutoAcceptFellowRequest = 0x20000000,
+    HearAllegianceChat = 0x40000000,
+    UseCraftSuccessDialog = 0x80000000,
 }
 
 /// The CharacterOptions2 word contains additional character options.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CharacterOptions2 {
-        pub bits: u32,
+pub enum CharacterOptions2 {
+    PersistentAtDay = 0x00000001,
+    DisplayDateOfBirth = 0x00000002,
+    DisplayChessRank = 0x00000004,
+    DisplayFishingSkill = 0x00000008,
+    DisplayNumberDeaths = 0x00000010,
+    DisplayAge = 0x00000020,
+    TimeStamp = 0x00000040,
+    SalvageMultiple = 0x00000080,
+    HearGeneralChat = 0x00000100,
+    HearTradeChat = 0x00000200,
+    HearLFGChat = 0x00000400,
+    HearRoleplayChat = 0x00000800,
+    AppearOffline = 0x00001000,
+    DisplayNumberCharacterTitles = 0x00002000,
+    MainPackPreferred = 0x00004000,
+    LeadMissileTargets = 0x00008000,
+    UseFastMissiles = 0x00010000,
+    FilterLanguage = 0x00020000,
+    ConfirmVolatileRareUse = 0x00040000,
+    HearSocietyChat = 0x00080000,
+    ShowHelm = 0x00100000,
+    DisableDistanceFog = 0x00200000,
+    UseMouseTurning = 0x00400000,
+    ShowCloak = 0x00800000,
+    LockUI = 0x01000000,
+    HearPKDeath = 0x02000000,
 }
 
 /// The various options for filtering the spellbook
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct SpellBookFilterOptions {
-        pub bits: u32,
+pub enum SpellBookFilterOptions {
+    None = 0x00000000,
+    Creature = 0x00000001,
+    Item = 0x00000002,
+    Life = 0x00000004,
+    War = 0x00000008,
+    Level1 = 0x00000010,
+    Level2 = 0x00000020,
+    Level3 = 0x00000040,
+    Level4 = 0x00000080,
+    Level5 = 0x00000100,
+    Level6 = 0x00000200,
+    Level7 = 0x00000400,
+    Level8 = 0x00000800,
+    Level9 = 0x00001000,
+    Void = 0x00002000,
 }
 
 /// The EquipMask value describes the equipment slots an item uses.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EquipMask {
-        pub bits: u32,
+pub enum EquipMask {
+    Head = 0x00000001,
+    ChestUnderwear = 0x00000002,
+    AbdomenUnderwear = 0x00000004,
+    UpperArmsUnderwear = 0x00000008,
+    LowerArmsUnderwear = 0x00000010,
+    Hands = 0x00000020,
+    UpperLegsUnderwear = 0x00000040,
+    LowerLegsUnderwear = 0x00000080,
+    Feet = 0x00000100,
+    Chest = 0x00000200,
+    Abdomen = 0x00000400,
+    UpperArms = 0x00000800,
+    LowerArms = 0x00001000,
+    UpperLegs = 0x00002000,
+    LowerLegs = 0x00004000,
+    Necklace = 0x00008000,
+    RightBracelet = 0x00010000,
+    LeftBracelet = 0x00020000,
+    RightRing = 0x00040000,
+    LeftRing = 0x00080000,
+    MeleeWeapon = 0x00100000,
+    Shield = 0x00200000,
+    MissileWeapon = 0x00400000,
+    Ammunition = 0x00800000,
+    Wand = 0x01000000,
 }
 
 /// The type of the friend change event.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct FriendsUpdateType {
-        pub bits: u32,
+pub enum FriendsUpdateType {
+    Full = 0x0000,
+    Added = 0x0001,
+    Removed = 0x0002,
+    LoginChange = 0x0004,
 }
 
 /// The permission levels that can be given to an allegiance officer
@@ -1985,8 +2144,11 @@ pub enum CurVitalId {
 
 /// The combat mode for a character or monster.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CombatMode {
-        pub bits: u32,
+pub enum CombatMode {
+    NonCombat = 0x1,
+    Melee = 0x2,
+    Missle = 0x4,
+    Magic = 0x8,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2264,32 +2426,97 @@ pub enum ChatFragmentType {
 
 /// Flags related to the use of the item.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ObjectDescriptionFlag {
-        pub bits: u32,
+pub enum ObjectDescriptionFlag {
+    Openable = 0x00000001,
+    Inscribable = 0x00000002,
+    Stuck = 0x00000004,
+    Player = 0x00000008,
+    Attackable = 0x00000010,
+    PlayerKiller = 0x00000020,
+    HiddenAdmin = 0x00000040,
+    UiHidden = 0x00000080,
+    Book = 0x00000100,
+    Vendor = 0x00000200,
+    PkSwitch = 0x00000400,
+    NpkSwitch = 0x00000800,
+    Door = 0x00001000,
+    Corpse = 0x00002000,
+    LifeStone = 0x00004000,
+    Food = 0x00008000,
+    Healer = 0x00010000,
+    Lockpick = 0x00020000,
+    Portal = 0x00040000,
+    Admin = 0x00100000,
+    FreePkStatus = 0x00200000,
+    ImmuneCellRestrictions = 0x00400000,
+    RequiresPackSlot = 0x00800000,
+    Retained = 0x01000000,
+    PkLiteStatus = 0x02000000,
+    IncludesSecondHeader = 0x04000000,
+    BindStone = 0x08000000,
+    VolatileRare = 0x10000000,
+    WieldOnUse = 0x20000000,
+    WieldLeft = 0x40000000,
 }
 
 /// The AmmoType value describes the type of ammunition a missile weapon uses.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AmmoType {
-        pub bits: u16,
+pub enum AmmoType {
+    ThrownWeapon = 0x0000,
+    Arrow = 0x0001,
+    Bolt = 0x0002,
+    Dart = 0x0004,
 }
 
 /// The useablilty flags of the object
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Usable {
-        pub bits: u32,
+pub enum Usable {
+    SourceUnusable = 0x00000001,
+    SourceSelf = 0x00000002,
+    SourceWielded = 0x00000004,
+    SourceContained = 0x00000008,
+    SourceViewed = 0x00000010,
+    SourceRemote = 0x00000020,
+    SourceNoApproach = 0x00000040,
+    SourceObjectSelf = 0x00000080,
+    TargetUnusable = 0x00010000,
+    TargetSelf = 0x00020000,
+    TargetWielded = 0x00040000,
+    TargetContained = 0x00080000,
+    TargetViewed = 0x00100000,
+    TargetRemote = 0x00200000,
+    TargetNoApproach = 0x00400000,
+    TargetObjectSelf = 0x00800000,
 }
 
 /// The CoverageMask value describes what parts of the body an item protects.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CoverageMask {
-        pub bits: u32,
+pub enum CoverageMask {
+    UpperLegsUnderwear = 0x00000002,
+    LowerLegsUnderwear = 0x00000004,
+    ChestUnderwear = 0x00000008,
+    AbdomenUnderwear = 0x00000010,
+    UpperArmsUnderwear = 0x00000020,
+    LowerArmsUnderwear = 0x00000040,
+    UpperLegs = 0x00000100,
+    LowerLegs = 0x00000200,
+    Chest = 0x00000400,
+    Abdomen = 0x00000800,
+    UpperArms = 0x00001000,
+    LowerArms = 0x00002000,
+    Head = 0x00004000,
+    Hands = 0x00008000,
+    Feet = 0x00010000,
 }
 
 /// The HookType identifies the types of dwelling hooks.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct HookType {
-        pub bits: u16,
+pub enum HookType {
+    Floor = 0x0001,
+    Wall = 0x0002,
+    Ceiling = 0x0004,
+    Yard = 0x0008,
+    Roof = 0x0010,
 }
 
 /// The MaterialType identifies the material an object is made of.
@@ -2929,8 +3156,31 @@ pub enum CharacterErrorType {
 
 /// The state flags for an object
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PhysicsState {
-        pub bits: u32,
+pub enum PhysicsState {
+    None = 0x00000000,
+    Static = 0x00000001,
+    Ethereal = 0x00000004,
+    ReportCollision = 0x00000008,
+    IgnoreCollision = 0x00000010,
+    NoDraw = 0x00000020,
+    Missle = 0x00000040,
+    Pushable = 0x00000080,
+    AlignPath = 0x00000100,
+    PathClipped = 0x00000200,
+    Gravity = 0x00000400,
+    LightingOn = 0x00000800,
+    ParticleEmitter = 0x00001000,
+    Hidden = 0x00004000,
+    ScriptedCollision = 0x00008000,
+    HasPhysicsBsp = 0x00010000,
+    Inelastic = 0x00020000,
+    HasDefaultAnim = 0x00040000,
+    HasDefaultScript = 0x00080000,
+    Cloaked = 0x00100000,
+    ReportCollisionAsEnvironment = 0x00200000,
+    EdgeSlide = 0x00400000,
+    Sledding = 0x00800000,
+    Frozen = 0x01000000,
 }
 
 /// The TurbineChatType identifies the type of Turbine Chat message.
@@ -2961,44 +3211,89 @@ pub enum CompressionType {
 
 /// The AttributeMask selects which creature attributes highlighting is applied to.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AttributeMask {
-        pub bits: u16,
+pub enum AttributeMask {
+    Strength = 0x0001,
+    Endurance = 0x0002,
+    Quickness = 0x0004,
+    Coordination = 0x0008,
+    Focus = 0x0010,
+    #[serde(rename = "Self")]
+    Self_ = 0x0020,
+    Health = 0x0040,
+    Stamina = 0x0080,
+    Mana = 0x0100,
 }
 
 /// The DamageType identifies the type of damage.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct DamageType {
-        pub bits: u32,
+pub enum DamageType {
+    Slashing = 0x01,
+    Piercing = 0x02,
+    Bludgeoning = 0x04,
+    Cold = 0x08,
+    Fire = 0x10,
+    Acid = 0x20,
+    Electric = 0x40,
 }
 
 /// The HookAppraisalFlags identifies various properties for an item hooked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct HookAppraisalFlags {
-        pub bits: u32,
+pub enum HookAppraisalFlags {
+    Inscribable = 0x01,
+    IsHealer = 0x02,
+    IsLockpick = 0x08,
 }
 
 /// The ArmorHighlightMask selects which armor attributes highlighting is applied to.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ArmorHighlightMask {
-        pub bits: u16,
+pub enum ArmorHighlightMask {
+    ArmorLevel = 0x0001,
+    SlashingProtection = 0x0002,
+    PiercingProtection = 0x0004,
+    BludgeoningProtection = 0x0008,
+    ColdProtection = 0x0010,
+    FireProtection = 0x0020,
+    AcidProtection = 0x0040,
+    ElectricalProtection = 0x0080,
 }
 
 /// The ResistHighlightMask selects which wand attributes highlighting is applied to.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ResistHighlightMask {
-        pub bits: u16,
+pub enum ResistHighlightMask {
+    ResistSlash = 0x0001,
+    ResistPierce = 0x0002,
+    ResistBludgeon = 0x0004,
+    ResistFire = 0x0008,
+    ResistCold = 0x0010,
+    ResistAcid = 0x0020,
+    ResistElectric = 0x0040,
+    ResistHealthBoost = 0x0080,
+    ResistStaminaDrain = 0x0100,
+    ResistStaminaBoost = 0x0200,
+    ResistManaDrain = 0x0400,
+    ResistManaBoost = 0x0800,
+    ManaConversionMod = 0x1000,
+    ElementalDamageMod = 0x2000,
+    ResistNether = 0x4000,
 }
 
 /// The WeaponHighlightMask selects which weapon attributes highlighting is applied to.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct WeaponHighlightMask {
-        pub bits: u16,
+pub enum WeaponHighlightMask {
+    AttackSkill = 0x0001,
+    MeleeDefense = 0x0002,
+    Speed = 0x0004,
+    Damage = 0x0008,
+    DamageVariance = 0x0010,
+    DamageMod = 0x0020,
 }
 
 /// Additional attack information
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct AttackConditionsMask {
-        pub bits: u32,
+pub enum AttackConditionsMask {
+    CriticalProtectionAugmentation = 0x01,
+    Recklessness = 0x02,
+    SneakAttack = 0x04,
 }
 
 /// The DamageLocation indicates where damage was done.
@@ -3135,8 +3430,11 @@ pub enum Gender {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct FactionBits {
-        pub bits: u32,
+pub enum FactionBits {
+    None = 0x00,
+    CelestialHand = 0x01,
+    EldrytchWeb = 0x02,
+    RadiantBlood = 0x04,
 }
 
 /// Creature type
@@ -3246,14 +3544,45 @@ pub enum CreatureType {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CombatStyle {
-        pub bits: u32,
+pub enum CombatStyle {
+    Undef = 0x00000,
+    Unarmed = 0x00001,
+    OneHanded = 0x00002,
+    OneHandedAndShield = 0x00004,
+    TwoHanded = 0x00008,
+    Bow = 0x00010,
+    Crossbow = 0x00020,
+    Sling = 0x00040,
+    ThrownWeapon = 0x00080,
+    DualWield = 0x00100,
+    Magic = 0x00200,
+    Atlatl = 0x00400,
+    ThrownShield = 0x00800,
+    Reserved1 = 0x01000,
+    Reserved2 = 0x02000,
+    Reserved3 = 0x04000,
+    Reserved4 = 0x08000,
+    StubbornMagic = 0x10000,
+    StubbornProjectile = 0x20000,
+    StubbornMelee = 0x40000,
+    StubbornMissile = 0x80000,
 }
 
 /// Indicates what data is present in the ACQualities data
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct ACQualitiesFlags {
-        pub bits: u32,
+pub enum ACQualitiesFlags {
+    Attributes = 0x00000001,
+    Skills = 0x00000002,
+    Body = 0x00000004,
+    SpellBook = 0x00000100,
+    Enchantments = 0x00000200,
+    EventFilter = 0x00000008,
+    Emotes = 0x00000010,
+    CreationProfile = 0x00000020,
+    PageData = 0x00000040,
+    Generators = 0x00000080,
+    GeneratorRegistry = 0x00000400,
+    GeneratorQueue = 0x00000800,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -3408,13 +3737,25 @@ pub enum HouseStatus {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct UiEffects {
-        pub bits: u32,
+pub enum UiEffects {
+    Undef = 0x0000,
+    Magical = 0x0001,
+    Poisoned = 0x0002,
+    BoostHealth = 0x0004,
+    BoostMana = 0x0008,
+    BoostStamina = 0x0010,
+    Fire = 0x0020,
+    Lightning = 0x0040,
+    Frost = 0x0080,
+    Acid = 0x0100,
+    Bludgeoning = 0x0200,
+    Slashing = 0x0400,
+    Piercing = 0x0800,
+    Nether = 0x1000,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PortalBitmask {
-    Undef = 0x00,
     NotPassable = 0x00,
     Unrestricted = 0x01,
     NoPk = 0x02,
@@ -5128,8 +5469,42 @@ pub enum PropertyFloat {
 
 /// Chat channels
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Channel {
-        pub bits: u32,
+pub enum Channel {
+    Undef = 0x00000000,
+    Abuse = 0x00000001,
+    Admin = 0x00000002,
+    Audit = 0x00000004,
+    Advocate1 = 0x00000008,
+    Advocate2 = 0x00000010,
+    Advocate3 = 0x00000020,
+    QA1 = 0x00000040,
+    QA2 = 0x00000080,
+    Debug = 0x00000100,
+    Sentinel = 0x00000200,
+    Help = 0x00000400,
+    AllBroadcast = 0x00000401,
+    Fellow = 0x00000800,
+    Vassals = 0x00001000,
+    Patron = 0x00002000,
+    Monarch = 0x00004000,
+    AlArqas = 0x00008000,
+    Holtburg = 0x00010000,
+    Lytelthorpe = 0x00020000,
+    Nanto = 0x00040000,
+    Rithwic = 0x00080000,
+    Samsur = 0x00100000,
+    Shoushi = 0x00200000,
+    Yanshi = 0x00400000,
+    Yaraq = 0x00800000,
+    TownChans = 0x00FF8000,
+    CoVassals = 0x01000000,
+    AllegianceBroadcast = 0x02000000,
+    FellowBroadcast = 0x04000000,
+    SocietyCelHanBroadcast = 0x08000000,
+    SocietyEldWebBroadcast = 0x10000000,
+    SocietyRadBloBroadcast = 0x20000000,
+    Olthoi = 0x40000000,
+    GhostChans = 0x7F007800,
 }
 
 /// Equipment Set Ids
@@ -5297,8 +5672,11 @@ pub enum RadarColor {
 
 /// Flags that determine what data is contained in the EnchantmentRegistry
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EnchantmentRegistryFlags {
-        pub bits: u32,
+pub enum EnchantmentRegistryFlags {
+    LifeSpells = 0x0001,
+    CreatureSpells = 0x0002,
+    Vitae = 0x0004,
+    Cooldowns = 0x0008,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -6055,8 +6433,21 @@ pub enum HeritageGroup {
 
 /// the type of highlight (outline) applied to the object's icon
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct IconHighlight {
-        pub bits: u32,
+pub enum IconHighlight {
+    Invalid = 0x0000,
+    Magical = 0x0001,
+    Poisoned = 0x0002,
+    BoostHealth = 0x0004,
+    BoostMana = 0x0008,
+    BoostStamina = 0x0010,
+    Fire = 0x0020,
+    Lightning = 0x0040,
+    Frost = 0x0080,
+    Acid = 0x0100,
+    Bludgeoning = 0x0200,
+    Slashing = 0x0400,
+    Piercing = 0x0800,
+    Nether = 0x1000,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -6113,16 +6504,29 @@ pub enum ChatDisplayMask {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum EnchantmentMask {
-    Multiplicative = 0x03912021,
-    Additive = 0x03912021,
-    Vitae = 0x03912021,
-    Cooldown = 0x03912021,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct EnchantmentTypeFlags {
-        pub bits: u32,
+pub enum EnchantmentTypeFlags {
+    Undef = 0x0000000,
+    Attribute = 0x0000001,
+    SecondAtt = 0x0000002,
+    Int = 0x0000004,
+    Float = 0x0000008,
+    Skill = 0x0000010,
+    BodyDamageValue = 0x0000020,
+    BodyDamageVariance = 0x0000040,
+    BodyArmorValue = 0x0000080,
+    SingleStat = 0x0001000,
+    MultipleStat = 0x0002000,
+    Multiplicative = 0x0004000,
+    Additive = 0x0008000,
+    AttackSkills = 0x0010000,
+    DefenseSkills = 0x0020000,
+    MultiplicativeDegrade = 0x0100000,
+    #[serde(rename = "Additive_Degrade")]
+    AdditiveDegrade = 0x0200000,
+    Vitae = 0x0800000,
+    Cooldown = 0x1000000,
+    Beneficial = 0x2000000,
+    StatTypes = 0x00000FF,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
