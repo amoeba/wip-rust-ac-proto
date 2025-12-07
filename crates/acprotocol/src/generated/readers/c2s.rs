@@ -2493,7 +2493,7 @@ impl crate::readers::ACDataType for MovementStopMovementCommand {
 impl MovementAutonomyLevel {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let autonomy_level = read_u32(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             autonomy_level,

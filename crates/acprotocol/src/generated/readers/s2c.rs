@@ -2448,7 +2448,7 @@ impl QualitiesPrivateUpdateString {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u8(reader)?;
         let key = PropertyString::try_from(read_u32(reader)?)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
         let value = read_string(reader)?;
 
         Ok(Self {
@@ -2470,7 +2470,7 @@ impl QualitiesUpdateString {
         let sequence = read_u8(reader)?;
         let object_id = ObjectId::read(reader)?;
         let key = PropertyString::try_from(read_u32(reader)?)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
         let value = read_string(reader)?;
 
         Ok(Self {
@@ -3073,7 +3073,7 @@ impl CharacterCharGenVerificationResponseType1 {
         let character_id = ObjectId::read(reader)?;
         let name = read_string(reader)?;
         let seconds_until_deletion = read_u32(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             character_id,
@@ -3229,7 +3229,7 @@ impl ItemDeleteObject {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let object_instance_sequence = read_u16(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             object_id,
@@ -3397,7 +3397,7 @@ impl crate::readers::ACDataType for EffectsSoundEvent {
 impl EffectsPlayerTeleport {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_teleport_sequence = read_u16(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             object_teleport_sequence,

@@ -1054,7 +1054,7 @@ fn process_align_tag(e: &quick_xml::events::BytesStart) -> Option<Field> {
 
     if let Some(align_to) = align_type {
         // Generate a synthetic field name for alignment padding
-        let padding_field_name = format!("__align_{}", align_to.to_lowercase());
+        let padding_field_name = format!("align_{}", align_to.to_lowercase());
 
         // Map alignment type to read call
         // We generate code that reads the padding needed to align to the specified boundary

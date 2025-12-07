@@ -340,7 +340,7 @@ impl ReferralHeader {
         let cookie = read_u64(reader)?;
         let address = SocketAddress::read(reader)?;
         let id_server = read_u16(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
         let unknown = DWORD::read(reader)?;
 
         Ok(Self {
@@ -2109,7 +2109,7 @@ impl GameplayOptions {
         let unknown200_2 = read_u8(reader)?;
         let option_property_count = read_u8(reader)?;
         let option_properties = read_vec::<OptionProperty>(reader, option_property_count as usize)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             size,
@@ -2516,7 +2516,7 @@ impl PublicWeenieDesc {
         let icon = PackedDWORD::read(reader)?;
         let type_ = ItemType::try_from(read_u32(reader)?)?;
         let behavior = ObjectDescriptionFlag::try_from(read_u32(reader)?)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
         let mut header2 = None;
         if (behavior.clone() as u32 & 0x04000000) != 0 {
             header2 = Some(read_u32(reader)?);
@@ -2665,7 +2665,7 @@ impl PublicWeenieDesc {
         if (header2.unwrap_or(0) & 0x00000008) != 0 {
             pet_owner_id = Some(ObjectId::read(reader)?);
         }
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             header,
@@ -2879,7 +2879,7 @@ impl OldPublicWeenieDesc {
         if (header & 0x80000000) != 0 {
             material = Some(MaterialType::try_from(read_u32(reader)?)?);
         }
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             header,
@@ -2964,7 +2964,7 @@ impl JumpPack {
         let object_server_control_sequence = read_u16(reader)?;
         let object_teleport_sequence = read_u16(reader)?;
         let object_force_position_sequence = read_u16(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             extent,
@@ -2992,7 +2992,7 @@ impl MoveToStatePack {
         let object_teleport_sequence = read_u16(reader)?;
         let object_force_position_sequence = read_u16(reader)?;
         let contact = read_u8(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             raw_motion_state,
@@ -3116,7 +3116,7 @@ impl AutonomousPositionPack {
         let object_teleport_sequence = read_u16(reader)?;
         let object_force_position_sequence = read_u16(reader)?;
         let contact = read_u8(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             position,
@@ -3356,7 +3356,7 @@ impl InterpertedMotionState {
             turn_speed = Some(read_f32(reader)?);
         }
         let commands = read_vec::<PackedMotionCommand>(reader, (command_list_length as usize))?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             flags,
@@ -3462,7 +3462,7 @@ impl ObjDesc {
         let subpalettes = read_vec::<Subpalette>(reader, palette_count as usize)?;
         let tm_changes = read_vec::<TextureMapChange>(reader, texture_count as usize)?;
         let ap_changes = read_vec::<AnimPartChange>(reader, model_count as usize)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             version,
@@ -3638,7 +3638,7 @@ impl CharacterIdentity {
         let character_id = ObjectId::read(reader)?;
         let name = read_string(reader)?;
         let seconds_greyed_out = read_u32(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             character_id,
@@ -3761,7 +3761,7 @@ impl PhysicsDesc {
         let object_force_position_sequence = read_u16(reader)?;
         let object_visual_desc_sequence = read_u16(reader)?;
         let object_instance_sequence = read_u16(reader)?;
-        let __alignment_marker___align_dword = align_dword(reader)?;
+        let __alignment_marker_align_dword = align_dword(reader)?;
 
         Ok(Self {
             flags,
