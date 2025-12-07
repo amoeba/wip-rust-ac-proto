@@ -272,13 +272,7 @@ impl crate::readers::ACDataType for SocketAddress {
 }
 
 impl LoginRequestHeaderType2 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let client_version = read_string(reader)?;
-        let length = read_u32(reader)?;
-        let flags = AuthFlags::try_from(read_u32(reader)?)?;
-        let sequence = read_u32(reader)?;
-        let account = read_string(reader)?;
-        let account_to_login_as = read_string(reader)?;
+    pub fn read(reader: &mut dyn Read, client_version: string, length: uint, flags: AuthFlags, sequence: uint, account: string, account_to_login_as: string) -> Result<Self, Box<dyn std::error::Error>> {
         let password = read_wstring(reader).map(WString)?;
 
         Ok(Self {
@@ -293,20 +287,8 @@ impl LoginRequestHeaderType2 {
     }
 }
 
-impl crate::readers::ACDataType for LoginRequestHeaderType2 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        LoginRequestHeaderType2::read(reader)
-    }
-}
-
 impl LoginRequestHeaderType40000002 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let client_version = read_string(reader)?;
-        let length = read_u32(reader)?;
-        let flags = AuthFlags::try_from(read_u32(reader)?)?;
-        let sequence = read_u32(reader)?;
-        let account = read_string(reader)?;
-        let account_to_login_as = read_string(reader)?;
+    pub fn read(reader: &mut dyn Read, client_version: string, length: uint, flags: AuthFlags, sequence: uint, account: string, account_to_login_as: string) -> Result<Self, Box<dyn std::error::Error>> {
         let gls_ticket = read_string(reader)?;
 
         Ok(Self {
@@ -318,12 +300,6 @@ impl LoginRequestHeaderType40000002 {
             account_to_login_as,
             gls_ticket,
         })
-    }
-}
-
-impl crate::readers::ACDataType for LoginRequestHeaderType40000002 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        LoginRequestHeaderType40000002::read(reader)
     }
 }
 
@@ -339,11 +315,11 @@ impl LoginRequestHeader {
 
         match auth_type {
             NetAuthType::AccountPassword => {
-                let variant_struct = LoginRequestHeaderType2::read(reader)?;
+                let variant_struct = LoginRequestHeaderType2::read(reader, client_version, length, flags, sequence, account, account_to_login_as)?;
                 Ok(Self::Type2(variant_struct))
             },
             NetAuthType::GlsTicket => {
-                let variant_struct = LoginRequestHeaderType40000002::read(reader)?;
+                let variant_struct = LoginRequestHeaderType40000002::read(reader, client_version, length, flags, sequence, account, account_to_login_as)?;
                 Ok(Self::Type40000002(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "auth_type", auth_type).into()),
@@ -1039,9 +1015,7 @@ impl crate::readers::ACDataType for EmoteSetList {
 }
 
 impl EmoteSetType1 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let probability = read_f32(reader)?;
-        let emotes = read_packable_list::<Emote>(reader)?;
+    pub fn read(reader: &mut dyn Read, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let class_id = read_u32(reader)?;
 
         Ok(Self {
@@ -1052,16 +1026,8 @@ impl EmoteSetType1 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteSetType1 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteSetType1::read(reader)
-    }
-}
-
 impl EmoteSetType2 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let probability = read_f32(reader)?;
-        let emotes = read_packable_list::<Emote>(reader)?;
+    pub fn read(reader: &mut dyn Read, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let vendor_type = read_u32(reader)?;
 
         Ok(Self {
@@ -1072,16 +1038,8 @@ impl EmoteSetType2 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteSetType2 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteSetType2::read(reader)
-    }
-}
-
 impl EmoteSetType5 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let probability = read_f32(reader)?;
-        let emotes = read_packable_list::<Emote>(reader)?;
+    pub fn read(reader: &mut dyn Read, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let style = read_u32(reader)?;
         let substyle = read_u32(reader)?;
 
@@ -1094,16 +1052,8 @@ impl EmoteSetType5 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteSetType5 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteSetType5::read(reader)
-    }
-}
-
 impl EmoteSetTypeC {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let probability = read_f32(reader)?;
-        let emotes = read_packable_list::<Emote>(reader)?;
+    pub fn read(reader: &mut dyn Read, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let quest = read_string(reader)?;
 
         Ok(Self {
@@ -1114,16 +1064,8 @@ impl EmoteSetTypeC {
     }
 }
 
-impl crate::readers::ACDataType for EmoteSetTypeC {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteSetTypeC::read(reader)
-    }
-}
-
 impl EmoteSetTypeF {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let probability = read_f32(reader)?;
-        let emotes = read_packable_list::<Emote>(reader)?;
+    pub fn read(reader: &mut dyn Read, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let min_health = read_f32(reader)?;
         let max_health = read_f32(reader)?;
 
@@ -1136,12 +1078,6 @@ impl EmoteSetTypeF {
     }
 }
 
-impl crate::readers::ACDataType for EmoteSetTypeF {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteSetTypeF::read(reader)
-    }
-}
-
 impl EmoteSet {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let category = EmoteCategory::try_from(read_u32(reader)?)?;
@@ -1150,23 +1086,23 @@ impl EmoteSet {
 
         match category {
             EmoteCategory::RefuseEmoteCategory | EmoteCategory::GiveEmoteCategory => {
-                let variant_struct = EmoteSetType1::read(reader)?;
+                let variant_struct = EmoteSetType1::read(reader, probability, emotes)?;
                 Ok(Self::Type1(variant_struct))
             },
             EmoteCategory::VendorEmoteCategory => {
-                let variant_struct = EmoteSetType2::read(reader)?;
+                let variant_struct = EmoteSetType2::read(reader, probability, emotes)?;
                 Ok(Self::Type2(variant_struct))
             },
             EmoteCategory::HeartBeatEmoteCategory => {
-                let variant_struct = EmoteSetType5::read(reader)?;
+                let variant_struct = EmoteSetType5::read(reader, probability, emotes)?;
                 Ok(Self::Type5(variant_struct))
             },
             EmoteCategory::QuestSuccessEmoteCategory | EmoteCategory::QuestFailureEmoteCategory | EmoteCategory::TestSuccessEmoteCategory | EmoteCategory::TestFailureEmoteCategory | EmoteCategory::EventSuccessEmoteCategory | EmoteCategory::EventFailureEmoteCategory | EmoteCategory::TestNoQualityEmoteCategory | EmoteCategory::QuestNoFellowEmoteCategory | EmoteCategory::TestNoFellowEmoteCategory | EmoteCategory::GotoSetEmoteCategory | EmoteCategory::NumFellowsSuccessEmoteCategory | EmoteCategory::NumFellowsFailureEmoteCategory | EmoteCategory::NumCharacterTitlesSuccessEmoteCategory | EmoteCategory::NumCharacterTitlesFailureEmoteCategory | EmoteCategory::ReceiveLocalSignalEmoteCategory | EmoteCategory::ReceiveTalkDirectEmoteCategory => {
-                let variant_struct = EmoteSetTypeC::read(reader)?;
+                let variant_struct = EmoteSetTypeC::read(reader, probability, emotes)?;
                 Ok(Self::TypeC(variant_struct))
             },
             EmoteCategory::WoundedTauntEmoteCategory => {
-                let variant_struct = EmoteSetTypeF::read(reader)?;
+                let variant_struct = EmoteSetTypeF::read(reader, probability, emotes)?;
                 Ok(Self::TypeF(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "category", category).into()),
@@ -1181,9 +1117,7 @@ impl crate::readers::ACDataType for EmoteSet {
 }
 
 impl EmoteType1 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
 
         Ok(Self {
@@ -1194,16 +1128,8 @@ impl EmoteType1 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType1 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType1::read(reader)
-    }
-}
-
 impl EmoteType2 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount64 = read_u64(reader)?;
         let hero_xp64 = read_u64(reader)?;
 
@@ -1216,16 +1142,8 @@ impl EmoteType2 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType2 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType2::read(reader)
-    }
-}
-
 impl EmoteType3 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let c_profile = CreationProfile::read(reader)?;
 
         Ok(Self {
@@ -1236,16 +1154,8 @@ impl EmoteType3 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType3 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType3::read(reader)
-    }
-}
-
 impl EmoteType4 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let frame = Frame::read(reader)?;
 
         Ok(Self {
@@ -1256,16 +1166,8 @@ impl EmoteType4 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType4 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType4::read(reader)
-    }
-}
-
 impl EmoteType5 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let motion = read_u32(reader)?;
 
         Ok(Self {
@@ -1276,16 +1178,8 @@ impl EmoteType5 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType5 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType5::read(reader)
-    }
-}
-
 impl EmoteType7 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let physics_script = read_u32(reader)?;
 
         Ok(Self {
@@ -1296,16 +1190,8 @@ impl EmoteType7 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType7 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType7::read(reader)
-    }
-}
-
 impl EmoteType9 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let sound = read_u32(reader)?;
 
         Ok(Self {
@@ -1316,16 +1202,8 @@ impl EmoteType9 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType9 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType9::read(reader)
-    }
-}
-
 impl EmoteTypeE {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let spell_id = read_u32(reader)?;
 
         Ok(Self {
@@ -1336,16 +1214,8 @@ impl EmoteTypeE {
     }
 }
 
-impl crate::readers::ACDataType for EmoteTypeE {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteTypeE::read(reader)
-    }
-}
-
 impl EmoteType1C {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount = read_u32(reader)?;
         let stat = read_u32(reader)?;
 
@@ -1355,19 +1225,11 @@ impl EmoteType1C {
             amount,
             stat,
         })
-    }
-}
-
-impl crate::readers::ACDataType for EmoteType1C {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType1C::read(reader)
     }
 }
 
 impl EmoteType1E {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let min = read_u32(reader)?;
         let max = read_u32(reader)?;
@@ -1379,19 +1241,11 @@ impl EmoteType1E {
             min,
             max,
         })
-    }
-}
-
-impl crate::readers::ACDataType for EmoteType1E {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType1E::read(reader)
     }
 }
 
 impl EmoteType20 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let amount = read_u32(reader)?;
 
@@ -1404,16 +1258,8 @@ impl EmoteType20 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType20 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType20::read(reader)
-    }
-}
-
 impl EmoteType22 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount = read_u32(reader)?;
 
         Ok(Self {
@@ -1424,16 +1270,8 @@ impl EmoteType22 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType22 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType22::read(reader)
-    }
-}
-
 impl EmoteType23 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let stat = read_u32(reader)?;
 
@@ -1446,16 +1284,8 @@ impl EmoteType23 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType23 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType23::read(reader)
-    }
-}
-
 impl EmoteType24 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let min = read_u32(reader)?;
         let max = read_u32(reader)?;
@@ -1472,16 +1302,8 @@ impl EmoteType24 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType24 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType24::read(reader)
-    }
-}
-
 impl EmoteType25 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let f_min = read_f64(reader)?;
         let f_max = read_f64(reader)?;
@@ -1498,16 +1320,8 @@ impl EmoteType25 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType25 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType25::read(reader)
-    }
-}
-
 impl EmoteType26 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let test_string = read_string(reader)?;
         let stat = read_u32(reader)?;
@@ -1522,16 +1336,8 @@ impl EmoteType26 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType26 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType26::read(reader)
-    }
-}
-
 impl EmoteType31 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let percent = read_f64(reader)?;
         let min64 = read_u64(reader)?;
         let max64 = read_u64(reader)?;
@@ -1546,16 +1352,8 @@ impl EmoteType31 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType31 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType31::read(reader)
-    }
-}
-
 impl EmoteType32 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
         let percent = read_f64(reader)?;
         let min = read_u32(reader)?;
@@ -1574,16 +1372,8 @@ impl EmoteType32 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType32 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType32::read(reader)
-    }
-}
-
 impl EmoteType35 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
         let amount = read_u32(reader)?;
 
@@ -1596,16 +1386,8 @@ impl EmoteType35 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType35 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType35::read(reader)
-    }
-}
-
 impl EmoteType38 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let wealth_rating = read_i32(reader)?;
         let treasure_class = read_i32(reader)?;
         let treasure_type = read_i32(reader)?;
@@ -1620,16 +1402,8 @@ impl EmoteType38 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType38 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType38::read(reader)
-    }
-}
-
 impl EmoteType3F {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let position = Position::read(reader)?;
 
         Ok(Self {
@@ -1640,16 +1414,8 @@ impl EmoteType3F {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType3F {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType3F::read(reader)
-    }
-}
-
 impl EmoteType4C {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let msg = read_string(reader)?;
         let c_profile = CreationProfile::read(reader)?;
 
@@ -1662,16 +1428,8 @@ impl EmoteType4C {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType4C {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType4C::read(reader)
-    }
-}
-
 impl EmoteType6E {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
 
         Ok(Self {
@@ -1682,16 +1440,8 @@ impl EmoteType6E {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType6E {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType6E::read(reader)
-    }
-}
-
 impl EmoteType70 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount64 = read_u64(reader)?;
 
         Ok(Self {
@@ -1702,16 +1452,8 @@ impl EmoteType70 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType70 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType70::read(reader)
-    }
-}
-
 impl EmoteType72 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let min64 = read_u64(reader)?;
         let max64 = read_u64(reader)?;
@@ -1728,16 +1470,8 @@ impl EmoteType72 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType72 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType72::read(reader)
-    }
-}
-
 impl EmoteType76 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let delay = read_f32(reader)?;
-        let extent = read_f32(reader)?;
+    pub fn read(reader: &mut dyn Read, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
         let percent = read_f64(reader)?;
 
@@ -1750,12 +1484,6 @@ impl EmoteType76 {
     }
 }
 
-impl crate::readers::ACDataType for EmoteType76 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        EmoteType76::read(reader)
-    }
-}
-
 impl Emote {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let type_ = EmoteType::try_from(read_u32(reader)?)?;
@@ -1764,107 +1492,107 @@ impl Emote {
 
         match type_ {
             EmoteType::ActEmoteType | EmoteType::SayEmoteType | EmoteType::TellEmoteType | EmoteType::TextDirectEmoteType | EmoteType::WorldBroadcastEmoteType | EmoteType::LocalBroadcastEmoteType | EmoteType::DirectBroadcastEmoteType | EmoteType::UpdateQuestEmoteType | EmoteType::InqQuestEmoteType | EmoteType::StampQuestEmoteType | EmoteType::StartEventEmoteType | EmoteType::StopEventEmoteType | EmoteType::BLogEmoteType | EmoteType::AdminSpamEmoteType | EmoteType::EraseQuestEmoteType | EmoteType::InqEventEmoteType | EmoteType::InqFellowQuestEmoteType | EmoteType::UpdateFellowQuestEmoteType | EmoteType::StampFellowQuestEmoteType | EmoteType::TellFellowEmoteType | EmoteType::FellowBroadcastEmoteType | EmoteType::GotoEmoteType | EmoteType::PopUpEmoteType | EmoteType::UpdateMyQuestEmoteType | EmoteType::InqMyQuestEmoteType | EmoteType::StampMyQuestEmoteType | EmoteType::EraseMyQuestEmoteType | EmoteType::LocalSignalEmoteType | EmoteType::InqContractsFullEmoteType => {
-                let variant_struct = EmoteType1::read(reader)?;
+                let variant_struct = EmoteType1::read(reader, delay, extent)?;
                 Ok(Self::Type1(variant_struct))
             },
             EmoteType::AwardXPEmoteType | EmoteType::AwardNoShareXPEmoteType => {
-                let variant_struct = EmoteType2::read(reader)?;
+                let variant_struct = EmoteType2::read(reader, delay, extent)?;
                 Ok(Self::Type2(variant_struct))
             },
             EmoteType::GiveEmoteType | EmoteType::TakeItemsEmoteType => {
-                let variant_struct = EmoteType3::read(reader)?;
+                let variant_struct = EmoteType3::read(reader, delay, extent)?;
                 Ok(Self::Type3(variant_struct))
             },
             EmoteType::MoveHomeEmoteType | EmoteType::MoveEmoteType | EmoteType::TurnEmoteType | EmoteType::MoveToPosEmoteType => {
-                let variant_struct = EmoteType4::read(reader)?;
+                let variant_struct = EmoteType4::read(reader, delay, extent)?;
                 Ok(Self::Type4(variant_struct))
             },
             EmoteType::MotionEmoteType | EmoteType::ForceMotionEmoteType => {
-                let variant_struct = EmoteType5::read(reader)?;
+                let variant_struct = EmoteType5::read(reader, delay, extent)?;
                 Ok(Self::Type5(variant_struct))
             },
             EmoteType::PhysScriptEmoteType => {
-                let variant_struct = EmoteType7::read(reader)?;
+                let variant_struct = EmoteType7::read(reader, delay, extent)?;
                 Ok(Self::Type7(variant_struct))
             },
             EmoteType::SoundEmoteType => {
-                let variant_struct = EmoteType9::read(reader)?;
+                let variant_struct = EmoteType9::read(reader, delay, extent)?;
                 Ok(Self::Type9(variant_struct))
             },
             EmoteType::CastSpellEmoteType | EmoteType::CastSpellInstantEmoteType | EmoteType::TeachSpellEmoteType | EmoteType::PetCastSpellOnOwnerEmoteType => {
-                let variant_struct = EmoteTypeE::read(reader)?;
+                let variant_struct = EmoteTypeE::read(reader, delay, extent)?;
                 Ok(Self::TypeE(variant_struct))
             },
             EmoteType::AwardSkillXPEmoteType | EmoteType::AwardSkillPointsEmoteType => {
-                let variant_struct = EmoteType1C::read(reader)?;
+                let variant_struct = EmoteType1C::read(reader, delay, extent)?;
                 Ok(Self::Type1C(variant_struct))
             },
             EmoteType::InqQuestSolvesEmoteType | EmoteType::InqFellowNumEmoteType | EmoteType::InqNumCharacterTitlesEmoteType | EmoteType::InqMyQuestSolvesEmoteType => {
-                let variant_struct = EmoteType1E::read(reader)?;
+                let variant_struct = EmoteType1E::read(reader, delay, extent)?;
                 Ok(Self::Type1E(variant_struct))
             },
             EmoteType::DecrementQuestEmoteType | EmoteType::IncrementQuestEmoteType | EmoteType::SetQuestCompletionsEmoteType | EmoteType::DecrementMyQuestEmoteType | EmoteType::IncrementMyQuestEmoteType | EmoteType::SetMyQuestCompletionsEmoteType | EmoteType::InqPackSpaceEmoteType | EmoteType::InqQuestBitsOnEmoteType | EmoteType::InqQuestBitsOffEmoteType | EmoteType::InqMyQuestBitsOnEmoteType | EmoteType::InqMyQuestBitsOffEmoteType | EmoteType::SetQuestBitsOnEmoteType | EmoteType::SetQuestBitsOffEmoteType | EmoteType::SetMyQuestBitsOnEmoteType | EmoteType::SetMyQuestBitsOffEmoteType => {
-                let variant_struct = EmoteType20::read(reader)?;
+                let variant_struct = EmoteType20::read(reader, delay, extent)?;
                 Ok(Self::Type20(variant_struct))
             },
             EmoteType::AddCharacterTitleEmoteType | EmoteType::AwardTrainingCreditsEmoteType | EmoteType::InflictVitaePenaltyEmoteType | EmoteType::RemoveVitaePenaltyEmoteType | EmoteType::SetAltRacialSkillsEmoteType | EmoteType::AddContractEmoteType | EmoteType::RemoveContractEmoteType => {
-                let variant_struct = EmoteType22::read(reader)?;
+                let variant_struct = EmoteType22::read(reader, delay, extent)?;
                 Ok(Self::Type22(variant_struct))
             },
             EmoteType::InqBoolStatEmoteType | EmoteType::InqSkillTrainedEmoteType | EmoteType::InqSkillSpecializedEmoteType => {
-                let variant_struct = EmoteType23::read(reader)?;
+                let variant_struct = EmoteType23::read(reader, delay, extent)?;
                 Ok(Self::Type23(variant_struct))
             },
             EmoteType::InqIntStatEmoteType | EmoteType::InqAttributeStatEmoteType | EmoteType::InqRawAttributeStatEmoteType | EmoteType::InqSecondaryAttributeStatEmoteType | EmoteType::InqRawSecondaryAttributeStatEmoteType | EmoteType::InqSkillStatEmoteType | EmoteType::InqRawSkillStatEmoteType => {
-                let variant_struct = EmoteType24::read(reader)?;
+                let variant_struct = EmoteType24::read(reader, delay, extent)?;
                 Ok(Self::Type24(variant_struct))
             },
             EmoteType::InqFloatStatEmoteType => {
-                let variant_struct = EmoteType25::read(reader)?;
+                let variant_struct = EmoteType25::read(reader, delay, extent)?;
                 Ok(Self::Type25(variant_struct))
             },
             EmoteType::InqStringStatEmoteType | EmoteType::InqYesNoEmoteType => {
-                let variant_struct = EmoteType26::read(reader)?;
+                let variant_struct = EmoteType26::read(reader, delay, extent)?;
                 Ok(Self::Type26(variant_struct))
             },
             EmoteType::AwardLevelProportionalXPEmoteType => {
-                let variant_struct = EmoteType31::read(reader)?;
+                let variant_struct = EmoteType31::read(reader, delay, extent)?;
                 Ok(Self::Type31(variant_struct))
             },
             EmoteType::AwardLevelProportionalSkillXPEmoteType => {
-                let variant_struct = EmoteType32::read(reader)?;
+                let variant_struct = EmoteType32::read(reader, delay, extent)?;
                 Ok(Self::Type32(variant_struct))
             },
             EmoteType::SetIntStatEmoteType | EmoteType::IncrementIntStatEmoteType | EmoteType::DecrementIntStatEmoteType | EmoteType::SetBoolStatEmoteType => {
-                let variant_struct = EmoteType35::read(reader)?;
+                let variant_struct = EmoteType35::read(reader, delay, extent)?;
                 Ok(Self::Type35(variant_struct))
             },
             EmoteType::CreateTreasureEmoteType => {
-                let variant_struct = EmoteType38::read(reader)?;
+                let variant_struct = EmoteType38::read(reader, delay, extent)?;
                 Ok(Self::Type38(variant_struct))
             },
             EmoteType::SetSanctuaryPositionEmoteType | EmoteType::TeleportTargetEmoteType | EmoteType::TeleportSelfEmoteType => {
-                let variant_struct = EmoteType3F::read(reader)?;
+                let variant_struct = EmoteType3F::read(reader, delay, extent)?;
                 Ok(Self::Type3F(variant_struct))
             },
             EmoteType::InqOwnsItemsEmoteType => {
-                let variant_struct = EmoteType4C::read(reader)?;
+                let variant_struct = EmoteType4C::read(reader, delay, extent)?;
                 Ok(Self::Type4C(variant_struct))
             },
             EmoteType::UntrainSkillEmoteType | EmoteType::SetInt64StatEmoteType => {
-                let variant_struct = EmoteType6E::read(reader)?;
+                let variant_struct = EmoteType6E::read(reader, delay, extent)?;
                 Ok(Self::Type6E(variant_struct))
             },
             EmoteType::SpendLuminanceEmoteType | EmoteType::AwardLuminanceEmoteType => {
-                let variant_struct = EmoteType70::read(reader)?;
+                let variant_struct = EmoteType70::read(reader, delay, extent)?;
                 Ok(Self::Type70(variant_struct))
             },
             EmoteType::InqInt64StatEmoteType => {
-                let variant_struct = EmoteType72::read(reader)?;
+                let variant_struct = EmoteType72::read(reader, delay, extent)?;
                 Ok(Self::Type72(variant_struct))
             },
             EmoteType::SetFloatStatEmoteType => {
-                let variant_struct = EmoteType76::read(reader)?;
+                let variant_struct = EmoteType76::read(reader, delay, extent)?;
                 Ok(Self::Type76(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),
@@ -2132,12 +1860,6 @@ impl WindowPropertyType1000007F {
     }
 }
 
-impl crate::readers::ACDataType for WindowPropertyType1000007F {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType1000007F::read(reader)
-    }
-}
-
 impl WindowPropertyType10000086 {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let unknown_i = read_u32(reader)?;
@@ -2147,12 +1869,6 @@ impl WindowPropertyType10000086 {
             unknown_i,
             value_i,
         })
-    }
-}
-
-impl crate::readers::ACDataType for WindowPropertyType10000086 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType10000086::read(reader)
     }
 }
 
@@ -2168,12 +1884,6 @@ impl WindowPropertyType10000087 {
     }
 }
 
-impl crate::readers::ACDataType for WindowPropertyType10000087 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType10000087::read(reader)
-    }
-}
-
 impl WindowPropertyType10000088 {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let unknown_f = read_u32(reader)?;
@@ -2183,12 +1893,6 @@ impl WindowPropertyType10000088 {
             unknown_f,
             value_f,
         })
-    }
-}
-
-impl crate::readers::ACDataType for WindowPropertyType10000088 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType10000088::read(reader)
     }
 }
 
@@ -2204,12 +1908,6 @@ impl WindowPropertyType10000089 {
     }
 }
 
-impl crate::readers::ACDataType for WindowPropertyType10000089 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType10000089::read(reader)
-    }
-}
-
 impl WindowPropertyType1000008A {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let unknown_d = read_u32(reader)?;
@@ -2219,12 +1917,6 @@ impl WindowPropertyType1000008A {
             unknown_d,
             value_d,
         })
-    }
-}
-
-impl crate::readers::ACDataType for WindowPropertyType1000008A {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType1000008A::read(reader)
     }
 }
 
@@ -2266,43 +1958,37 @@ impl WindowPropertyType1000008DTitleSourceVariant {
     }
 }
 
-impl crate::readers::ACDataType for WindowPropertyType1000008D {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowPropertyType1000008D::read(reader)
-    }
-}
-
 impl WindowProperty {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let key_a = read_u32(reader)?;
 
         match key_a {
             0x1000007F => {
-                let variant_struct = WindowPropertyType1000007F::read(reader)?;
+                let variant_struct = WindowPropertyType1000007F::read(reader, )?;
                 Ok(Self::Type1000007F(variant_struct))
             },
             0x10000086 => {
-                let variant_struct = WindowPropertyType10000086::read(reader)?;
+                let variant_struct = WindowPropertyType10000086::read(reader, )?;
                 Ok(Self::Type10000086(variant_struct))
             },
             0x10000087 => {
-                let variant_struct = WindowPropertyType10000087::read(reader)?;
+                let variant_struct = WindowPropertyType10000087::read(reader, )?;
                 Ok(Self::Type10000087(variant_struct))
             },
             0x10000088 => {
-                let variant_struct = WindowPropertyType10000088::read(reader)?;
+                let variant_struct = WindowPropertyType10000088::read(reader, )?;
                 Ok(Self::Type10000088(variant_struct))
             },
             0x10000089 => {
-                let variant_struct = WindowPropertyType10000089::read(reader)?;
+                let variant_struct = WindowPropertyType10000089::read(reader, )?;
                 Ok(Self::Type10000089(variant_struct))
             },
             0x1000008A => {
-                let variant_struct = WindowPropertyType1000008A::read(reader)?;
+                let variant_struct = WindowPropertyType1000008A::read(reader, )?;
                 Ok(Self::Type1000008A(variant_struct))
             },
             0x1000008D => {
-                let variant_struct = WindowPropertyType1000008D::read(reader)?;
+                let variant_struct = WindowPropertyType1000008D::read(reader, )?;
                 Ok(Self::Type1000008D(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "key_a", key_a).into()),
@@ -2330,19 +2016,13 @@ impl WindowOptionType1000008B {
     }
 }
 
-impl crate::readers::ACDataType for WindowOptionType1000008B {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        WindowOptionType1000008B::read(reader)
-    }
-}
-
 impl WindowOption {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let type_a = read_u32(reader)?;
 
         match type_a {
             0x1000008B => {
-                let variant_struct = WindowOptionType1000008B::read(reader)?;
+                let variant_struct = WindowOptionType1000008B::read(reader, )?;
                 Ok(Self::Type1000008B(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "type_a", type_a).into()),
@@ -2368,12 +2048,6 @@ impl OptionPropertyType10000080 {
     }
 }
 
-impl crate::readers::ACDataType for OptionPropertyType10000080 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        OptionPropertyType10000080::read(reader)
-    }
-}
-
 impl OptionPropertyType10000081 {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let unknown_k = read_u32(reader)?;
@@ -2383,12 +2057,6 @@ impl OptionPropertyType10000081 {
             unknown_k,
             active_opacity,
         })
-    }
-}
-
-impl crate::readers::ACDataType for OptionPropertyType10000081 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        OptionPropertyType10000081::read(reader)
     }
 }
 
@@ -2404,27 +2072,21 @@ impl OptionPropertyType1000008C {
     }
 }
 
-impl crate::readers::ACDataType for OptionPropertyType1000008C {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        OptionPropertyType1000008C::read(reader)
-    }
-}
-
 impl OptionProperty {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let type_ = read_u32(reader)?;
 
         match type_ {
             0x10000080 => {
-                let variant_struct = OptionPropertyType10000080::read(reader)?;
+                let variant_struct = OptionPropertyType10000080::read(reader, )?;
                 Ok(Self::Type10000080(variant_struct))
             },
             0x10000081 => {
-                let variant_struct = OptionPropertyType10000081::read(reader)?;
+                let variant_struct = OptionPropertyType10000081::read(reader, )?;
                 Ok(Self::Type10000081(variant_struct))
             },
             0x1000008C => {
-                let variant_struct = OptionPropertyType1000008C::read(reader)?;
+                let variant_struct = OptionPropertyType1000008C::read(reader, )?;
                 Ok(Self::Type1000008C(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),
@@ -2792,11 +2454,7 @@ impl crate::readers::ACDataType for FriendData {
 }
 
 impl ItemProfileTypeNeg1 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let packed_amount = read_u32(reader)?;
-        let amount = (packed_amount & 0x_ffffff) as i32;
-        let pwd_type = (packed_amount >> 24) as i32;
-        let object_id = ObjectId::read(reader)?;
+    pub fn read(reader: &mut dyn Read, packed_amount: uint, object_id: ObjectId) -> Result<Self, Box<dyn std::error::Error>> {
         let weenie_description = PublicWeenieDesc::read(reader)?;
 
         Ok(Self {
@@ -2807,18 +2465,8 @@ impl ItemProfileTypeNeg1 {
     }
 }
 
-impl crate::readers::ACDataType for ItemProfileTypeNeg1 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemProfileTypeNeg1::read(reader)
-    }
-}
-
 impl ItemProfileType1 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let packed_amount = read_u32(reader)?;
-        let amount = (packed_amount & 0x_ffffff) as i32;
-        let pwd_type = (packed_amount >> 24) as i32;
-        let object_id = ObjectId::read(reader)?;
+    pub fn read(reader: &mut dyn Read, packed_amount: uint, object_id: ObjectId) -> Result<Self, Box<dyn std::error::Error>> {
         let old_weenie_description = OldPublicWeenieDesc::read(reader)?;
 
         Ok(Self {
@@ -2826,12 +2474,6 @@ impl ItemProfileType1 {
             object_id,
             old_weenie_description,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemProfileType1 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemProfileType1::read(reader)
     }
 }
 
@@ -2844,11 +2486,11 @@ impl ItemProfile {
 
         match pwd_type {
             -1 => {
-                let variant_struct = ItemProfileTypeNeg1::read(reader)?;
+                let variant_struct = ItemProfileTypeNeg1::read(reader, packed_amount, object_id)?;
                 Ok(Self::TypeNeg1(variant_struct))
             },
             0x01 => {
-                let variant_struct = ItemProfileType1::read(reader)?;
+                let variant_struct = ItemProfileType1::read(reader, packed_amount, object_id)?;
                 Ok(Self::Type1(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "pwd_type", pwd_type).into()),
@@ -3540,12 +3182,7 @@ impl crate::readers::ACDataType for PositionPack {
 }
 
 impl MovementDataType0 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let object_movement_sequence = read_u16(reader)?;
-        let object_server_control_sequence = read_u16(reader)?;
-        let autonomous = read_u16(reader)?;
-        let option_flags = MovementOption::try_from(read_u8(reader)?)?;
-        let stance = StanceMode::try_from(read_u16(reader)?)?;
+    pub fn read(reader: &mut dyn Read, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let state = InterpertedMotionState::read(reader)?;
         let sticky_object = if (option_flags.clone() as u32 & 0x01) != 0 { ObjectId::read(reader).map(Some) } else { Ok(None) }?;
 
@@ -3561,19 +3198,8 @@ impl MovementDataType0 {
     }
 }
 
-impl crate::readers::ACDataType for MovementDataType0 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementDataType0::read(reader)
-    }
-}
-
 impl MovementDataType6 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let object_movement_sequence = read_u16(reader)?;
-        let object_server_control_sequence = read_u16(reader)?;
-        let autonomous = read_u16(reader)?;
-        let option_flags = MovementOption::try_from(read_u8(reader)?)?;
-        let stance = StanceMode::try_from(read_u16(reader)?)?;
+    pub fn read(reader: &mut dyn Read, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let target = ObjectId::read(reader)?;
         let origin = Origin::read(reader)?;
         let move_to_params = MoveToMovementParameters::read(reader)?;
@@ -3593,19 +3219,8 @@ impl MovementDataType6 {
     }
 }
 
-impl crate::readers::ACDataType for MovementDataType6 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementDataType6::read(reader)
-    }
-}
-
 impl MovementDataType7 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let object_movement_sequence = read_u16(reader)?;
-        let object_server_control_sequence = read_u16(reader)?;
-        let autonomous = read_u16(reader)?;
-        let option_flags = MovementOption::try_from(read_u8(reader)?)?;
-        let stance = StanceMode::try_from(read_u16(reader)?)?;
+    pub fn read(reader: &mut dyn Read, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let origin = Origin::read(reader)?;
         let move_to_params = MoveToMovementParameters::read(reader)?;
         let my_run_rate = read_f32(reader)?;
@@ -3623,19 +3238,8 @@ impl MovementDataType7 {
     }
 }
 
-impl crate::readers::ACDataType for MovementDataType7 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementDataType7::read(reader)
-    }
-}
-
 impl MovementDataType8 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let object_movement_sequence = read_u16(reader)?;
-        let object_server_control_sequence = read_u16(reader)?;
-        let autonomous = read_u16(reader)?;
-        let option_flags = MovementOption::try_from(read_u8(reader)?)?;
-        let stance = StanceMode::try_from(read_u16(reader)?)?;
+    pub fn read(reader: &mut dyn Read, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let target_id = ObjectId::read(reader)?;
         let desired_heading = read_f32(reader)?;
         let turn_to_params = TurnToMovementParameters::read(reader)?;
@@ -3653,19 +3257,8 @@ impl MovementDataType8 {
     }
 }
 
-impl crate::readers::ACDataType for MovementDataType8 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementDataType8::read(reader)
-    }
-}
-
 impl MovementDataType9 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let object_movement_sequence = read_u16(reader)?;
-        let object_server_control_sequence = read_u16(reader)?;
-        let autonomous = read_u16(reader)?;
-        let option_flags = MovementOption::try_from(read_u8(reader)?)?;
-        let stance = StanceMode::try_from(read_u16(reader)?)?;
+    pub fn read(reader: &mut dyn Read, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let turn_to_params = TurnToMovementParameters::read(reader)?;
 
         Ok(Self {
@@ -3676,12 +3269,6 @@ impl MovementDataType9 {
             stance,
             turn_to_params,
         })
-    }
-}
-
-impl crate::readers::ACDataType for MovementDataType9 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementDataType9::read(reader)
     }
 }
 
@@ -3696,23 +3283,23 @@ impl MovementData {
 
         match movement_type {
             MovementType::InterpertedMotionState => {
-                let variant_struct = MovementDataType0::read(reader)?;
+                let variant_struct = MovementDataType0::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type0(variant_struct))
             },
             MovementType::MoveToObject => {
-                let variant_struct = MovementDataType6::read(reader)?;
+                let variant_struct = MovementDataType6::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type6(variant_struct))
             },
             MovementType::MoveToPosition => {
-                let variant_struct = MovementDataType7::read(reader)?;
+                let variant_struct = MovementDataType7::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type7(variant_struct))
             },
             MovementType::TurnToObject => {
-                let variant_struct = MovementDataType8::read(reader)?;
+                let variant_struct = MovementDataType8::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type8(variant_struct))
             },
             MovementType::TurnToPosition => {
-                let variant_struct = MovementDataType9::read(reader)?;
+                let variant_struct = MovementDataType9::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type9(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "movement_type", movement_type).into()),
@@ -4601,9 +4188,7 @@ impl crate::readers::ACDataType for GuestInfo {
 }
 
 impl GameMoveDataType4 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let player_id = ObjectId::read(reader)?;
-        let team = read_i32(reader)?;
+    pub fn read(reader: &mut dyn Read, player_id: ObjectId, team: int) -> Result<Self, Box<dyn std::error::Error>> {
         let id_piece_to_move = read_i32(reader)?;
         let y_grid = read_i32(reader)?;
 
@@ -4616,16 +4201,8 @@ impl GameMoveDataType4 {
     }
 }
 
-impl crate::readers::ACDataType for GameMoveDataType4 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        GameMoveDataType4::read(reader)
-    }
-}
-
 impl GameMoveDataType5 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let player_id = ObjectId::read(reader)?;
-        let team = read_i32(reader)?;
+    pub fn read(reader: &mut dyn Read, player_id: ObjectId, team: int) -> Result<Self, Box<dyn std::error::Error>> {
         let id_piece_to_move = read_i32(reader)?;
         let y_grid = read_i32(reader)?;
         let x_to = read_i32(reader)?;
@@ -4642,16 +4219,8 @@ impl GameMoveDataType5 {
     }
 }
 
-impl crate::readers::ACDataType for GameMoveDataType5 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        GameMoveDataType5::read(reader)
-    }
-}
-
 impl GameMoveDataType6 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let player_id = ObjectId::read(reader)?;
-        let team = read_i32(reader)?;
+    pub fn read(reader: &mut dyn Read, player_id: ObjectId, team: int) -> Result<Self, Box<dyn std::error::Error>> {
         let id_piece_to_move = read_i32(reader)?;
 
         Ok(Self {
@@ -4659,12 +4228,6 @@ impl GameMoveDataType6 {
             team,
             id_piece_to_move,
         })
-    }
-}
-
-impl crate::readers::ACDataType for GameMoveDataType6 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        GameMoveDataType6::read(reader)
     }
 }
 
@@ -4676,15 +4239,15 @@ impl GameMoveData {
 
         match type_ {
             0x04 => {
-                let variant_struct = GameMoveDataType4::read(reader)?;
+                let variant_struct = GameMoveDataType4::read(reader, player_id, team)?;
                 Ok(Self::Type4(variant_struct))
             },
             0x05 => {
-                let variant_struct = GameMoveDataType5::read(reader)?;
+                let variant_struct = GameMoveDataType5::read(reader, player_id, team)?;
                 Ok(Self::Type5(variant_struct))
             },
             0x06 => {
-                let variant_struct = GameMoveDataType6::read(reader)?;
+                let variant_struct = GameMoveDataType6::read(reader, player_id, team)?;
                 Ok(Self::Type6(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),

@@ -3078,19 +3078,13 @@ impl CharacterCharGenVerificationResponseType1 {
     }
 }
 
-impl crate::readers::ACDataType for CharacterCharGenVerificationResponseType1 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterCharGenVerificationResponseType1::read(reader)
-    }
-}
-
 impl CharacterCharGenVerificationResponse {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let response_type = CharGenResponseType::try_from(read_u32(reader)?)?;
 
         match response_type {
             CharGenResponseType::OK => {
-                let variant_struct = CharacterCharGenVerificationResponseType1::read(reader)?;
+                let variant_struct = CharacterCharGenVerificationResponseType1::read(reader, )?;
                 Ok(Self::Type1(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "response_type", response_type).into()),
@@ -3617,13 +3611,7 @@ impl crate::readers::ACDataType for LoginWorldInfo {
 }
 
 impl DDDDataMessageType0 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let dat_file = DatFileType::try_from(read_i64(reader)?)?;
-        let resource_type = read_u32(reader)?;
-        let resource_id = DataId::read(reader)?;
-        let iteration = read_u32(reader)?;
-        let version = read_u32(reader)?;
-        let data_size = read_u32(reader)?;
+    pub fn read(reader: &mut dyn Read, dat_file: DatFileType, resource_type: uint, resource_id: DataId, iteration: uint, version: uint, data_size: uint) -> Result<Self, Box<dyn std::error::Error>> {
         let data = read_vec::<u8>(reader, data_size as usize)?;
 
         Ok(Self {
@@ -3638,20 +3626,8 @@ impl DDDDataMessageType0 {
     }
 }
 
-impl crate::readers::ACDataType for DDDDataMessageType0 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        DDDDataMessageType0::read(reader)
-    }
-}
-
 impl DDDDataMessageType1 {
-    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
-        let dat_file = DatFileType::try_from(read_i64(reader)?)?;
-        let resource_type = read_u32(reader)?;
-        let resource_id = DataId::read(reader)?;
-        let iteration = read_u32(reader)?;
-        let version = read_u32(reader)?;
-        let data_size = read_u32(reader)?;
+    pub fn read(reader: &mut dyn Read, dat_file: DatFileType, resource_type: uint, resource_id: DataId, iteration: uint, version: uint, data_size: uint) -> Result<Self, Box<dyn std::error::Error>> {
         let file_size = read_u32(reader)?;
         let data = read_vec::<u8>(reader, data_size as usize)?;
 
@@ -3668,12 +3644,6 @@ impl DDDDataMessageType1 {
     }
 }
 
-impl crate::readers::ACDataType for DDDDataMessageType1 {
-    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
-        DDDDataMessageType1::read(reader)
-    }
-}
-
 impl DDDDataMessage {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let dat_file = DatFileType::try_from(read_i64(reader)?)?;
@@ -3686,11 +3656,11 @@ impl DDDDataMessage {
 
         match compression {
             CompressionType::None => {
-                let variant_struct = DDDDataMessageType0::read(reader)?;
+                let variant_struct = DDDDataMessageType0::read(reader, dat_file, resource_type, resource_id, iteration, version, data_size)?;
                 Ok(Self::Type0(variant_struct))
             },
             CompressionType::ZLib => {
-                let variant_struct = DDDDataMessageType1::read(reader)?;
+                let variant_struct = DDDDataMessageType1::read(reader, dat_file, resource_type, resource_id, iteration, version, data_size)?;
                 Ok(Self::Type1(variant_struct))
             },
             _ => Err(format!("Unknown {} value: {:?}", "compression", compression).into()),

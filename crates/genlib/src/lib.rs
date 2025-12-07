@@ -1765,8 +1765,21 @@ fn generate_enum_reader_impl(
             format!("Type{}", hex_str)
         };
 
+        // Build the common fields argument list for the variant struct reader
+        // Exclude the switch field since it's already been read and matched
+        let mut common_field_args = Vec::new();
+        let switch_field = field_set.switch_field.as_ref().unwrap();
+        for field in &field_set.common_fields {
+            if field.name != *switch_field {
+                let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                common_field_args.push(field_name);
+            }
+        }
+        let args_str = common_field_args.join(", ");
+        
         out.push_str(&format!(
-            "                let variant_struct = {variant_struct_name}::read(reader)?;\n"
+            "                let variant_struct = {variant_struct_name}::read(reader, {})?;\n",
+            args_str
         ));
         out.push_str(&format!(
             "                Ok(Self::{variant_name}(variant_struct))\n"
@@ -1800,33 +1813,25 @@ fn generate_variant_struct_reader_impl(
     let mut out = String::new();
 
     out.push_str(&format!("impl {struct_name} {{\n"));
-    out.push_str(
-        "    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {\n",
-    );
-
-    // Read common fields (except the switch field which is handled at a higher level)
+    
+    // Build function signature with common fields as parameters
+    let mut params = vec!["reader: &mut dyn Read".to_string()];
     let switch_field = field_set.switch_field.as_ref().unwrap();
     for field in &field_set.common_fields {
         if field.name != *switch_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-            let read_call = generate_read_call(ctx, field, &field_set.common_fields);
-            out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
-
-            // Generate subfield computations if any
-            for subfield in &field.subfields {
-                let subfield_name = safe_identifier(&subfield.name, IdentifierType::Field).name;
-                let subfield_expr = convert_condition_expression(
-                    &subfield.value_expression,
-                    &field_set.common_fields,
-                );
-                let subfield_rust_type = get_rust_type(&subfield.field_type);
-                out.push_str(&format!(
-                    "        let {} = ({}) as {};\n",
-                    subfield_name, subfield_expr, subfield_rust_type
-                ));
-            }
+            let field_type = &field.field_type;
+            params.push(format!("{}: {}", field_name, field_type));
         }
     }
+    let params_str = params.join(", ");
+    
+    out.push_str(&format!(
+        "    pub fn read({}) -> Result<Self, Box<dyn std::error::Error>> {{\n",
+        params_str
+    ));
+
+    // Don't read common fields - they're passed in as parameters
 
     // Check if this case has a nested switch
     let has_nested_switch = if let Some(ref nested_switches) = field_set.nested_switches {
@@ -1953,13 +1958,11 @@ fn generate_variant_struct_reader_impl(
     out.push_str("    }\n");
     out.push_str("}\n\n");
 
-    // Add ACDataType implementation
-    out.push_str(&format!(
-        "impl crate::readers::ACDataType for {struct_name} {{\n    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        {struct_name}::read(reader)\n    }}\n}}\n\n"
-    ));
+    // Don't generate ACDataType for variant structs since they require common field parameters
+    // They're only called directly from their parent enum reader
 
     out
-}
+    }
 
 /// Generate a reader for a nested switch enum
 fn generate_nested_switch_enum_reader(
