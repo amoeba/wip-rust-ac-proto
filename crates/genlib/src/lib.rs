@@ -468,7 +468,7 @@ pub enum {type_name}{type_generics} {{\n",
             field_out.push(generate_field_line(field));
         }
 
-        let fields_out: String = field_out.join(",\n");
+        let fields_out: String = field_out.join(",\n") + ",";
 
         let derives = build_derive_string(&protocol_type.extra_derives);
 

@@ -63,7 +63,7 @@ pub struct LayeredSpellId {
         #[serde(rename = "Id")]
         id: SpellId,
         #[serde(rename = "Layer")]
-        layer: u16
+        layer: u16,
 }
 
 // List which is packable for network
@@ -72,7 +72,7 @@ pub struct PackableList<T> {
         #[serde(rename = "Count")]
         count: u32,
         #[serde(rename = "List")]
-        list: Vec<T>
+        list: Vec<T>,
 }
 
 // HashTable which is packable for network
@@ -83,7 +83,7 @@ pub struct PackableHashTable<T: std::cmp::Eq + std::hash::Hash, U> {
         #[serde(rename = "MaxSize")]
         max_size: u16,
         #[serde(rename = "Table")]
-        table: std::collections::HashMap<T, U>
+        table: std::collections::HashMap<T, U>,
 }
 
 // HashTable which is packable for network
@@ -92,7 +92,7 @@ pub struct PHashTable<T: std::cmp::Eq + std::hash::Hash, U> {
         #[serde(rename = "PackedSize")]
         packed_size: u32,
         #[serde(rename = "Table")]
-        table: std::collections::HashMap<T, U>
+        table: std::collections::HashMap<T, U>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -102,7 +102,7 @@ pub struct Vector3 {
         #[serde(rename = "Y")]
         y: f32,
         #[serde(rename = "Z")]
-        z: f32
+        z: f32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -114,7 +114,7 @@ pub struct Quaternion {
         #[serde(rename = "Y")]
         y: f32,
         #[serde(rename = "Z")]
-        z: f32
+        z: f32,
 }
 
 // Landcell location, without orientation
@@ -123,7 +123,7 @@ pub struct Origin {
         #[serde(rename = "Landcell")]
         landcell: LandcellId,
         #[serde(rename = "Location")]
-        location: Vector3
+        location: Vector3,
 }
 
 // Landcell location, including orientation
@@ -132,7 +132,7 @@ pub struct Position {
         #[serde(rename = "Landcell")]
         landcell: LandcellId,
         #[serde(rename = "Frame")]
-        frame: Frame
+        frame: Frame,
 }
 
 // A the location and orientation of an object within a landcell
@@ -141,7 +141,7 @@ pub struct Frame {
         #[serde(rename = "Origin")]
         origin: Vector3,
         #[serde(rename = "Orientation")]
-        orientation: Quaternion
+        orientation: Quaternion,
 }
 
 // Optional header data when PacketHeaderFlags includes ServerSwitch
@@ -150,7 +150,7 @@ pub struct ServerSwitchHeader {
         #[serde(rename = "Sequence")]
         sequence: u32,
         #[serde(rename = "Type")]
-        type_: ServerSwitchType
+        type_: ServerSwitchType,
 }
 
 // Optional header data when PacketHeaderFlags includes CICMDCommand
@@ -159,7 +159,7 @@ pub struct CICMDCommandHeader {
         #[serde(rename = "Command")]
         command: u32,
         #[serde(rename = "Parameter")]
-        parameter: u32
+        parameter: u32,
 }
 
 // Optional header data when PacketHeaderFlags includes Flow
@@ -168,7 +168,7 @@ pub struct FlowHeader {
         #[serde(rename = "Bytes")]
         bytes: u32,
         #[serde(rename = "Interval")]
-        interval: u16
+        interval: u16,
 }
 
 // Optional header data when PacketHeaderFlags includes LogonServerAddr
@@ -181,7 +181,7 @@ pub struct SocketAddress {
         #[serde(rename = "Address")]
         address: u32,
         #[serde(rename = "Empty")]
-        empty: u64
+        empty: u64,
 }
 
 // Optional header data when PacketHeaderFlags includes LoginRequest
@@ -234,7 +234,7 @@ pub struct ReferralHeader {
         #[serde(rename = "IdServer")]
         id_server: u16,
         #[serde(rename = "Unknown")]
-        unknown: DWORD
+        unknown: DWORD,
 }
 
 // Optional header data when PacketHeaderFlags includes ConnectRequest
@@ -251,7 +251,7 @@ pub struct ConnectRequestHeader {
         #[serde(rename = "IncomingSeed")]
         incoming_seed: u32,
         #[serde(rename = "Unknown")]
-        unknown: DWORD
+        unknown: DWORD,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -259,7 +259,7 @@ pub struct NetError {
         #[serde(rename = "StringId")]
         string_id: DataId,
         #[serde(rename = "TableId")]
-        table_id: DataId
+        table_id: DataId,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -267,7 +267,7 @@ pub struct EchoResponseHeader {
         #[serde(rename = "LocalTime")]
         local_time: f32,
         #[serde(rename = "HoldingTime")]
-        holding_time: f32
+        holding_time: f32,
 }
 
 // A collection of property tables.
@@ -292,7 +292,7 @@ pub struct ACBaseQualities {
         #[serde(rename = "InstanceProperties")]
         instance_properties: Option<PackableHashTable<PropertyInstanceId, ObjectId>>,
         #[serde(rename = "PositionProperties")]
-        position_properties: Option<PackableHashTable<PropertyPosition, Position>>
+        position_properties: Option<PackableHashTable<PropertyPosition, Position>>,
 }
 
 // The ACQualities structure contains character property lists.
@@ -325,7 +325,7 @@ pub struct ACQualities {
         #[serde(rename = "GeneratorRegistry")]
         generator_registry: Option<GeneratorRegistry>,
         #[serde(rename = "GeneratorQueue")]
-        generator_queue: Option<GeneratorQueue>
+        generator_queue: Option<GeneratorQueue>,
 }
 
 // The AttributeCache structure contains information about a character attributes.
@@ -350,7 +350,7 @@ pub struct AttributeCache {
         #[serde(rename = "Stamina")]
         stamina: Option<SecondaryAttributeInfo>,
         #[serde(rename = "Mana")]
-        mana: Option<SecondaryAttributeInfo>
+        mana: Option<SecondaryAttributeInfo>,
 }
 
 // The Attribute structure contains information about a character attribute.
@@ -361,7 +361,7 @@ pub struct AttributeInfo {
         #[serde(rename = "InnatePoints")]
         innate_points: u32,
         #[serde(rename = "ExperienceSpent")]
-        experience_spent: u32
+        experience_spent: u32,
 }
 
 // The SecondaryAttribute structure contains information about a character vital.
@@ -370,7 +370,7 @@ pub struct SecondaryAttributeInfo {
         #[serde(rename = "Attribute")]
         attribute: AttributeInfo,
         #[serde(rename = "Current")]
-        current: u32
+        current: u32,
 }
 
 // The Skill structure contains information about a character skill.
@@ -389,14 +389,14 @@ pub struct Skill {
         #[serde(rename = "ResistanceOfLastCheck")]
         resistance_of_last_check: u32,
         #[serde(rename = "LastUsedTime")]
-        last_used_time: f64
+        last_used_time: f64,
 }
 
 // Contains body part table
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Body {
         #[serde(rename = "BodyParts")]
-        body_parts: PackableHashTable<uint, BodyPart>
+        body_parts: PackableHashTable<uint, BodyPart>,
 }
 
 // Information on individual body parts. (Needs to be confirmed if this was used in prod)
@@ -415,7 +415,7 @@ pub struct BodyPart {
         #[serde(rename = "BH")]
         bh: i32,
         #[serde(rename = "BPSD")]
-        bpsd: Option<BodyPartSelectionData>
+        bpsd: Option<BodyPartSelectionData>,
 }
 
 // Information on armor levels
@@ -438,7 +438,7 @@ pub struct ArmorCache {
         #[serde(rename = "ArmorVsElectric")]
         armor_vs_electric: i32,
         #[serde(rename = "ArmorVsNether")]
-        armor_vs_nether: i32
+        armor_vs_nether: i32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -466,7 +466,7 @@ pub struct BodyPartSelectionData {
         #[serde(rename = "MRB")]
         mrb: i32,
         #[serde(rename = "LRB")]
-        lrb: i32
+        lrb: i32,
 }
 
 // Contains information related to the spell in your spellbook
@@ -477,7 +477,7 @@ pub struct SpellBookPage {
         #[serde(rename = "CastingLikelihood2")]
         casting_likelihood2: Option<f32>,
         #[serde(rename = "Unknown")]
-        unknown: Option<i32>
+        unknown: Option<i32>,
 }
 
 // Contains information related to the spells in effect on the character
@@ -492,7 +492,7 @@ pub struct EnchantmentRegistry {
         #[serde(rename = "Vitae")]
         vitae: Option<Enchantment>,
         #[serde(rename = "Cooldowns")]
-        cooldowns: Option<PackableList<Enchantment>>
+        cooldowns: Option<PackableList<Enchantment>>,
 }
 
 // The Enchantment structure describes an active enchantment.
@@ -521,7 +521,7 @@ pub struct Enchantment {
         #[serde(rename = "StatMod")]
         stat_mod: StatMod,
         #[serde(rename = "EquipmentSet")]
-        equipment_set: Option<EquipmentSet>
+        equipment_set: Option<EquipmentSet>,
 }
 
 // Information on stat modification
@@ -532,27 +532,27 @@ pub struct StatMod {
         #[serde(rename = "Key")]
         key: u32,
         #[serde(rename = "Value")]
-        value: f32
+        value: f32,
 }
 
 // Contains a list of events to filter? Unknown what this does currently.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EventFilter {
         #[serde(rename = "Events")]
-        events: PackableList<uint>
+        events: PackableList<uint>,
 }
 
 // Contains a list of emotes for NPCs? Unknown what this does currently.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmoteTable {
         #[serde(rename = "Emotes")]
-        emotes: PackableHashTable<EmoteCategory, EmoteSetList>
+        emotes: PackableHashTable<EmoteCategory, EmoteSetList>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EmoteSetList {
         #[serde(rename = "Emotes")]
-        emotes: PackableList<EmoteSet>
+        emotes: PackableList<EmoteSet>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1010,7 +1010,7 @@ pub struct CreationProfile {
         #[serde(rename = "StackSize")]
         stack_size: i32,
         #[serde(rename = "TryToBond")]
-        try_to_bond: bool
+        try_to_bond: bool,
 }
 
 // List of pages in a book
@@ -1021,7 +1021,7 @@ pub struct PageDataList {
         #[serde(rename = "MaxNumCharsPerPage")]
         max_num_chars_per_page: u32,
         #[serde(rename = "Pages")]
-        pages: PackableList<PageData>
+        pages: PackableList<PageData>,
 }
 
 // Data for an individual page
@@ -1040,7 +1040,7 @@ pub struct PageData {
         #[serde(rename = "IgnoreAuthor")]
         ignore_author: bool,
         #[serde(rename = "PageText")]
-        page_text: Option<String>
+        page_text: Option<String>,
 }
 
 // Blob fragment data used to contruct message data. These can be spread across multiple packets
@@ -1059,13 +1059,13 @@ pub struct BlobFragments {
         #[serde(rename = "Group")]
         group: FragmentGroup,
         #[serde(rename = "Data")]
-        data: Vec<byte>
+        data: Vec<byte>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GeneratorTable {
         #[serde(rename = "Generators")]
-        generators: PackableList<GeneratorProfile>
+        generators: PackableList<GeneratorProfile>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1093,13 +1093,13 @@ pub struct GeneratorProfile {
         #[serde(rename = "PosVal")]
         pos_val: Position,
         #[serde(rename = "Slot")]
-        slot: u32
+        slot: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GeneratorRegistry {
         #[serde(rename = "Registry")]
-        registry: PackableHashTable<uint, GeneratorRegistryNode>
+        registry: PackableHashTable<uint, GeneratorRegistryNode>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1117,14 +1117,14 @@ pub struct GeneratorRegistryNode {
         #[serde(rename = "Shop")]
         shop: u32,
         #[serde(rename = "Amount")]
-        amount: u32
+        amount: u32,
 }
 
 // Set of inventory items
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GeneratorQueue {
         #[serde(rename = "Queue")]
-        queue: PackableList<GeneratorQueueNode>
+        queue: PackableList<GeneratorQueueNode>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1132,7 +1132,7 @@ pub struct GeneratorQueueNode {
         #[serde(rename = "Slot")]
         slot: u32,
         #[serde(rename = "When")]
-        when: f64
+        when: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1259,7 +1259,7 @@ pub struct GameplayOptions {
         #[serde(rename = "OptionPropertyCount")]
         option_property_count: u8,
         #[serde(rename = "OptionProperties")]
-        option_properties: Vec<OptionProperty>
+        option_properties: Vec<OptionProperty>,
 }
 
 // The PlayerModule structure contains character options.
@@ -1298,14 +1298,14 @@ pub struct PlayerModule {
         #[serde(rename = "OptionStrings")]
         option_strings: Option<PackableHashTable<uint, string>>,
         #[serde(rename = "GameplayOptions")]
-        gameplay_options: Option<GameplayOptions>
+        gameplay_options: Option<GameplayOptions>,
 }
 
 // Set of shortcuts
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ShortCutManager {
         #[serde(rename = "Shortcuts")]
-        shortcuts: PackableList<ShortCutData>
+        shortcuts: PackableList<ShortCutData>,
 }
 
 // Shortcut
@@ -1316,14 +1316,14 @@ pub struct ShortCutData {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "SpellId")]
-        spell_id: LayeredSpellId
+        spell_id: LayeredSpellId,
 }
 
 // List of spells in spell tab
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SpellTab {
         #[serde(rename = "Spells")]
-        spells: PackableList<LayeredSpellId>
+        spells: PackableList<LayeredSpellId>,
 }
 
 // Set of inventory items
@@ -1332,7 +1332,7 @@ pub struct ContentProfile {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "ContainerType")]
-        container_type: ContainerProperties
+        container_type: ContainerProperties,
 }
 
 // Set of inventory items
@@ -1343,7 +1343,7 @@ pub struct InventoryPlacement {
         #[serde(rename = "Location")]
         location: EquipMask,
         #[serde(rename = "Priority")]
-        priority: CoverageMask
+        priority: CoverageMask,
 }
 
 // Allegience information
@@ -1354,7 +1354,7 @@ pub struct AllegianceProfile {
         #[serde(rename = "TotalVassals")]
         total_vassals: u32,
         #[serde(rename = "Hierarchy")]
-        hierarchy: AllegianceHierarchy
+        hierarchy: AllegianceHierarchy,
 }
 
 // Allegience record
@@ -1363,7 +1363,7 @@ pub struct AllegianceRecord {
         #[serde(rename = "TreeParent")]
         tree_parent: ObjectId,
         #[serde(rename = "AllegianceData")]
-        allegiance_data: AllegianceData
+        allegiance_data: AllegianceData,
 }
 
 // Allegience hierarchy information
@@ -1404,7 +1404,7 @@ pub struct AllegianceHierarchy {
         #[serde(rename = "MonarchData")]
         monarch_data: Option<AllegianceData>,
         #[serde(rename = "Records")]
-        records: Vec<AllegianceRecord>
+        records: Vec<AllegianceRecord>,
 }
 
 // Set of allegiance data for a specific player
@@ -1435,7 +1435,7 @@ pub struct AllegianceData {
         #[serde(rename = "TimeOnline")]
         time_online: Option<u64>,
         #[serde(rename = "Name")]
-        name: String
+        name: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1451,7 +1451,7 @@ pub struct FriendData {
         #[serde(rename = "OutFriends")]
         out_friends: PackableList<ObjectId>,
         #[serde(rename = "InFriends")]
-        in_friends: PackableList<ObjectId>
+        in_friends: PackableList<ObjectId>,
 }
 
 // Data related to an item, namely the amount and description
@@ -1566,7 +1566,7 @@ pub struct PublicWeenieDesc {
         #[serde(rename = "CooldownDuration")]
         cooldown_duration: Option<u64>,
         #[serde(rename = "PetOwnerId")]
-        pet_owner_id: Option<ObjectId>
+        pet_owner_id: Option<ObjectId>,
 }
 
 // The RestrictionDB contains the access control list for a dwelling object.
@@ -1579,7 +1579,7 @@ pub struct RestrictionDB {
         #[serde(rename = "MonarchId")]
         monarch_id: ObjectId,
         #[serde(rename = "Permissions")]
-        permissions: PHashTable<ObjectId, uint>
+        permissions: PHashTable<ObjectId, uint>,
 }
 
 // The OldPublicWeenieDesc structure defines an object's game behavior.
@@ -1660,7 +1660,7 @@ pub struct OldPublicWeenieDesc {
         #[serde(rename = "IconOverlay")]
         icon_overlay: Option<PackedDWORD>,
         #[serde(rename = "Material")]
-        material: Option<MaterialType>
+        material: Option<MaterialType>,
 }
 
 // Information related to a secure trade.
@@ -1677,7 +1677,7 @@ pub struct Trade {
         #[serde(rename = "Accepted")]
         accepted: bool,
         #[serde(rename = "PartnerAccepted")]
-        partner_accepted: bool
+        partner_accepted: bool,
 }
 
 // A jump with sequences
@@ -1694,7 +1694,7 @@ pub struct JumpPack {
         #[serde(rename = "ObjectTeleportSequence")]
         object_teleport_sequence: u16,
         #[serde(rename = "ObjectForcePositionSequence")]
-        object_force_position_sequence: u16
+        object_force_position_sequence: u16,
 }
 
 // A set of data related to changing states with sequences
@@ -1713,7 +1713,7 @@ pub struct MoveToStatePack {
         #[serde(rename = "ObjectForcePositionSequence")]
         object_force_position_sequence: u16,
         #[serde(rename = "Contact")]
-        contact: u8
+        contact: u8,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1723,7 +1723,7 @@ pub struct PackedMotionCommand {
         #[serde(rename = "PackedSequence")]
         packed_sequence: u16,
         #[serde(rename = "Speed")]
-        speed: f32
+        speed: f32,
 }
 
 // Data related to the movement of the object sent from a client
@@ -1754,7 +1754,7 @@ pub struct RawMotionState {
         #[serde(rename = "TurnSpeed")]
         turn_speed: Option<f32>,
         #[serde(rename = "Commands")]
-        commands: Vec<PackedMotionCommand>
+        commands: Vec<PackedMotionCommand>,
 }
 
 // An autonomous position with sequences
@@ -1771,7 +1771,7 @@ pub struct AutonomousPositionPack {
         #[serde(rename = "ObjectForcePositionSequence")]
         object_force_position_sequence: u16,
         #[serde(rename = "Contact")]
-        contact: u8
+        contact: u8,
 }
 
 // A position with sequences
@@ -1800,7 +1800,7 @@ pub struct PositionPack {
         #[serde(rename = "ObjectTeleportSequence")]
         object_teleport_sequence: u16,
         #[serde(rename = "ObjectForcePositionSequence")]
-        object_force_position_sequence: u16
+        object_force_position_sequence: u16,
 }
 
 // Data related to the movement and animation of the object
@@ -1920,7 +1920,7 @@ pub struct InterpertedMotionState {
         #[serde(rename = "TurnSpeed")]
         turn_speed: Option<f32>,
         #[serde(rename = "Commands")]
-        commands: Vec<PackedMotionCommand>
+        commands: Vec<PackedMotionCommand>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1932,7 +1932,7 @@ pub struct DDDRevision {
         #[serde(rename = "IdsToDownload")]
         ids_to_download: PackableList<DataId>,
         #[serde(rename = "IdsToPurge")]
-        ids_to_purge: PackableList<DataId>
+        ids_to_purge: PackableList<DataId>,
 }
 
 // Set of movement parameters required for a MoveTo movement
@@ -1951,7 +1951,7 @@ pub struct MoveToMovementParameters {
         #[serde(rename = "WalkRunThreshold")]
         walk_run_threshold: f32,
         #[serde(rename = "DesiredHeading")]
-        desired_heading: f32
+        desired_heading: f32,
 }
 
 // Set of movement parameters required for a TurnTo motion
@@ -1962,7 +1962,7 @@ pub struct TurnToMovementParameters {
         #[serde(rename = "AnimationSpeed")]
         animation_speed: f32,
         #[serde(rename = "DesiredHeading")]
-        desired_heading: f32
+        desired_heading: f32,
 }
 
 // The ObjDesc structure defines an object's visual appearance.
@@ -1983,7 +1983,7 @@ pub struct ObjDesc {
         #[serde(rename = "TMChanges")]
         tm_changes: Vec<TextureMapChange>,
         #[serde(rename = "APChanges")]
-        ap_changes: Vec<AnimPartChange>
+        ap_changes: Vec<AnimPartChange>,
 }
 
 // Contains data for a subpalette
@@ -1994,7 +1994,7 @@ pub struct Subpalette {
         #[serde(rename = "Offset")]
         offset: u8,
         #[serde(rename = "NumColors")]
-        num_colors: u8
+        num_colors: u8,
 }
 
 // Contains data for texture map changes
@@ -2005,7 +2005,7 @@ pub struct TextureMapChange {
         #[serde(rename = "OldTexId")]
         old_tex_id: DataId,
         #[serde(rename = "NewTexId")]
-        new_tex_id: DataId
+        new_tex_id: DataId,
 }
 
 // Contains data for animation part changes
@@ -2014,7 +2014,7 @@ pub struct AnimPartChange {
         #[serde(rename = "PartIndex")]
         part_index: u8,
         #[serde(rename = "PartId")]
-        part_id: DataId
+        part_id: DataId,
 }
 
 // Data for a character creation
@@ -2097,7 +2097,7 @@ pub struct CharGenResult {
         #[serde(rename = "IsEnvoy")]
         is_envoy: u32,
         #[serde(rename = "Validation")]
-        validation: u32
+        validation: u32,
 }
 
 // Basic information for a character used at the Login screen
@@ -2108,7 +2108,7 @@ pub struct CharacterIdentity {
         #[serde(rename = "Name")]
         name: String,
         #[serde(rename = "SecondsGreyedOut")]
-        seconds_greyed_out: u32
+        seconds_greyed_out: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2116,7 +2116,7 @@ pub struct EquipLocation {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Slot")]
-        slot: EquipMask
+        slot: EquipMask,
 }
 
 // The PhysicsDesc structure defines an object's physical behavior.
@@ -2183,7 +2183,7 @@ pub struct PhysicsDesc {
         #[serde(rename = "ObjectVisualDescSequence")]
         object_visual_desc_sequence: u16,
         #[serde(rename = "ObjectInstanceSequence")]
-        object_instance_sequence: u16
+        object_instance_sequence: u16,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2191,14 +2191,14 @@ pub struct AdminAccountData {
         #[serde(rename = "AccountName")]
         account_name: String,
         #[serde(rename = "BookieId")]
-        bookie_id: u32
+        bookie_id: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AdminPlayerData {
         name: String,
         #[serde(rename = "bookieId")]
-        bookie_id: u32
+        bookie_id: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2220,7 +2220,7 @@ pub struct VendorProfile {
         #[serde(rename = "CurrencyAmount")]
         currency_amount: u32,
         #[serde(rename = "CurrencyName")]
-        currency_name: String
+        currency_name: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2240,7 +2240,7 @@ pub struct ArmorProfile {
         #[serde(rename = "ProtNether")]
         prot_nether: f32,
         #[serde(rename = "ProtLightning")]
-        prot_lightning: f32
+        prot_lightning: f32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2274,7 +2274,7 @@ pub struct CreatureAppraisalProfile {
         #[serde(rename = "AttrHighlight")]
         attr_highlight: Option<AttributeMask>,
         #[serde(rename = "AttrColor")]
-        attr_color: Option<AttributeMask>
+        attr_color: Option<AttributeMask>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2298,7 +2298,7 @@ pub struct WeaponProfile {
         #[serde(rename = "Offsense")]
         offsense: f64,
         #[serde(rename = "MaxVelocityEstimated")]
-        max_velocity_estimated: u32
+        max_velocity_estimated: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2308,7 +2308,7 @@ pub struct HookAppraisalProfile {
         #[serde(rename = "ValidLocations")]
         valid_locations: EquipMask,
         #[serde(rename = "AmmoType")]
-        ammo_type: AmmoType
+        ammo_type: AmmoType,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2318,7 +2318,7 @@ pub struct SquelchDB {
         #[serde(rename = "CharacterHash")]
         character_hash: PackableHashTable<ObjectId, SquelchInfo>,
         #[serde(rename = "GlobalInfo")]
-        global_info: SquelchInfo
+        global_info: SquelchInfo,
 }
 
 // Set of information related to a squelch entry
@@ -2329,7 +2329,7 @@ pub struct SquelchInfo {
         #[serde(rename = "Name")]
         name: String,
         #[serde(rename = "Account")]
-        account: bool
+        account: bool,
 }
 
 // Set of information related to purchasing a housing
@@ -2358,7 +2358,7 @@ pub struct HouseProfile {
         #[serde(rename = "Buy")]
         buy: PackableList<HousePayment>,
         #[serde(rename = "Rent")]
-        rent: PackableList<HousePayment>
+        rent: PackableList<HousePayment>,
 }
 
 // The HousePayment structure contains information about a house purchase or maintenance item.
@@ -2373,7 +2373,7 @@ pub struct HousePayment {
         #[serde(rename = "Name")]
         name: String,
         #[serde(rename = "PluralName")]
-        plural_name: String
+        plural_name: String,
 }
 
 // Set of information related to owning a housing
@@ -2392,7 +2392,7 @@ pub struct HouseData {
         #[serde(rename = "Rent")]
         rent: PackableList<HousePayment>,
         #[serde(rename = "Position")]
-        position: Position
+        position: Position,
 }
 
 // Set of information related to house access
@@ -2407,7 +2407,7 @@ pub struct HAR {
         #[serde(rename = "GuestList")]
         guest_list: PackableHashTable<ObjectId, GuestInfo>,
         #[serde(rename = "RoommateList")]
-        roommate_list: PackableList<ObjectId>
+        roommate_list: PackableList<ObjectId>,
 }
 
 // Set of information related to a house guest
@@ -2416,7 +2416,7 @@ pub struct GuestInfo {
         #[serde(rename = "HasStoragePermission")]
         has_storage_permission: bool,
         #[serde(rename = "GuestName")]
-        guest_name: String
+        guest_name: String,
 }
 
 // Set of information related to a chess game move
@@ -2470,7 +2470,7 @@ pub struct SalvageOperationsResultData {
         #[serde(rename = "SalvageResults")]
         salvage_results: PackableList<SalvageResult>,
         #[serde(rename = "AugBonus")]
-        aug_bonus: i32
+        aug_bonus: i32,
 }
 
 // Set of information related to a salvage of an item
@@ -2481,7 +2481,7 @@ pub struct SalvageResult {
         #[serde(rename = "Workmanship")]
         workmanship: f64,
         #[serde(rename = "Units")]
-        units: u32
+        units: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -2495,7 +2495,7 @@ pub struct FellowshipLockData {
         #[serde(rename = "Timestamp")]
         timestamp: u32,
         #[serde(rename = "Sequence")]
-        sequence: u32
+        sequence: u32,
 }
 
 // Set of information for a fellowship
@@ -2518,7 +2518,7 @@ pub struct Fellowship {
         #[serde(rename = "RecentlyDeparted")]
         recently_departed: PackableHashTable<ObjectId, int>,
         #[serde(rename = "Locks")]
-        locks: PackableHashTable<String, FellowshipLockData>
+        locks: PackableHashTable<String, FellowshipLockData>,
 }
 
 // The FellowInfo structure contains information about a fellowship member.
@@ -2545,7 +2545,7 @@ pub struct Fellow {
         #[serde(rename = "ShareLoot")]
         share_loot: bool,
         #[serde(rename = "Name")]
-        name: String
+        name: String,
 }
 
 // Contains information about a contract.
@@ -2560,14 +2560,14 @@ pub struct ContractTracker {
         #[serde(rename = "TimeWhenDone")]
         time_when_done: i64,
         #[serde(rename = "TimeWhenRepeats")]
-        time_when_repeats: i64
+        time_when_repeats: i64,
 }
 
 // Contains table of ContractTrackers
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ContractTrackerTable {
         #[serde(rename = "ContactTrackers")]
-        contact_trackers: PackableHashTable<uint, ContractTracker>
+        contact_trackers: PackableHashTable<uint, ContractTracker>,
 }
 
 // Client to Server AC packet.
@@ -2610,7 +2610,7 @@ pub struct C2SPacket {
         #[serde(rename = "Flow")]
         flow: Option<FlowHeader>,
         #[serde(rename = "Fragments")]
-        fragments: Option<BlobFragments>
+        fragments: Option<BlobFragments>,
 }
 
 // Server to Client AC packet.
@@ -2645,6 +2645,6 @@ pub struct S2CPacket {
         #[serde(rename = "EchoResponse")]
         echo_response: Option<EchoResponseHeader>,
         #[serde(rename = "Fragments")]
-        fragments: Option<BlobFragments>
+        fragments: Option<BlobFragments>,
 }
 

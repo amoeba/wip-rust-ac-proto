@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 #[serde(rename = "Allegiance_AllegianceUpdateAborted")]
 pub struct AllegianceAllegianceUpdateAborted {
         #[serde(rename = "FailureType")]
-        failure_type: WeenieError
+        failure_type: WeenieError,
 }
 
 // Display a message in a popup message window.
@@ -13,7 +13,7 @@ pub struct AllegianceAllegianceUpdateAborted {
 #[serde(rename = "Communication_PopUpString")]
 pub struct CommunicationPopUpString {
         #[serde(rename = "Message")]
-        message: String
+        message: String,
 }
 
 // Information describing your character.
@@ -29,7 +29,7 @@ pub struct LoginPlayerDescription {
         #[serde(rename = "ContentProfile")]
         content_profile: PackableList<ContentProfile>,
         #[serde(rename = "InventoryPlacement")]
-        inventory_placement: PackableList<InventoryPlacement>
+        inventory_placement: PackableList<InventoryPlacement>,
 }
 
 // Returns info related to your monarch, patron and vassals.
@@ -39,7 +39,7 @@ pub struct AllegianceAllegianceUpdate {
         #[serde(rename = "Rank")]
         rank: u32,
         #[serde(rename = "Profile")]
-        profile: AllegianceProfile
+        profile: AllegianceProfile,
 }
 
 // Friends list update
@@ -49,7 +49,7 @@ pub struct SocialFriendsUpdate {
         #[serde(rename = "Friends")]
         friends: PackableList<FriendData>,
         #[serde(rename = "Type")]
-        type_: FriendsUpdateType
+        type_: FriendsUpdateType,
 }
 
 // Store an item in a container.
@@ -63,7 +63,7 @@ pub struct ItemServerSaysContainId {
         #[serde(rename = "SlotIndex")]
         slot_index: u32,
         #[serde(rename = "ContainerType")]
-        container_type: ContainerProperties
+        container_type: ContainerProperties,
 }
 
 // Equip an item.
@@ -73,7 +73,7 @@ pub struct ItemWearItem {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Slot")]
-        slot: EquipMask
+        slot: EquipMask,
 }
 
 // Titles for the current character.
@@ -83,7 +83,7 @@ pub struct SocialCharacterTitleTable {
         #[serde(rename = "DisplayTitle")]
         display_title: u32,
         #[serde(rename = "Titles")]
-        titles: PackableList<uint>
+        titles: PackableList<uint>,
 }
 
 // Set a title for the current character.
@@ -93,7 +93,7 @@ pub struct SocialAddOrSetCharacterTitle {
         #[serde(rename = "NewTitle")]
         new_title: u32,
         #[serde(rename = "SetAsDisplayTitle")]
-        set_as_display_title: bool
+        set_as_display_title: bool,
 }
 
 // Close Container - Only sent when explicitly closed
@@ -101,7 +101,7 @@ pub struct SocialAddOrSetCharacterTitle {
 #[serde(rename = "Item_StopViewingObjectContents")]
 pub struct ItemStopViewingObjectContents {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // Open the buy/sell panel for a merchant.
@@ -113,7 +113,7 @@ pub struct VendorVendorInfo {
         #[serde(rename = "Profile")]
         profile: VendorProfile,
         #[serde(rename = "Items")]
-        items: PackableList<ItemProfile>
+        items: PackableList<ItemProfile>,
 }
 
 // Opens barber UI
@@ -151,7 +151,7 @@ pub struct CharacterStartBarber {
         #[serde(rename = "Option1")]
         option1: i32,
         #[serde(rename = "Option2")]
-        option2: i32
+        option2: i32,
 }
 
 // Member left fellowship
@@ -159,7 +159,7 @@ pub struct CharacterStartBarber {
 #[serde(rename = "Fellowship_Quit")]
 pub struct FellowshipQuit {
         #[serde(rename = "Disband")]
-        disband: bool
+        disband: bool,
 }
 
 // Member dismissed from fellowship
@@ -167,7 +167,7 @@ pub struct FellowshipQuit {
 #[serde(rename = "Fellowship_Dismiss")]
 pub struct FellowshipDismiss {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // Sent when you first open a book, contains the entire table of contents.
@@ -185,7 +185,7 @@ pub struct WritingBookOpen {
         #[serde(rename = "ScribeId")]
         scribe_id: ObjectId,
         #[serde(rename = "ScribeName")]
-        scribe_name: String
+        scribe_name: String,
 }
 
 // Response to an attempt to add a page to a book.
@@ -197,7 +197,7 @@ pub struct WritingBookAddPageResponse {
         #[serde(rename = "PageNumber")]
         page_number: u32,
         #[serde(rename = "Success")]
-        success: bool
+        success: bool,
 }
 
 // Response to an attempt to delete a page from a book.
@@ -209,7 +209,7 @@ pub struct WritingBookDeletePageResponse {
         #[serde(rename = "PageNumber")]
         page_number: u32,
         #[serde(rename = "Success")]
-        success: bool
+        success: bool,
 }
 
 // Contains the text of a single page of a book, parchment or sign.
@@ -221,7 +221,7 @@ pub struct WritingBookPageDataResponse {
         #[serde(rename = "Page")]
         page: u32,
         #[serde(rename = "PageData")]
-        page_data: PageData
+        page_data: PageData,
 }
 
 // Get Inscription Response, doesn't seem to be really used by client
@@ -233,7 +233,7 @@ pub struct ItemGetInscriptionResponse {
         #[serde(rename = "ScribeName")]
         scribe_name: String,
         #[serde(rename = "ScribeAccount")]
-        scribe_account: String
+        scribe_account: String,
 }
 
 // The result of an attempt to assess an item or creature.
@@ -297,7 +297,7 @@ pub struct ItemSetAppraiseInfo {
         #[serde(rename = "BaseArmorShin")]
         base_armor_shin: Option<u32>,
         #[serde(rename = "BaseArmorFoot")]
-        base_armor_foot: Option<u32>
+        base_armor_foot: Option<u32>,
 }
 
 // ChannelBroadcast: Group Chat
@@ -307,7 +307,7 @@ pub struct CommunicationChannelBroadcast {
         #[serde(rename = "Channel")]
         channel: Channel,
         #[serde(rename = "Message")]
-        message: String
+        message: String,
 }
 
 // ChannelList: Provides list of characters listening to a channel, I assume in response to a command
@@ -315,7 +315,7 @@ pub struct CommunicationChannelBroadcast {
 #[serde(rename = "Communication_ChannelList")]
 pub struct CommunicationChannelList {
         #[serde(rename = "Characters")]
-        characters: PackableList<string>
+        characters: PackableList<string>,
 }
 
 // ChannelIndex: Provides list of channels available to the player, I assume in response to a command
@@ -323,7 +323,7 @@ pub struct CommunicationChannelList {
 #[serde(rename = "Communication_ChannelIndex")]
 pub struct CommunicationChannelIndex {
         #[serde(rename = "Channels")]
-        channels: PackableList<string>
+        channels: PackableList<string>,
 }
 
 // Set Pack Contents
@@ -333,7 +333,7 @@ pub struct ItemOnViewContents {
         #[serde(rename = "ContainerId")]
         container_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList<ContentProfile>
+        items: PackableList<ContentProfile>,
 }
 
 // ServerSaysMoveItem: Removes an item from inventory (when you place it on the ground or give it away)
@@ -341,7 +341,7 @@ pub struct ItemOnViewContents {
 #[serde(rename = "Item_ServerSaysMoveItem")]
 pub struct ItemServerSaysMoveItem {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // HandleAttackDoneEvent: Melee attack completed
@@ -349,7 +349,7 @@ pub struct ItemServerSaysMoveItem {
 #[serde(rename = "Combat_HandleAttackDoneEvent")]
 pub struct CombatHandleAttackDoneEvent {
         #[serde(rename = "Number")]
-        number: u32
+        number: u32,
 }
 
 // RemoveSpell: Delete a spell from your spellbook.
@@ -357,7 +357,7 @@ pub struct CombatHandleAttackDoneEvent {
 #[serde(rename = "Magic_RemoveSpell")]
 pub struct MagicRemoveSpell {
         #[serde(rename = "SpellId")]
-        spell_id: LayeredSpellId
+        spell_id: LayeredSpellId,
 }
 
 // You just died.
@@ -365,7 +365,7 @@ pub struct MagicRemoveSpell {
 #[serde(rename = "Combat_HandleVictimNotificationEventSelf")]
 pub struct CombatHandleVictimNotificationEventSelf {
         #[serde(rename = "Message")]
-        message: String
+        message: String,
 }
 
 // Message for a death, something you killed or your own death message.
@@ -373,7 +373,7 @@ pub struct CombatHandleVictimNotificationEventSelf {
 #[serde(rename = "Combat_HandleVictimNotificationEventOther")]
 pub struct CombatHandleVictimNotificationEventOther {
         #[serde(rename = "Message")]
-        message: String
+        message: String,
 }
 
 // HandleAttackerNotificationEvent: You have hit your target with a melee attack.
@@ -391,7 +391,7 @@ pub struct CombatHandleAttackerNotificationEvent {
         #[serde(rename = "Critical")]
         critical: bool,
         #[serde(rename = "AttackConditions")]
-        attack_conditions: AttackConditionsMask
+        attack_conditions: AttackConditionsMask,
 }
 
 // HandleDefenderNotificationEvent: You have been hit by a creature's melee attack.
@@ -411,7 +411,7 @@ pub struct CombatHandleDefenderNotificationEvent {
         #[serde(rename = "Critical")]
         critical: bool,
         #[serde(rename = "AttackConditions")]
-        attack_conditions: AttackConditionsMask
+        attack_conditions: AttackConditionsMask,
 }
 
 // HandleEvasionAttackerNotificationEvent: Your target has evaded your melee attack.
@@ -419,7 +419,7 @@ pub struct CombatHandleDefenderNotificationEvent {
 #[serde(rename = "Combat_HandleEvasionAttackerNotificationEvent")]
 pub struct CombatHandleEvasionAttackerNotificationEvent {
         #[serde(rename = "DefenderName")]
-        defender_name: String
+        defender_name: String,
 }
 
 // HandleEvasionDefenderNotificationEvent: You have evaded a creature's melee attack.
@@ -427,7 +427,7 @@ pub struct CombatHandleEvasionAttackerNotificationEvent {
 #[serde(rename = "Combat_HandleEvasionDefenderNotificationEvent")]
 pub struct CombatHandleEvasionDefenderNotificationEvent {
         #[serde(rename = "AttackerName")]
-        attacker_name: String
+        attacker_name: String,
 }
 
 // HandleCommenceAttackEvent: Start melee attack
@@ -442,7 +442,7 @@ pub struct CombatQueryHealthResponse {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Health")]
-        health: f32
+        health: f32,
 }
 
 // QueryAgeResponse: happens when you do /age in the game
@@ -452,7 +452,7 @@ pub struct CharacterQueryAgeResponse {
         #[serde(rename = "TargetName")]
         target_name: String,
         #[serde(rename = "Age")]
-        age: String
+        age: String,
 }
 
 // UseDone: Ready. Previous action complete
@@ -460,7 +460,7 @@ pub struct CharacterQueryAgeResponse {
 #[serde(rename = "Item_UseDone")]
 pub struct ItemUseDone {
         #[serde(rename = "FailureType")]
-        failure_type: WeenieError
+        failure_type: WeenieError,
 }
 
 // Allegiance update finished
@@ -468,7 +468,7 @@ pub struct ItemUseDone {
 #[serde(rename = "Allegiance_AllegianceUpdateDone")]
 pub struct AllegianceAllegianceUpdateDone {
         #[serde(rename = "FailureType")]
-        failure_type: WeenieError
+        failure_type: WeenieError,
 }
 
 // Fellow update is done
@@ -486,7 +486,7 @@ pub struct FellowshipFellowStatsDone {}
 #[serde(rename = "Item_AppraiseDone")]
 pub struct ItemAppraiseDone {
         #[serde(rename = "Unknown")]
-        unknown: u32
+        unknown: u32,
 }
 
 // Ping Reply
@@ -499,7 +499,7 @@ pub struct CharacterReturnPing {}
 #[serde(rename = "Communication_SetSquelchDB")]
 pub struct CommunicationSetSquelchDB {
         #[serde(rename = "SquelchDB")]
-        squelch_db: SquelchDB
+        squelch_db: SquelchDB,
 }
 
 // RegisterTrade: Send to begin a trade and display the trade window
@@ -511,7 +511,7 @@ pub struct TradeRegisterTrade {
         #[serde(rename = "PartnerId")]
         partner_id: ObjectId,
         #[serde(rename = "Stamp")]
-        stamp: i64
+        stamp: i64,
 }
 
 // OpenTrade: Open trade window
@@ -519,7 +519,7 @@ pub struct TradeRegisterTrade {
 #[serde(rename = "Trade_OpenTrade")]
 pub struct TradeOpenTrade {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // CloseTrade: End trading
@@ -527,7 +527,7 @@ pub struct TradeOpenTrade {
 #[serde(rename = "Trade_CloseTrade")]
 pub struct TradeCloseTrade {
         #[serde(rename = "Reason")]
-        reason: EndTradeReason
+        reason: EndTradeReason,
 }
 
 // RemoveFromTrade: Item was removed from trade window
@@ -537,7 +537,7 @@ pub struct TradeAddToTrade {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Side")]
-        side: TradeSide
+        side: TradeSide,
 }
 
 // Removes an item from the trade window, not sure if this is used still?
@@ -547,7 +547,7 @@ pub struct TradeRemoveFromTrade {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Side")]
-        side: TradeSide
+        side: TradeSide,
 }
 
 // AcceptTrade: The trade was accepted
@@ -555,7 +555,7 @@ pub struct TradeRemoveFromTrade {
 #[serde(rename = "Trade_AcceptTrade")]
 pub struct TradeAcceptTrade {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // DeclineTrade: The trade was declined
@@ -563,7 +563,7 @@ pub struct TradeAcceptTrade {
 #[serde(rename = "Trade_DeclineTrade")]
 pub struct TradeDeclineTrade {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // ResetTrade: The trade window was reset
@@ -571,7 +571,7 @@ pub struct TradeDeclineTrade {
 #[serde(rename = "Trade_ResetTrade")]
 pub struct TradeResetTrade {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // TradeFailure: Failure to add a trade item
@@ -581,7 +581,7 @@ pub struct TradeTradeFailure {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Reason")]
-        reason: u32
+        reason: u32,
 }
 
 // ClearTradeAcceptance: Failure to complete a trade
@@ -596,7 +596,7 @@ pub struct HouseHouseProfile {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Profile")]
-        profile: HouseProfile
+        profile: HouseProfile,
 }
 
 // House panel information for owners.
@@ -604,7 +604,7 @@ pub struct HouseHouseProfile {
 #[serde(rename = "House_HouseData")]
 pub struct HouseHouseData {
         #[serde(rename = "Data")]
-        data: HouseData
+        data: HouseData,
 }
 
 // House Data
@@ -612,7 +612,7 @@ pub struct HouseHouseData {
 #[serde(rename = "House_HouseStatus")]
 pub struct HouseHouseStatus {
         #[serde(rename = "NoticeType")]
-        notice_type: u32
+        notice_type: u32,
 }
 
 // Update Rent Time
@@ -620,7 +620,7 @@ pub struct HouseHouseStatus {
 #[serde(rename = "House_UpdateRentTime")]
 pub struct HouseUpdateRentTime {
         #[serde(rename = "RentTime")]
-        rent_time: u32
+        rent_time: u32,
 }
 
 // Update Rent Payment
@@ -628,7 +628,7 @@ pub struct HouseUpdateRentTime {
 #[serde(rename = "House_UpdateRentPayment")]
 pub struct HouseUpdateRentPayment {
         #[serde(rename = "Rent")]
-        rent: PackableList<HousePayment>
+        rent: PackableList<HousePayment>,
 }
 
 // Update Restrictions
@@ -640,7 +640,7 @@ pub struct HouseUpdateRestrictions {
         #[serde(rename = "SenderId")]
         sender_id: ObjectId,
         #[serde(rename = "Restrictions")]
-        restrictions: RestrictionDB
+        restrictions: RestrictionDB,
 }
 
 // House Guest List
@@ -648,7 +648,7 @@ pub struct HouseUpdateRestrictions {
 #[serde(rename = "House_UpdateHAR")]
 pub struct HouseUpdateHAR {
         #[serde(rename = "GuestList")]
-        guest_list: HAR
+        guest_list: HAR,
 }
 
 // House Profile
@@ -656,7 +656,7 @@ pub struct HouseUpdateHAR {
 #[serde(rename = "House_HouseTransaction")]
 pub struct HouseHouseTransaction {
         #[serde(rename = "NoticeType")]
-        notice_type: u32
+        notice_type: u32,
 }
 
 // Update an item's mana bar.
@@ -668,7 +668,7 @@ pub struct ItemQueryItemManaResponse {
         #[serde(rename = "Mana")]
         mana: f32,
         #[serde(rename = "Success")]
-        success: bool
+        success: bool,
 }
 
 // Display a list of available dwellings in the chat window.
@@ -680,7 +680,7 @@ pub struct HouseAvailableHouses {
         #[serde(rename = "Houses")]
         houses: PackableList<uint>,
         #[serde(rename = "NumHouses")]
-        num_houses: i32
+        num_houses: i32,
 }
 
 // Display a confirmation panel.
@@ -692,7 +692,7 @@ pub struct CharacterConfirmationRequest {
         #[serde(rename = "ContextId")]
         context_id: u32,
         #[serde(rename = "Text")]
-        text: String
+        text: String,
 }
 
 // Confirmation done
@@ -702,7 +702,7 @@ pub struct CharacterConfirmationDone {
         #[serde(rename = "ConfirmationType")]
         confirmation_type: ConfirmationType,
         #[serde(rename = "ContextId")]
-        context_id: u32
+        context_id: u32,
 }
 
 // Display an allegiance login/logout message in the chat window.
@@ -712,7 +712,7 @@ pub struct AllegianceAllegianceLoginNotificationEvent {
         #[serde(rename = "CharacterId")]
         character_id: ObjectId,
         #[serde(rename = "IsLoggedIn")]
-        is_logged_in: bool
+        is_logged_in: bool,
 }
 
 // Returns data for a player's allegiance information
@@ -722,7 +722,7 @@ pub struct AllegianceAllegianceInfoResponseEvent {
         #[serde(rename = "TargetId")]
         target_id: ObjectId,
         #[serde(rename = "Profile")]
-        profile: AllegianceProfile
+        profile: AllegianceProfile,
 }
 
 // Joining game response
@@ -732,7 +732,7 @@ pub struct GameJoinGameResponse {
         #[serde(rename = "GameId")]
         game_id: u32,
         #[serde(rename = "Team")]
-        team: i32
+        team: i32,
 }
 
 // Start game
@@ -742,7 +742,7 @@ pub struct GameStartGame {
         #[serde(rename = "GameId")]
         game_id: u32,
         #[serde(rename = "Team")]
-        team: i32
+        team: i32,
 }
 
 // Move response
@@ -752,7 +752,7 @@ pub struct GameMoveResponse {
         #[serde(rename = "GameId")]
         game_id: u32,
         #[serde(rename = "MoveResult")]
-        move_result: ChessMoveResult
+        move_result: ChessMoveResult,
 }
 
 // Opponent Turn
@@ -764,7 +764,7 @@ pub struct GameOpponentTurn {
         #[serde(rename = "Team")]
         team: i32,
         #[serde(rename = "GameMove")]
-        game_move: GameMoveData
+        game_move: GameMoveData,
 }
 
 // Opponent Stalemate State
@@ -776,7 +776,7 @@ pub struct GameOpponentStalemateState {
         #[serde(rename = "Team")]
         team: i32,
         #[serde(rename = "On")]
-        on: bool
+        on: bool,
 }
 
 // Display a status message in the chat window.
@@ -784,7 +784,7 @@ pub struct GameOpponentStalemateState {
 #[serde(rename = "Communication_WeenieError")]
 pub struct CommunicationWeenieError {
         #[serde(rename = "Type")]
-        type_: WeenieError
+        type_: WeenieError,
 }
 
 // Display a parameterized status message in the chat window.
@@ -794,7 +794,7 @@ pub struct CommunicationWeenieErrorWithString {
         #[serde(rename = "Type")]
         type_: WeenieErrorWithString,
         #[serde(rename = "Text")]
-        text: String
+        text: String,
 }
 
 // End of Chess game
@@ -804,7 +804,7 @@ pub struct GameGameOver {
         #[serde(rename = "GameId")]
         game_id: u32,
         #[serde(rename = "TeamWinner")]
-        team_winner: i32
+        team_winner: i32,
 }
 
 // Set Turbine Chat channel numbers.
@@ -830,7 +830,7 @@ pub struct CommunicationChatRoomTracker {
         #[serde(rename = "SocietyEldrichWebChatRoomId")]
         society_eldrich_web_chat_room_id: u32,
         #[serde(rename = "SocietyRadiantBloodChatRoomId")]
-        society_radiant_blood_chat_room_id: u32
+        society_radiant_blood_chat_room_id: u32,
 }
 
 // TODO: QueryPluginList
@@ -853,7 +853,7 @@ pub struct AdminQueryPluginResponse2 {}
 #[serde(rename = "Inventory_SalvageOperationsResultData")]
 pub struct InventorySalvageOperationsResultData {
         #[serde(rename = "Result")]
-        result: SalvageOperationsResultData
+        result: SalvageOperationsResultData,
 }
 
 // Someone has sent you a @tell.
@@ -871,7 +871,7 @@ pub struct CommunicationHearDirectSpeech {
         #[serde(rename = "Type")]
         type_: ChatFragmentType,
         #[serde(rename = "SecretFlags")]
-        secret_flags: u32
+        secret_flags: u32,
 }
 
 // Create or join a fellowship
@@ -879,7 +879,7 @@ pub struct CommunicationHearDirectSpeech {
 #[serde(rename = "Fellowship_FullUpdate")]
 pub struct FellowshipFullUpdate {
         #[serde(rename = "Fellowship")]
-        fellowship: Fellowship
+        fellowship: Fellowship,
 }
 
 // Disband your fellowship.
@@ -894,7 +894,7 @@ pub struct FellowshipUpdateFellow {
         #[serde(rename = "Fellow")]
         fellow: Fellow,
         #[serde(rename = "UpdateType")]
-        update_type: FellowUpdateType
+        update_type: FellowUpdateType,
 }
 
 // Add a spell to your spellbook.
@@ -902,7 +902,7 @@ pub struct FellowshipUpdateFellow {
 #[serde(rename = "Magic_UpdateSpell")]
 pub struct MagicUpdateSpell {
         #[serde(rename = "SpellId")]
-        spell_id: LayeredSpellId
+        spell_id: LayeredSpellId,
 }
 
 // Apply an enchantment to your character.
@@ -910,7 +910,7 @@ pub struct MagicUpdateSpell {
 #[serde(rename = "Magic_UpdateEnchantment")]
 pub struct MagicUpdateEnchantment {
         #[serde(rename = "Enchantment")]
-        enchantment: Enchantment
+        enchantment: Enchantment,
 }
 
 // Remove an enchantment from your character.
@@ -918,7 +918,7 @@ pub struct MagicUpdateEnchantment {
 #[serde(rename = "Magic_RemoveEnchantment")]
 pub struct MagicRemoveEnchantment {
         #[serde(rename = "SpellId")]
-        spell_id: LayeredSpellId
+        spell_id: LayeredSpellId,
 }
 
 // Update multiple enchantments from your character.
@@ -926,7 +926,7 @@ pub struct MagicRemoveEnchantment {
 #[serde(rename = "Magic_UpdateMultipleEnchantments")]
 pub struct MagicUpdateMultipleEnchantments {
         #[serde(rename = "Enchantments")]
-        enchantments: PackableList<Enchantment>
+        enchantments: PackableList<Enchantment>,
 }
 
 // Remove multiple enchantments from your character.
@@ -934,7 +934,7 @@ pub struct MagicUpdateMultipleEnchantments {
 #[serde(rename = "Magic_RemoveMultipleEnchantments")]
 pub struct MagicRemoveMultipleEnchantments {
         #[serde(rename = "Enchantments")]
-        enchantments: PackableList<LayeredSpellId>
+        enchantments: PackableList<LayeredSpellId>,
 }
 
 // Silently remove all enchantments from your character, e.g. when you die (no message in the chat window).
@@ -947,7 +947,7 @@ pub struct MagicPurgeEnchantments {}
 #[serde(rename = "Magic_DispelEnchantment")]
 pub struct MagicDispelEnchantment {
         #[serde(rename = "SpellId")]
-        spell_id: LayeredSpellId
+        spell_id: LayeredSpellId,
 }
 
 // Silently remove multiple enchantments from your character (no message in the chat window).
@@ -955,7 +955,7 @@ pub struct MagicDispelEnchantment {
 #[serde(rename = "Magic_DispelMultipleEnchantments")]
 pub struct MagicDispelMultipleEnchantments {
         #[serde(rename = "Enchantments")]
-        enchantments: PackableList<LayeredSpellId>
+        enchantments: PackableList<LayeredSpellId>,
 }
 
 // A portal storm is brewing.
@@ -963,7 +963,7 @@ pub struct MagicDispelMultipleEnchantments {
 #[serde(rename = "Misc_PortalStormBrewing")]
 pub struct MiscPortalStormBrewing {
         #[serde(rename = "Extent")]
-        extent: f32
+        extent: f32,
 }
 
 // A portal storm is imminent.
@@ -971,7 +971,7 @@ pub struct MiscPortalStormBrewing {
 #[serde(rename = "Misc_PortalStormImminent")]
 pub struct MiscPortalStormImminent {
         #[serde(rename = "Extent")]
-        extent: f32
+        extent: f32,
 }
 
 // You have been portal stormed.
@@ -989,7 +989,7 @@ pub struct MiscPortalStormSubsided {}
 #[serde(rename = "Communication_TransientString")]
 pub struct CommunicationTransientString {
         #[serde(rename = "Message")]
-        message: String
+        message: String,
 }
 
 // Remove all bad enchantments from your character.
@@ -1002,7 +1002,7 @@ pub struct MagicPurgeBadEnchantments {}
 #[serde(rename = "Social_SendClientContractTrackerTable")]
 pub struct SocialSendClientContractTrackerTable {
         #[serde(rename = "ContractTracker")]
-        contract_tracker: ContractTrackerTable
+        contract_tracker: ContractTrackerTable,
 }
 
 // Updates a contract data
@@ -1014,7 +1014,7 @@ pub struct SocialSendClientContractTracker {
         #[serde(rename = "DeleteContract")]
         delete_contract: bool,
         #[serde(rename = "SetAsDisplayContract")]
-        set_as_display_contract: bool
+        set_as_display_contract: bool,
 }
 
 // Sent every time an object you are aware of ceases to exist. Merely running out of range does not generate this message - in that case, the client just automatically stops tracking it after receiving no updates for a while (which I presume is a very short while).
@@ -1022,7 +1022,7 @@ pub struct SocialSendClientContractTracker {
 #[serde(rename = "Item_ServerSaysRemove")]
 pub struct ItemServerSaysRemove {
         #[serde(rename = "ObjectId")]
-        object_id: ObjectId
+        object_id: ObjectId,
 }
 
 // Failure to give an item
@@ -1032,7 +1032,7 @@ pub struct CharacterServerSaysAttemptFailed {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Reason")]
-        reason: WeenieError
+        reason: WeenieError,
 }
 
 // For stackable items, this changes the number of items in the stack.
@@ -1046,7 +1046,7 @@ pub struct ItemUpdateStackSize {
         #[serde(rename = "Amount")]
         amount: u32,
         #[serde(rename = "NewValue")]
-        new_value: u32
+        new_value: u32,
 }
 
 // A Player Kill occurred nearby (also sent for suicides).
@@ -1058,7 +1058,7 @@ pub struct CombatHandlePlayerDeathEvent {
         #[serde(rename = "KilledId")]
         killed_id: ObjectId,
         #[serde(rename = "KillerId")]
-        killer_id: ObjectId
+        killer_id: ObjectId,
 }
 
 // Remove an int property from the character
@@ -1068,7 +1068,7 @@ pub struct QualitiesPrivateRemoveIntEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyInt
+        type_: PropertyInt,
 }
 
 // Remove an int property from an object
@@ -1080,7 +1080,7 @@ pub struct QualitiesRemoveIntEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyInt
+        type_: PropertyInt,
 }
 
 // Remove a bool property from the charactert
@@ -1090,7 +1090,7 @@ pub struct QualitiesPrivateRemoveBoolEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyBool
+        type_: PropertyBool,
 }
 
 // Remove a bool property from an object
@@ -1102,7 +1102,7 @@ pub struct QualitiesRemoveBoolEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyBool
+        type_: PropertyBool,
 }
 
 // Remove a float property from the character
@@ -1112,7 +1112,7 @@ pub struct QualitiesPrivateRemoveFloatEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyFloat
+        type_: PropertyFloat,
 }
 
 // Remove a float property from an object
@@ -1124,7 +1124,7 @@ pub struct QualitiesRemoveFloatEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyFloat
+        type_: PropertyFloat,
 }
 
 // Remove a string property from the character
@@ -1134,7 +1134,7 @@ pub struct QualitiesPrivateRemoveStringEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyString
+        type_: PropertyString,
 }
 
 // Remove a string property from an object
@@ -1146,7 +1146,7 @@ pub struct QualitiesRemoveStringEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyString
+        type_: PropertyString,
 }
 
 // Remove an dataId property from the character
@@ -1156,7 +1156,7 @@ pub struct QualitiesPrivateRemoveDataIdEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyDataId
+        type_: PropertyDataId,
 }
 
 // Remove an dataId property from an object
@@ -1168,7 +1168,7 @@ pub struct QualitiesRemoveDataIdEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyDataId
+        type_: PropertyDataId,
 }
 
 // Remove an instanceId property from the character
@@ -1178,7 +1178,7 @@ pub struct QualitiesPrivateRemoveInstanceIdEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyInstanceId
+        type_: PropertyInstanceId,
 }
 
 // Remove an instanceId property from an object
@@ -1190,7 +1190,7 @@ pub struct QualitiesRemoveInstanceIdEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyInstanceId
+        type_: PropertyInstanceId,
 }
 
 // Remove a position property from the character
@@ -1200,7 +1200,7 @@ pub struct QualitiesPrivateRemovePositionEvent {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyPosition
+        type_: PropertyPosition,
 }
 
 // Remove a position property from an object
@@ -1212,7 +1212,7 @@ pub struct QualitiesRemovePositionEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyPosition
+        type_: PropertyPosition,
 }
 
 // Remove an int64 property from the character
@@ -1222,7 +1222,7 @@ pub struct QualitiesPrivateRemoveInt64Event {
         #[serde(rename = "Sequence")]
         sequence: u8,
         #[serde(rename = "Type")]
-        type_: PropertyInt64
+        type_: PropertyInt64,
 }
 
 // Remove an int64 property from an object
@@ -1234,7 +1234,7 @@ pub struct QualitiesRemoveInt64Event {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: PropertyInt64
+        type_: PropertyInt64,
 }
 
 // Set or update a Character Int property value
@@ -1246,7 +1246,7 @@ pub struct QualitiesPrivateUpdateInt {
         #[serde(rename = "Key")]
         key: PropertyInt,
         #[serde(rename = "Value")]
-        value: i32
+        value: i32,
 }
 
 // Set or update an Object Int property value
@@ -1260,7 +1260,7 @@ pub struct QualitiesUpdateInt {
         #[serde(rename = "Key")]
         key: PropertyInt,
         #[serde(rename = "Value")]
-        value: i32
+        value: i32,
 }
 
 // Set or update a Character Int64 property value
@@ -1272,7 +1272,7 @@ pub struct QualitiesPrivateUpdateInt64 {
         #[serde(rename = "Key")]
         key: PropertyInt64,
         #[serde(rename = "Value")]
-        value: i64
+        value: i64,
 }
 
 // Set or update a Character Int64 property value
@@ -1286,7 +1286,7 @@ pub struct QualitiesUpdateInt64 {
         #[serde(rename = "Key")]
         key: PropertyInt64,
         #[serde(rename = "Value")]
-        value: i64
+        value: i64,
 }
 
 // Set or update a Character Boolean property value
@@ -1298,7 +1298,7 @@ pub struct QualitiesPrivateUpdateBool {
         #[serde(rename = "Key")]
         key: PropertyBool,
         #[serde(rename = "Value")]
-        value: bool
+        value: bool,
 }
 
 // Set or update an Object Boolean property value
@@ -1312,7 +1312,7 @@ pub struct QualitiesUpdateBool {
         #[serde(rename = "Key")]
         key: PropertyBool,
         #[serde(rename = "Value")]
-        value: bool
+        value: bool,
 }
 
 // Set or update an Object float property value
@@ -1324,7 +1324,7 @@ pub struct QualitiesPrivateUpdateFloat {
         #[serde(rename = "Key")]
         key: PropertyFloat,
         #[serde(rename = "Value")]
-        value: f32
+        value: f32,
 }
 
 // Set or update an Object float property value
@@ -1338,7 +1338,7 @@ pub struct QualitiesUpdateFloat {
         #[serde(rename = "Key")]
         key: PropertyFloat,
         #[serde(rename = "Value")]
-        value: f32
+        value: f32,
 }
 
 // Set or update an Object String property value
@@ -1350,7 +1350,7 @@ pub struct QualitiesPrivateUpdateString {
         #[serde(rename = "Key")]
         key: PropertyString,
         #[serde(rename = "Value")]
-        value: String
+        value: String,
 }
 
 // Set or update an Object String property value
@@ -1364,7 +1364,7 @@ pub struct QualitiesUpdateString {
         #[serde(rename = "Key")]
         key: PropertyString,
         #[serde(rename = "Value")]
-        value: String
+        value: String,
 }
 
 // Set or update an Object DId property value
@@ -1376,7 +1376,7 @@ pub struct QualitiesPrivateUpdateDataId {
         #[serde(rename = "Key")]
         key: PropertyDataId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update an Object DId property value
@@ -1390,7 +1390,7 @@ pub struct QualitiesUpdateDataId {
         #[serde(rename = "Key")]
         key: PropertyDataId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update a IId property value
@@ -1402,7 +1402,7 @@ pub struct QualitiesPrivateUpdateInstanceId {
         #[serde(rename = "Key")]
         key: PropertyInstanceId,
         #[serde(rename = "Value")]
-        value: ObjectId
+        value: ObjectId,
 }
 
 // Set or update an Object IId property value
@@ -1416,7 +1416,7 @@ pub struct QualitiesUpdateInstanceId {
         #[serde(rename = "Key")]
         key: PropertyInstanceId,
         #[serde(rename = "Value")]
-        value: ObjectId
+        value: ObjectId,
 }
 
 // Set or update a Character Position property value
@@ -1428,7 +1428,7 @@ pub struct QualitiesPrivateUpdatePosition {
         #[serde(rename = "Key")]
         key: PropertyPosition,
         #[serde(rename = "Value")]
-        value: Position
+        value: Position,
 }
 
 // Set or update a Character Position property value
@@ -1442,7 +1442,7 @@ pub struct QualitiesUpdatePosition {
         #[serde(rename = "Key")]
         key: PropertyPosition,
         #[serde(rename = "Value")]
-        value: Position
+        value: Position,
 }
 
 // Set or update a Character Skill value
@@ -1454,7 +1454,7 @@ pub struct QualitiesPrivateUpdateSkill {
         #[serde(rename = "Key")]
         key: SkillId,
         #[serde(rename = "Value")]
-        value: Skill
+        value: Skill,
 }
 
 // Set or update a Character Skill value
@@ -1468,7 +1468,7 @@ pub struct QualitiesUpdateSkill {
         #[serde(rename = "Key")]
         key: SkillId,
         #[serde(rename = "Value")]
-        value: Skill
+        value: Skill,
 }
 
 // Set or update a Character Skill Level
@@ -1480,7 +1480,7 @@ pub struct QualitiesPrivateUpdateSkillLevel {
         #[serde(rename = "Key")]
         key: SkillId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update a Character Skill Level
@@ -1494,7 +1494,7 @@ pub struct QualitiesUpdateSkillLevel {
         #[serde(rename = "Key")]
         key: SkillId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update a Character Skill state
@@ -1506,7 +1506,7 @@ pub struct QualitiesPrivateUpdateSkillAC {
         #[serde(rename = "Key")]
         key: SkillId,
         #[serde(rename = "Value")]
-        value: SkillAdvancementClass
+        value: SkillAdvancementClass,
 }
 
 // Set or update a Character Skill state
@@ -1520,7 +1520,7 @@ pub struct QualitiesUpdateSkillAC {
         #[serde(rename = "Key")]
         key: SkillId,
         #[serde(rename = "Value")]
-        value: SkillAdvancementClass
+        value: SkillAdvancementClass,
 }
 
 // Set or update a Character Attribute value
@@ -1532,7 +1532,7 @@ pub struct QualitiesPrivateUpdateAttribute {
         #[serde(rename = "Key")]
         key: AttributeId,
         #[serde(rename = "Value")]
-        value: AttributeInfo
+        value: AttributeInfo,
 }
 
 // Set or update a Character Attribute value
@@ -1546,7 +1546,7 @@ pub struct QualitiesUpdateAttribute {
         #[serde(rename = "Key")]
         key: AttributeId,
         #[serde(rename = "Value")]
-        value: AttributeInfo
+        value: AttributeInfo,
 }
 
 // Set or update a Character Attribute Level
@@ -1558,7 +1558,7 @@ pub struct QualitiesPrivateUpdateAttributeLevel {
         #[serde(rename = "Key")]
         key: AttributeId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update a Character Attribute Level
@@ -1572,7 +1572,7 @@ pub struct QualitiesUpdateAttributeLevel {
         #[serde(rename = "Key")]
         key: AttributeId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update a Character Vital value
@@ -1584,7 +1584,7 @@ pub struct QualitiesPrivateUpdateAttribute2nd {
         #[serde(rename = "Key")]
         key: VitalId,
         #[serde(rename = "Value")]
-        value: SecondaryAttributeInfo
+        value: SecondaryAttributeInfo,
 }
 
 // Set or update a Character Vital value
@@ -1598,7 +1598,7 @@ pub struct QualitiesUpdateAttribute2nd {
         #[serde(rename = "Key")]
         key: VitalId,
         #[serde(rename = "Value")]
-        value: SecondaryAttributeInfo
+        value: SecondaryAttributeInfo,
 }
 
 // Set or update a Character Vital value
@@ -1610,7 +1610,7 @@ pub struct QualitiesPrivateUpdateAttribute2ndLevel {
         #[serde(rename = "Key")]
         key: CurVitalId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Set or update a Character Vital value
@@ -1624,7 +1624,7 @@ pub struct QualitiesUpdateAttribute2ndLevel {
         #[serde(rename = "Key")]
         key: CurVitalId,
         #[serde(rename = "Value")]
-        value: u32
+        value: u32,
 }
 
 // Indirect '/e' text.
@@ -1636,7 +1636,7 @@ pub struct CommunicationHearEmote {
         #[serde(rename = "SenderName")]
         sender_name: String,
         #[serde(rename = "Text")]
-        text: String
+        text: String,
 }
 
 // Contains the text associated with an emote action.
@@ -1648,7 +1648,7 @@ pub struct CommunicationHearSoulEmote {
         #[serde(rename = "SenderName")]
         sender_name: String,
         #[serde(rename = "Text")]
-        text: String
+        text: String,
 }
 
 // A message to be displayed in the chat window, spoken by a nearby player, NPC or creature
@@ -1662,7 +1662,7 @@ pub struct CommunicationHearSpeech {
         #[serde(rename = "SenderId")]
         sender_id: ObjectId,
         #[serde(rename = "Type")]
-        type_: ChatFragmentType
+        type_: ChatFragmentType,
 }
 
 // A message to be displayed in the chat window, spoken by a nearby player, NPC or creature
@@ -1678,7 +1678,7 @@ pub struct CommunicationHearRangedSpeech {
         #[serde(rename = "Range")]
         range: f32,
         #[serde(rename = "Type")]
-        type_: ChatFragmentType
+        type_: ChatFragmentType,
 }
 
 // This appears to be an admin command to change the environment (light, fog, sounds, colors)
@@ -1686,7 +1686,7 @@ pub struct CommunicationHearRangedSpeech {
 #[serde(rename = "Admin_Environs")]
 pub struct AdminEnvirons {
         #[serde(rename = "EnvrionOption")]
-        envrion_option: EnvrionChangeType
+        envrion_option: EnvrionChangeType,
 }
 
 // Sets both the position and movement, such as when materializing at a lifestone
@@ -1698,7 +1698,7 @@ pub struct MovementPositionAndMovementEvent {
         #[serde(rename = "Position")]
         position: PositionPack,
         #[serde(rename = "MovementData")]
-        movement_data: MovementData
+        movement_data: MovementData,
 }
 
 // Sent whenever a character changes their clothes. It contains the entire description of what their wearing (and possibly their facial features as well). This message is only sent for changes, when the character is first created, the body of this message is included inside the creation message.
@@ -1712,7 +1712,7 @@ pub struct ItemObjDescEvent {
         #[serde(rename = "InstanceSequence")]
         instance_sequence: u16,
         #[serde(rename = "VisualDescSequence")]
-        visual_desc_sequence: u16
+        visual_desc_sequence: u16,
 }
 
 // Sets the player visual desc, TODO confirm this
@@ -1720,7 +1720,7 @@ pub struct ItemObjDescEvent {
 #[serde(rename = "Character_SetPlayerVisualDesc")]
 pub struct CharacterSetPlayerVisualDesc {
         #[serde(rename = "ObjectDescription")]
-        object_description: ObjDesc
+        object_description: ObjDesc,
 }
 
 // Character creation screen initilised.
@@ -1744,7 +1744,7 @@ pub enum CharacterCharGenVerificationResponse {
 #[serde(rename = "Login_AwaitingSubscriptionExpiration")]
 pub struct LoginAwaitingSubscriptionExpiration {
         #[serde(rename = "SecondsRemaining")]
-        seconds_remaining: u32
+        seconds_remaining: u32,
 }
 
 // Instructs the client to return to 2D mode - the character list.
@@ -1774,7 +1774,7 @@ pub struct LoginLoginCharacterSet {
         #[serde(rename = "UseTurbineChat")]
         use_turbine_chat: bool,
         #[serde(rename = "HasThroneofDestiny")]
-        has_throneof_destiny: bool
+        has_throneof_destiny: bool,
 }
 
 // Failure to log in
@@ -1782,7 +1782,7 @@ pub struct LoginLoginCharacterSet {
 #[serde(rename = "Character_CharacterError")]
 pub struct CharacterCharacterError {
         #[serde(rename = "Reason")]
-        reason: CharacterErrorType
+        reason: CharacterErrorType,
 }
 
 // Create an object somewhere in the world
@@ -1796,7 +1796,7 @@ pub struct ItemCreateObject {
         #[serde(rename = "PhysicsDescription")]
         physics_description: PhysicsDesc,
         #[serde(rename = "WeenieDescription")]
-        weenie_description: PublicWeenieDesc
+        weenie_description: PublicWeenieDesc,
 }
 
 // Login of player
@@ -1804,7 +1804,7 @@ pub struct ItemCreateObject {
 #[serde(rename = "Login_CreatePlayer")]
 pub struct LoginCreatePlayer {
         #[serde(rename = "CharacterId")]
-        character_id: ObjectId
+        character_id: ObjectId,
 }
 
 // Sent whenever an object is being deleted from the scene.
@@ -1814,7 +1814,7 @@ pub struct ItemDeleteObject {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "ObjectInstanceSequence")]
-        object_instance_sequence: u16
+        object_instance_sequence: u16,
 }
 
 // Sets the position/motion of an object
@@ -1824,7 +1824,7 @@ pub struct MovementPositionEvent {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Position")]
-        position: PositionPack
+        position: PositionPack,
 }
 
 // Sets the parent for an object, eg. equipting an object.
@@ -1842,7 +1842,7 @@ pub struct ItemParentEvent {
         #[serde(rename = "ObjectInstanceSequence")]
         object_instance_sequence: u16,
         #[serde(rename = "ChildPositionSequence")]
-        child_position_sequence: u16
+        child_position_sequence: u16,
 }
 
 // Sent when picking up an object
@@ -1854,7 +1854,7 @@ pub struct InventoryPickupEvent {
         #[serde(rename = "ObjectInstanceSequence")]
         object_instance_sequence: u16,
         #[serde(rename = "ObjectPositionSequence")]
-        object_position_sequence: u16
+        object_position_sequence: u16,
 }
 
 // Set's the current state of the object. Client appears to only process the following state changes post creation: NoDraw, LightingOn, Hidden
@@ -1868,7 +1868,7 @@ pub struct ItemSetState {
         #[serde(rename = "ObjectInstanceSequence")]
         object_instance_sequence: u16,
         #[serde(rename = "ObjectStateSequence")]
-        object_state_sequence: u16
+        object_state_sequence: u16,
 }
 
 // These are animations. Whenever a human, monster or object moves - one of these little messages is sent. Even idle emotes (like head scratching and nodding) are sent in this manner.
@@ -1880,7 +1880,7 @@ pub struct MovementSetObjectMovement {
         #[serde(rename = "ObjectInstanceSequence")]
         object_instance_sequence: u16,
         #[serde(rename = "MovementData")]
-        movement_data: MovementData
+        movement_data: MovementData,
 }
 
 // Changes an objects vector, for things like jumping
@@ -1896,7 +1896,7 @@ pub struct MovementVectorUpdate {
         #[serde(rename = "ObjectInstanceSequence")]
         object_instance_sequence: u16,
         #[serde(rename = "ObjectVectorSequence")]
-        object_vector_sequence: u16
+        object_vector_sequence: u16,
 }
 
 // Applies a sound effect.
@@ -1908,7 +1908,7 @@ pub struct EffectsSoundEvent {
         #[serde(rename = "SoundType")]
         sound_type: Sound,
         #[serde(rename = "Volume")]
-        volume: f32
+        volume: f32,
 }
 
 // Instructs the client to show the portal graphic.
@@ -1916,7 +1916,7 @@ pub struct EffectsSoundEvent {
 #[serde(rename = "Effects_PlayerTeleport")]
 pub struct EffectsPlayerTeleport {
         #[serde(rename = "ObjectTeleportSequence")]
-        object_teleport_sequence: u16
+        object_teleport_sequence: u16,
 }
 
 // Instructs the client to play a script. (Not seen so far, maybe prefered PlayScriptType)
@@ -1926,7 +1926,7 @@ pub struct EffectsPlayScriptId {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "ScriptId")]
-        script_id: DataId
+        script_id: DataId,
 }
 
 // Applies an effect with visual and sound by providing the type to be looked up in the Physics Script Table
@@ -1938,7 +1938,7 @@ pub struct EffectsPlayScriptType {
         #[serde(rename = "ScriptType")]
         script_type: i32,
         #[serde(rename = "Speed")]
-        speed: f32
+        speed: f32,
 }
 
 // Account has been banned
@@ -1948,7 +1948,7 @@ pub struct LoginAccountBanned {
         #[serde(rename = "BannedUntil")]
         banned_until: u32,
         #[serde(rename = "Text")]
-        text: String
+        text: String,
 }
 
 // Admin Receive Account Data
@@ -1958,7 +1958,7 @@ pub struct AdminReceiveAccountData {
         #[serde(rename = "Unknown")]
         unknown: u32,
         #[serde(rename = "AdminAccountData")]
-        admin_account_data: PackableList<AdminAccountData>
+        admin_account_data: PackableList<AdminAccountData>,
 }
 
 // Admin Receive Player Data
@@ -1968,7 +1968,7 @@ pub struct AdminReceivePlayerData {
         #[serde(rename = "Unknown")]
         unknown: i32,
         #[serde(rename = "AdminPlayerData")]
-        admin_player_data: PackableList<AdminPlayerData>
+        admin_player_data: PackableList<AdminPlayerData>,
 }
 
 // Update an existing object's data.
@@ -1982,7 +1982,7 @@ pub struct ItemUpdateObject {
         #[serde(rename = "PhysicsDesc")]
         physics_desc: PhysicsDesc,
         #[serde(rename = "WeenieDesc")]
-        weenie_desc: PublicWeenieDesc
+        weenie_desc: PublicWeenieDesc,
 }
 
 // Account has been booted
@@ -1992,7 +1992,7 @@ pub struct LoginAccountBooted {
         #[serde(rename = "AdditionalReasonText")]
         additional_reason_text: String,
         #[serde(rename = "ReasonText")]
-        reason_text: String
+        reason_text: String,
 }
 
 // Send or receive a message using Turbine Chat.
@@ -2042,7 +2042,7 @@ pub struct CommunicationTextboxString {
         #[serde(rename = "Text")]
         text: String,
         #[serde(rename = "Type")]
-        type_: ChatFragmentType
+        type_: ChatFragmentType,
 }
 
 // The name of the current world.
@@ -2054,7 +2054,7 @@ pub struct LoginWorldInfo {
         #[serde(rename = "MaxConnections")]
         max_connections: u32,
         #[serde(rename = "WorldName")]
-        world_name: String
+        world_name: String,
 }
 
 // Add or update a dat file Resource.
@@ -2108,7 +2108,7 @@ pub struct DDDErrorMessage {
         #[serde(rename = "ResourceId")]
         resource_id: DataId,
         #[serde(rename = "RError")]
-        r_error: u32
+        r_error: u32,
 }
 
 // A list of dat files that need to be patched
@@ -2118,7 +2118,7 @@ pub struct DDDBeginDDDMessage {
         #[serde(rename = "DataExpected")]
         data_expected: u32,
         #[serde(rename = "Revisions")]
-        revisions: PackableList<DDDRevision>
+        revisions: PackableList<DDDRevision>,
 }
 
 // Add or update a dat file Resource.
@@ -2132,7 +2132,7 @@ pub struct DDDInterrogationMessage {
         #[serde(rename = "ProductId")]
         product_id: u32,
         #[serde(rename = "SupportedLanguages")]
-        supported_languages: PackableList<uint>
+        supported_languages: PackableList<uint>,
 }
 
 // Ends DDD update
