@@ -22,19 +22,8 @@ fn main() {
     // Commented out for testing
     // println!("cargo:rerun-if-changed={}", protocol_path.display());
 
-    // Support filtering to one or more types
-    let mut filter_types = None;
-    if let Ok(filter_types_flag) = env::var("FILTER_TYPES") {
-        filter_types = Some(
-            filter_types_flag
-                .split(',')
-                .map(|s| s.trim().to_string())
-                .collect(),
-        );
-    }
-
     let xml = fs::read_to_string(&protocol_path).unwrap();
-    let generated_code = genlib::generate(&xml, filter_types);
+    let generated_code = genlib::generate(&xml);
 
     fs::write(enums_path, generated_code.enums).unwrap();
     fs::write(types_common_path, generated_code.common).unwrap();

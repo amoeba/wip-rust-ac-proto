@@ -105,11 +105,6 @@ pub fn safe_identifier(name: &str, identifier_type: IdentifierType) -> SafeIdent
     SafeIdentifier::new(safe_name, needs_rename)
 }
 
-/// Convert a field name to a safe Rust identifier in snake_case
-pub fn safe_field_name(name: &str) -> SafeIdentifier {
-    safe_identifier(name, IdentifierType::Field)
-}
-
 /// Convert an enum variant name to a safe Rust identifier in PascalCase
 pub fn safe_enum_variant_name(name: &str) -> SafeIdentifier {
     safe_identifier(name, IdentifierType::EnumVariant)

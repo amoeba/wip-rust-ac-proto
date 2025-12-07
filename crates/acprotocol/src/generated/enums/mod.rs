@@ -75,7 +75,6 @@ pub enum GameMessageGroup {
     SecureLogin = 0x0008,
     UIQueue = 0x0009,
     SmartBox = 0x000A,
-    Observer = 0x0008,
 }
 
 /// Client to Server message opcodes
@@ -1572,7 +1571,7 @@ pub enum ItemType {
 
 /// The Skill identifies a specific Character skill.
 #[repr(i32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Eq)]
 pub enum SkillId {
     Axe = 0x01,
     Bow = 0x02,
@@ -1656,8 +1655,6 @@ pub enum PropertyAttribute2nd {
 pub enum EmoteType {
     #[serde(rename = "Invalid_EmoteType")]
     InvalidEmoteType = 0x00,
-    #[serde(rename = "Invalid_VendorEmoteType")]
-    InvalidVendorEmoteType = 0x00,
     #[serde(rename = "Act_EmoteType")]
     ActEmoteType = 0x01,
     #[serde(rename = "AwardXP_EmoteType")]
@@ -3855,7 +3852,6 @@ pub enum UiEffects {
 #[repr(i32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PortalBitmask {
-    Undef = 0x00,
     NotPassable = 0x00,
     Unrestricted = 0x01,
     NoPk = 0x02,
@@ -6624,15 +6620,6 @@ pub enum ChatDisplayMask {
     TradeChannel = 0x10000000,
     LFGChannel = 0x20000000,
     RoleplayChannel = 0x40000000,
-}
-
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum EnchantmentMask {
-    Multiplicative = 0x03912021,
-    Additive = 0x03912021,
-    Vitae = 0x03912021,
-    Cooldown = 0x03912021,
 }
 
 #[repr(u32)]
