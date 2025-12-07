@@ -59,10 +59,7 @@ fn get_larger_type(type1: &str, type2: &str) -> String {
 /// Merge fields from <if> true and false branches
 /// - Fields with same name but different types: use larger type, make optional
 /// - Fields only in one branch: make optional
-fn merge_if_fields(
-    true_fields: Vec<Field>,
-    false_fields: Vec<Field>,
-) -> Vec<Field> {
+fn merge_if_fields(true_fields: Vec<Field>, false_fields: Vec<Field>) -> Vec<Field> {
     use std::collections::HashMap;
 
     let mut merged: HashMap<String, Field> = HashMap::new();
@@ -739,7 +736,7 @@ fn process_type_tag(
     if let Some(name) = name {
         let should_skip = filter_types
             .as_ref()
-            .map_or(false, |filters| !filters.contains(&name));
+            .map_or(false, |filters| filters.contains(&name));
 
         if should_skip {
             debug!("Skipping type {name} because it's not in inclusion list.");
@@ -783,10 +780,10 @@ pub struct GeneratedCode {
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum MessageDirection {
     None,
-    C2S,            // <c2s> in messages section
-    S2C,            // <s2c> in messages section
-    GameActions,    // <gameactions> section (C2S)
-    GameEvents,     // <gameevents> section (S2C)
+    C2S,         // <c2s> in messages section
+    S2C,         // <s2c> in messages section
+    GameActions, // <gameactions> section (C2S)
+    GameEvents,  // <gameevents> section (S2C)
 }
 
 pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> GeneratedCode {

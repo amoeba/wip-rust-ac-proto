@@ -414,7 +414,7 @@ pub struct VendorBuy {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList,
+        items: PackableList<ItemProfile>,
         #[serde(rename = "AlternateCurrencyId")]
         alternate_currency_id: u32
 }
@@ -426,7 +426,7 @@ pub struct VendorSell {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList
+        items: PackableList<ItemProfile>
 }
 
 // Teleport to your lifestone. (/lifestone)
@@ -819,7 +819,7 @@ pub struct HouseBuyHouse {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList
+        items: PackableList<ObjectId>
 }
 
 // Query your house info, during signin
@@ -847,7 +847,7 @@ pub struct HouseRentHouse {
         #[serde(rename = "ObjectId")]
         object_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList
+        items: PackableList<ObjectId>
 }
 
 // Sets a new fill complevel for a component
@@ -1087,7 +1087,7 @@ pub struct InventoryCreateTinkeringTool {
         #[serde(rename = "ToolId")]
         tool_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList
+        items: PackableList<ObjectId>
 }
 
 // Changes the spell book filter
@@ -1441,7 +1441,7 @@ pub struct DDDInterrogationResponseMessage {
         #[serde(rename = "Language")]
         language: u32,
         #[serde(rename = "Files")]
-        files: PackableList
+        files: PackableList<long>
 }
 
 // Ends DDD message update

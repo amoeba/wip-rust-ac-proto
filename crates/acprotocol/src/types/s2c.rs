@@ -27,9 +27,9 @@ pub struct LoginPlayerDescription {
         #[serde(rename = "PlayerModule")]
         player_module: PlayerModule,
         #[serde(rename = "ContentProfile")]
-        content_profile: PackableList,
+        content_profile: PackableList<ContentProfile>,
         #[serde(rename = "InventoryPlacement")]
-        inventory_placement: PackableList
+        inventory_placement: PackableList<InventoryPlacement>
 }
 
 // Returns info related to your monarch, patron and vassals.
@@ -47,7 +47,7 @@ pub struct AllegianceAllegianceUpdate {
 #[serde(rename = "Social_FriendsUpdate")]
 pub struct SocialFriendsUpdate {
         #[serde(rename = "Friends")]
-        friends: PackableList,
+        friends: PackableList<FriendData>,
         #[serde(rename = "Type")]
         type_: FriendsUpdateType
 }
@@ -83,7 +83,7 @@ pub struct SocialCharacterTitleTable {
         #[serde(rename = "DisplayTitle")]
         display_title: u32,
         #[serde(rename = "Titles")]
-        titles: PackableList
+        titles: PackableList<uint>
 }
 
 // Set a title for the current character.
@@ -113,7 +113,7 @@ pub struct VendorVendorInfo {
         #[serde(rename = "Profile")]
         profile: VendorProfile,
         #[serde(rename = "Items")]
-        items: PackableList
+        items: PackableList<ItemProfile>
 }
 
 // Opens barber UI
@@ -247,57 +247,57 @@ pub struct ItemSetAppraiseInfo {
         #[serde(rename = "Success")]
         success: bool,
         #[serde(rename = "IntProperties")]
-        int_properties: PackableHashTable,
+        int_properties: Option<PackableHashTable<PropertyInt, int>>,
         #[serde(rename = "Int64Properties")]
-        int64_properties: PackableHashTable,
+        int64_properties: Option<PackableHashTable<PropertyInt64, long>>,
         #[serde(rename = "BoolProperties")]
-        bool_properties: PackableHashTable,
+        bool_properties: Option<PackableHashTable<PropertyBool, bool>>,
         #[serde(rename = "FloatProperties")]
-        float_properties: PackableHashTable,
+        float_properties: Option<PackableHashTable<PropertyFloat, double>>,
         #[serde(rename = "StringProperties")]
-        string_properties: PackableHashTable,
+        string_properties: Option<PackableHashTable<PropertyString, string>>,
         #[serde(rename = "DataIdProperties")]
-        data_id_properties: PackableHashTable,
+        data_id_properties: Option<PackableHashTable<PropertyDataId, DataId>>,
         #[serde(rename = "SpellBook")]
-        spell_book: PackableList,
+        spell_book: Option<PackableList<LayeredSpellId>>,
         #[serde(rename = "ArmorProfile")]
-        armor_profile: ArmorProfile,
+        armor_profile: Option<ArmorProfile>,
         #[serde(rename = "CreatureProfile")]
-        creature_profile: CreatureAppraisalProfile,
+        creature_profile: Option<CreatureAppraisalProfile>,
         #[serde(rename = "WeaponProfile")]
-        weapon_profile: WeaponProfile,
+        weapon_profile: Option<WeaponProfile>,
         #[serde(rename = "HookProfile")]
-        hook_profile: HookAppraisalProfile,
+        hook_profile: Option<HookAppraisalProfile>,
         #[serde(rename = "ArmorHighlight")]
-        armor_highlight: ArmorHighlightMask,
+        armor_highlight: Option<ArmorHighlightMask>,
         #[serde(rename = "ArmorColor")]
-        armor_color: ArmorHighlightMask,
+        armor_color: Option<ArmorHighlightMask>,
         #[serde(rename = "WeaponHighlight")]
-        weapon_highlight: WeaponHighlightMask,
+        weapon_highlight: Option<WeaponHighlightMask>,
         #[serde(rename = "WeaponColor")]
-        weapon_color: WeaponHighlightMask,
+        weapon_color: Option<WeaponHighlightMask>,
         #[serde(rename = "ResistHighlight")]
-        resist_highlight: ResistHighlightMask,
+        resist_highlight: Option<ResistHighlightMask>,
         #[serde(rename = "ResistColor")]
-        resist_color: ResistHighlightMask,
+        resist_color: Option<ResistHighlightMask>,
         #[serde(rename = "BaseArmorHead")]
-        base_armor_head: u32,
+        base_armor_head: Option<u32>,
         #[serde(rename = "BaseArmorChest")]
-        base_armor_chest: u32,
+        base_armor_chest: Option<u32>,
         #[serde(rename = "BaseArmorGroin")]
-        base_armor_groin: u32,
+        base_armor_groin: Option<u32>,
         #[serde(rename = "BaseArmorBicep")]
-        base_armor_bicep: u32,
+        base_armor_bicep: Option<u32>,
         #[serde(rename = "BaseArmorWrist")]
-        base_armor_wrist: u32,
+        base_armor_wrist: Option<u32>,
         #[serde(rename = "BaseArmorHand")]
-        base_armor_hand: u32,
+        base_armor_hand: Option<u32>,
         #[serde(rename = "BaseArmorThigh")]
-        base_armor_thigh: u32,
+        base_armor_thigh: Option<u32>,
         #[serde(rename = "BaseArmorShin")]
-        base_armor_shin: u32,
+        base_armor_shin: Option<u32>,
         #[serde(rename = "BaseArmorFoot")]
-        base_armor_foot: u32
+        base_armor_foot: Option<u32>
 }
 
 // ChannelBroadcast: Group Chat
@@ -315,7 +315,7 @@ pub struct CommunicationChannelBroadcast {
 #[serde(rename = "Communication_ChannelList")]
 pub struct CommunicationChannelList {
         #[serde(rename = "Characters")]
-        characters: PackableList
+        characters: PackableList<string>
 }
 
 // ChannelIndex: Provides list of channels available to the player, I assume in response to a command
@@ -323,7 +323,7 @@ pub struct CommunicationChannelList {
 #[serde(rename = "Communication_ChannelIndex")]
 pub struct CommunicationChannelIndex {
         #[serde(rename = "Channels")]
-        channels: PackableList
+        channels: PackableList<string>
 }
 
 // Set Pack Contents
@@ -333,7 +333,7 @@ pub struct ItemOnViewContents {
         #[serde(rename = "ContainerId")]
         container_id: ObjectId,
         #[serde(rename = "Items")]
-        items: PackableList
+        items: PackableList<ContentProfile>
 }
 
 // ServerSaysMoveItem: Removes an item from inventory (when you place it on the ground or give it away)
@@ -628,7 +628,7 @@ pub struct HouseUpdateRentTime {
 #[serde(rename = "House_UpdateRentPayment")]
 pub struct HouseUpdateRentPayment {
         #[serde(rename = "Rent")]
-        rent: PackableList
+        rent: PackableList<HousePayment>
 }
 
 // Update Restrictions
@@ -678,7 +678,7 @@ pub struct HouseAvailableHouses {
         #[serde(rename = "Type")]
         type_: HouseType,
         #[serde(rename = "Houses")]
-        houses: PackableList,
+        houses: PackableList<uint>,
         #[serde(rename = "NumHouses")]
         num_houses: i32
 }
@@ -926,7 +926,7 @@ pub struct MagicRemoveEnchantment {
 #[serde(rename = "Magic_UpdateMultipleEnchantments")]
 pub struct MagicUpdateMultipleEnchantments {
         #[serde(rename = "Enchantments")]
-        enchantments: PackableList
+        enchantments: PackableList<Enchantment>
 }
 
 // Remove multiple enchantments from your character.
@@ -934,7 +934,7 @@ pub struct MagicUpdateMultipleEnchantments {
 #[serde(rename = "Magic_RemoveMultipleEnchantments")]
 pub struct MagicRemoveMultipleEnchantments {
         #[serde(rename = "Enchantments")]
-        enchantments: PackableList
+        enchantments: PackableList<LayeredSpellId>
 }
 
 // Silently remove all enchantments from your character, e.g. when you die (no message in the chat window).
@@ -955,7 +955,7 @@ pub struct MagicDispelEnchantment {
 #[serde(rename = "Magic_DispelMultipleEnchantments")]
 pub struct MagicDispelMultipleEnchantments {
         #[serde(rename = "Enchantments")]
-        enchantments: PackableList
+        enchantments: PackableList<LayeredSpellId>
 }
 
 // A portal storm is brewing.
@@ -1764,9 +1764,9 @@ pub struct LoginLoginCharacterSet {
         #[serde(rename = "Status")]
         status: u32,
         #[serde(rename = "Characters")]
-        characters: PackableList,
+        characters: PackableList<CharacterIdentity>,
         #[serde(rename = "DeletedCharacters")]
-        deleted_characters: PackableList,
+        deleted_characters: PackableList<CharacterIdentity>,
         #[serde(rename = "NumAllowedCharacters")]
         num_allowed_characters: u32,
         #[serde(rename = "Account")]
@@ -1958,7 +1958,7 @@ pub struct AdminReceiveAccountData {
         #[serde(rename = "Unknown")]
         unknown: u32,
         #[serde(rename = "AdminAccountData")]
-        admin_account_data: PackableList
+        admin_account_data: PackableList<AdminAccountData>
 }
 
 // Admin Receive Player Data
@@ -1968,7 +1968,7 @@ pub struct AdminReceivePlayerData {
         #[serde(rename = "Unknown")]
         unknown: i32,
         #[serde(rename = "AdminPlayerData")]
-        admin_player_data: PackableList
+        admin_player_data: PackableList<AdminPlayerData>
 }
 
 // Update an existing object's data.
@@ -2118,7 +2118,7 @@ pub struct DDDBeginDDDMessage {
         #[serde(rename = "DataExpected")]
         data_expected: u32,
         #[serde(rename = "Revisions")]
-        revisions: PackableList
+        revisions: PackableList<DDDRevision>
 }
 
 // Add or update a dat file Resource.
@@ -2132,7 +2132,7 @@ pub struct DDDInterrogationMessage {
         #[serde(rename = "ProductId")]
         product_id: u32,
         #[serde(rename = "SupportedLanguages")]
-        supported_languages: PackableList
+        supported_languages: PackableList<uint>
 }
 
 // Ends DDD update
