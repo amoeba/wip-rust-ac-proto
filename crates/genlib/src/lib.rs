@@ -7,7 +7,7 @@ use quick_xml::{Reader, events::Event};
 use crate::{
     identifiers::{IdentifierType, safe_enum_variant_name, safe_identifier},
     types::{EnumValue, Field, FieldSet, IfBranch, ProtocolEnum, ProtocolType, Subfield},
-    util::{format_hex_value, parse_hex_string},
+    util::{format_hex_value, parse_enum_value},
 };
 
 mod identifiers;
@@ -723,7 +723,7 @@ fn process_case_tag(e: &quick_xml::events::BytesStart) -> Option<Vec<i64>> {
             .map(|s| s.trim())
             .filter(|s| !s.is_empty())
             .filter_map(|s| {
-                parse_hex_string(s)
+                parse_enum_value(s)
                     .map_err(|e| {
                         eprintln!("Warning: {}", e);
                         e
@@ -793,7 +793,7 @@ fn process_enum_value_tag(
         for val in values {
             let trimmed_val = val.trim();
             if !trimmed_val.is_empty() {
-                match parse_hex_string(trimmed_val) {
+                match parse_enum_value(trimmed_val) {
                     Ok(parsed_value) => {
                         let enum_value = EnumValue {
                             name: name.clone(),
