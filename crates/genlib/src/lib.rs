@@ -63,11 +63,8 @@ pub struct {enum_name} {{\n        pub bits: {},\n}}\n\n",
             get_rust_type(&protocol_enum.parent)
         ));
     } else {
-        // Enums don't have float fields, so we can safely derive Eq
-        let derives = "Clone, Debug, Eq, PartialEq, Serialize, Deserialize";
-
         // Generate regular enum
-        out.push_str(&format!("#[derive({derives})]\npub enum "));
+        out.push_str("#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]\npub enum ");
         out.push_str(enum_name);
         out.push_str(" {\n");
 
@@ -152,8 +149,9 @@ pub struct {type_name} {{}}\n\n"
     if let Some(ref variant_fields) = field_set.variant_fields {
         // Generate enum
         let switch_field = field_set.switch_field.as_ref().unwrap();
+
         out.push_str(&format!(
-            "#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+            "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = \"{switch_field}\")]
 pub enum {type_name} {{\n"
         ));
@@ -240,15 +238,8 @@ pub enum {type_name} {{\n"
 
         let fields_out: String = field_out.join(",\n");
 
-        // Check if this type supports the Eq trait derivation
-        let derives = if protocol_type.supports_trait_eq() {
-            "Clone, Debug, Eq, PartialEq, Serialize, Deserialize"
-        } else {
-            "Clone, Debug, PartialEq, Serialize, Deserialize"
-        };
-
         out.push_str(&format!(
-            "#[derive({derives})]
+            "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct {type_name} {{
 {fields_out}
 }}\n\n"
