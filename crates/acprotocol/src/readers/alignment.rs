@@ -1,6 +1,6 @@
 use super::ACReader;
 use std::error::Error;
-use std::io::{Seek, SeekFrom};
+use std::io::SeekFrom;
 
 /// Align to a boundary specified by a const generic parameter
 /// This function is fully inlined and the const parameter allows

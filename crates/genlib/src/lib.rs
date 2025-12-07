@@ -544,11 +544,13 @@ fn generate_variant_struct(
     for field in case_fields {
         // Skip the nested switch discriminator field - it will be represented by the enum
         // Also skip alignment marker fields - they're only for reading
-        if Some(field.name.as_str()) != nested_switch_field_name && !field.name.starts_with("__alignment_marker_") {
-             out.push_str(&generate_field_line(field, false));
-             out.push_str(",\n");
-         }
-     }
+        if Some(field.name.as_str()) != nested_switch_field_name
+            && !field.name.starts_with("__alignment_marker_")
+        {
+            out.push_str(&generate_field_line(field, false));
+            out.push_str(",\n");
+        }
+    }
 
     if has_nested_switch {
         let nested_switch_obj = field_set
@@ -854,15 +856,15 @@ pub enum {type_name}{type_generics} {{\n"
 
         out.push_str("}\n\n");
     } else {
-         // Generate struct
-         let mut field_out: Vec<String> = Vec::new();
-    
-         for field in &field_set.common_fields {
-             // Skip alignment marker fields - they're only for reading
-             if !field.name.starts_with("__alignment_marker_") {
-                 field_out.push(generate_field_line(field, false)); // false = is struct field
-             }
-         }
+        // Generate struct
+        let mut field_out: Vec<String> = Vec::new();
+
+        for field in &field_set.common_fields {
+            // Skip alignment marker fields - they're only for reading
+            if !field.name.starts_with("__alignment_marker_") {
+                field_out.push(generate_field_line(field, false)); // false = is struct field
+            }
+        }
 
         let fields_out: String = field_out.join(",\n") + ",";
 
@@ -1053,7 +1055,7 @@ fn process_align_tag(e: &quick_xml::events::BytesStart) -> Option<Field> {
     if let Some(align_to) = align_type {
         // Generate a synthetic field name for alignment padding
         let padding_field_name = format!("__align_{}", align_to.to_lowercase());
-        
+
         // Map alignment type to read call
         // We generate code that reads the padding needed to align to the specified boundary
         Some(Field {
@@ -1713,7 +1715,7 @@ fn generate_enum_reader_impl(
     for field in &field_set.common_fields {
         let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
         let read_call = generate_read_call(ctx, field, &field_set.common_fields);
-        
+
         // Alignment fields don't need to be stored, just executed
         if field.name.starts_with("__alignment_marker_") {
             out.push_str(&format!("        {}?;\n", read_call));
@@ -1826,7 +1828,7 @@ fn generate_enum_reader_impl(
         } else {
             format!(", {}", common_field_args.join(", "))
         };
-        
+
         out.push_str(&format!(
             "                let variant_struct = {variant_struct_name}::read(reader{})?;\n",
             args_str
@@ -1863,7 +1865,7 @@ fn generate_variant_struct_reader_impl(
     let mut out = String::new();
 
     out.push_str(&format!("impl {struct_name} {{\n"));
-    
+
     // Build function signature with common fields as parameters
     let mut params = vec!["reader: &mut dyn ACReader".to_string()];
     let switch_field = field_set.switch_field.as_ref().unwrap();
@@ -1875,7 +1877,7 @@ fn generate_variant_struct_reader_impl(
         }
     }
     let params_str = params.join(", ");
-    
+
     out.push_str(&format!(
         "    pub fn read({}) -> Result<Self, Box<dyn std::error::Error>> {{\n",
         params_str
@@ -1975,7 +1977,9 @@ fn generate_variant_struct_reader_impl(
 
     for field in case_fields {
         // Skip nested switch field and alignment marker fields
-        if Some(field.name.as_str()) != nested_switch_field_name && !field.name.starts_with("__alignment_marker_") {
+        if Some(field.name.as_str()) != nested_switch_field_name
+            && !field.name.starts_with("__alignment_marker_")
+        {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             out.push_str(&format!("            {},\n", field_name));
         }
@@ -2014,7 +2018,7 @@ fn generate_variant_struct_reader_impl(
     // They're only called directly from their parent enum reader
 
     out
-    }
+}
 
 /// Generate a reader for a nested switch enum
 fn generate_nested_switch_enum_reader(
@@ -2143,15 +2147,15 @@ fn generate_struct_reader_impl(
     }
 
     // Construct the struct
-     out.push_str("\n        Ok(Self {\n");
-     for field in &field_set.common_fields {
-         // Skip alignment marker fields - they're only read, not stored
-         if !field.name.starts_with("__alignment_marker_") {
-             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-             out.push_str(&format!("            {},\n", field_name));
-         }
-     }
-     out.push_str("        })\n");
+    out.push_str("\n        Ok(Self {\n");
+    for field in &field_set.common_fields {
+        // Skip alignment marker fields - they're only read, not stored
+        if !field.name.starts_with("__alignment_marker_") {
+            let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+            out.push_str(&format!("            {},\n", field_name));
+        }
+    }
+    out.push_str("        })\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
 
@@ -2463,7 +2467,7 @@ fn generate_field_group_reads(
 /// Generate the base read call without the conditional wrapper
 fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
     let field_type = &field.field_type;
-    
+
     // Handle alignment padding fields first
     if field_type.starts_with("__align__") {
         let align_type = &field_type[9..]; // Remove "__align__" prefix
@@ -2475,7 +2479,7 @@ fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Fie
         };
         return padding_code.to_string();
     }
-    
+
     let rust_type = get_rust_type(field_type);
 
     match rust_type {
@@ -3089,11 +3093,7 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                     if let Some(mut align_field) = process_align_tag(&e) {
                         // Mark as internal so it won't be added to struct definition
                         align_field.name = format!("__alignment_marker_{}", align_field.name);
-                        add_field_to_set(
-                            align_field,
-                            &mut current_field_set,
-                            &mut field_ctx,
-                        );
+                        add_field_to_set(align_field, &mut current_field_set, &mut field_ctx);
                         debug!("Added alignment field");
                     }
                 } else if tag_name == "switch" {
@@ -3213,23 +3213,19 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                 } else if tag_name == "vector" {
                     process_vector_tag(&e, &mut current_field_set, &mut field_ctx);
                 } else if tag_name == "table" {
-                     process_table_tag(&e, &mut current_field_set, &mut field_ctx);
-                 } else if tag_name == "align" {
-                     // Process alignment requirement (as Empty event for self-closing tags)
-                     if let Some(mut align_field) = process_align_tag(&e) {
-                         // Mark as internal so it won't be added to struct definition
-                         align_field.name = format!("__alignment_marker_{}", align_field.name);
-                         add_field_to_set(
-                             align_field,
-                             &mut current_field_set,
-                             &mut field_ctx,
-                         );
-                         debug!("Added alignment field (empty tag)");
-                     }
-                 } else if tag_name == "value" {
-                     process_enum_value_tag(&e, &mut current_enum);
-                 }
+                    process_table_tag(&e, &mut current_field_set, &mut field_ctx);
+                } else if tag_name == "align" {
+                    // Process alignment requirement (as Empty event for self-closing tags)
+                    if let Some(mut align_field) = process_align_tag(&e) {
+                        // Mark as internal so it won't be added to struct definition
+                        align_field.name = format!("__alignment_marker_{}", align_field.name);
+                        add_field_to_set(align_field, &mut current_field_set, &mut field_ctx);
+                        debug!("Added alignment field (empty tag)");
+                    }
+                } else if tag_name == "value" {
+                    process_enum_value_tag(&e, &mut current_enum);
                 }
+            }
             Ok(Event::End(e)) => {
                 if e.name().as_ref() == b"type" {
                     // Close out type

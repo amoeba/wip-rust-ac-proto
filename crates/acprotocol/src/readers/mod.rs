@@ -1,14 +1,13 @@
-use crate::readers::traits::{ACDataType, ACReader};
 use crate::types::{PHashTable, PackableHashTable, PackableList};
 use std::cmp::Eq;
 use std::collections::HashMap;
 use std::error::Error;
 use std::hash::Hash;
-use std::io::{Read, Seek, SeekFrom};
 
 pub mod alignment;
 pub mod traits;
 pub use alignment::{align, align_dword, align_qword, align_word};
+pub use traits::{ACDataType, ACReader};
 
 pub mod common {
     include!("../generated/readers/common.rs");
