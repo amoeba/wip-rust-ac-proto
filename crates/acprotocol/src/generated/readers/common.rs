@@ -159,8 +159,10 @@ impl AllegianceData {
         let mut allegiance_age = None;
         let mut time_online = None;
         if flags == 0x4 {
-            allegiance_age = Some(read_u32(reader)?);
             time_online = Some(read_u64(reader)?);
+        } else {
+            allegiance_age = Some(read_u32(reader)?);
+            time_online = Some((read_u32(reader))? as u64);
         }
         let name = read_string(reader)?;
 

@@ -14,6 +14,21 @@ pub struct Field {
     pub(crate) mask_field: Option<String>,
     /// For masked fields, the bitmask value (e.g., "0x8")
     pub(crate) mask_value: Option<String>,
+    /// For if/true/false blocks: which branch(es) this field belongs to
+    pub(crate) if_branch: Option<IfBranch>,
+    /// For fields in both branches with different types: the original type from the false branch
+    pub(crate) if_false_branch_type: Option<String>,
+}
+
+/// Tracks which branch of an if/true/false block a field belongs to
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IfBranch {
+    /// Field is in the true branch only
+    True,
+    /// Field is in the false branch only
+    False,
+    /// Field exists in both branches but with different types (merged)
+    Both,
 }
 
 #[derive(Debug, Clone)]

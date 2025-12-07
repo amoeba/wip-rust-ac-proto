@@ -6,7 +6,7 @@ use quick_xml::{Reader, events::Event};
 
 use crate::{
     identifiers::{IdentifierType, safe_enum_variant_name, safe_identifier},
-    types::{EnumValue, Field, FieldSet, ProtocolEnum, ProtocolType},
+    types::{EnumValue, Field, FieldSet, IfBranch, ProtocolEnum, ProtocolType},
 };
 
 mod identifiers;
@@ -181,38 +181,56 @@ fn get_larger_type(type1: &str, type2: &str) -> String {
     }
 }
 
-/// Merge fields from <if> true and false branches
-/// - Fields with same name but different types: use larger type, make optional
-/// - Fields only in one branch: make optional
-fn merge_if_fields(true_fields: Vec<Field>, false_fields: Vec<Field>) -> Vec<Field> {
+/// Merge fields from <if test="..."> <true> and <false> branches
+/// 
+/// This preserves branch information for code generation. The generated code will emit
+/// if-else blocks that read different fields in each branch, rather than making all
+/// fields optional.
+/// 
+/// Logic:
+/// - Fields only in one branch: keep with IfBranch set (True or False)
+/// - Fields in both branches with same type: mark as IfBranch::Both, make optional
+/// - Fields in both branches with different types: use larger type, mark as IfBranch::Both,
+///   make optional, and store the false branch type for casting during code generation
+fn merge_if_fields(mut true_fields: Vec<Field>, mut false_fields: Vec<Field>) -> Vec<Field> {
     use std::collections::HashMap;
 
-    let mut merged: HashMap<String, Field> = HashMap::new();
+    let mut true_map: HashMap<String, Field> = true_fields.drain(..).map(|f| (f.name.clone(), f)).collect();
+    let mut false_map: HashMap<String, Field> = false_fields.drain(..).map(|f| (f.name.clone(), f)).collect();
 
-    // Process true branch fields
-    for field in true_fields {
-        merged.insert(field.name.clone(), field);
-    }
+    let mut result = Vec::new();
 
-    // Process false branch fields
-    for false_field in false_fields {
-        if let Some(true_field) = merged.get_mut(&false_field.name) {
-            // Field exists in both branches
-            if true_field.field_type != false_field.field_type {
-                // Different types - use the larger one
-                let larger_type = get_larger_type(&true_field.field_type, &false_field.field_type);
-                true_field.field_type = larger_type;
+    // Process all unique field names
+    let all_names: std::collections::HashSet<_> = true_map.keys().chain(false_map.keys()).cloned().collect();
+
+    for name in all_names {
+        match (true_map.remove(&name), false_map.remove(&name)) {
+            (Some(mut true_field), Some(false_field)) => {
+                // Field exists in both branches
+                if true_field.field_type != false_field.field_type {
+                    // Different types - use the larger one and store the false branch type
+                    let larger_type = get_larger_type(&true_field.field_type, &false_field.field_type);
+                    true_field.if_false_branch_type = Some(false_field.field_type.clone());
+                    true_field.field_type = larger_type;
+                }
+                // Mark as existing in both branches and make optional
+                true_field.if_branch = Some(IfBranch::Both);
+                true_field.is_optional = true;
+                result.push(true_field);
             }
-            // Always optional since it's conditional
-            true_field.is_optional = true;
-        } else {
-            // Field only in false branch - add it as optional
-            merged.insert(false_field.name.clone(), false_field);
+            (Some(field), None) => {
+                // Field only in true branch - keep IfBranch::True
+                result.push(field);
+            }
+            (None, Some(field)) => {
+                // Field only in false branch - keep IfBranch::False
+                result.push(field);
+            }
+            (None, None) => unreachable!(),
         }
     }
 
-    // Convert to Vec and sort by name for consistent output
-    let mut result: Vec<Field> = merged.into_values().collect();
+    // Sort by name for consistent output
     result.sort_by(|a, b| a.name.cmp(&b.name));
     result
 }
@@ -789,8 +807,17 @@ fn process_field_tag(
             // PackableList<T>
             ftype = format!("{ftype}<{gtype}>");
         }
-        // Fields in <if> or <maskmap> are optional
+        // Fields inside <if>/<true>/<false> or <maskmap> blocks are conditional
         let is_optional = ctx.in_if_true || ctx.in_if_false || ctx.in_maskmap;
+
+        // Track which branch this field belongs to (used for if/true/false code generation)
+        let if_branch = if ctx.in_if_true {
+            Some(IfBranch::True)
+        } else if ctx.in_if_false {
+            Some(IfBranch::False)
+        } else {
+            None
+        };
 
         let new_field = Field {
             name: fname,
@@ -812,6 +839,8 @@ fn process_field_tag(
             } else {
                 None
             },
+            if_branch,
+            if_false_branch_type: None,
         };
 
         // If we're in an <if> block, collect fields separately
@@ -873,6 +902,14 @@ fn process_vector_tag(
         let vec_type = format!("Vec<{vtype}>");
         let is_optional = ctx.in_if_true || ctx.in_if_false || ctx.in_maskmap;
 
+        let if_branch = if ctx.in_if_true {
+            Some(IfBranch::True)
+        } else if ctx.in_if_false {
+            Some(IfBranch::False)
+        } else {
+            None
+        };
+
         let new_field = Field {
             name: vname,
             field_type: vec_type,
@@ -893,6 +930,8 @@ fn process_vector_tag(
             } else {
                 None
             },
+            if_branch,
+            if_false_branch_type: None,
         };
 
         // If we're in an <if> block, collect fields separately
@@ -956,6 +995,14 @@ fn process_table_tag(
         let map_type = format!("std::collections::HashMap<{ktype}, {vtype}>");
         let is_optional = ctx.in_if_true || ctx.in_if_false || ctx.in_maskmap;
 
+        let if_branch = if ctx.in_if_true {
+            Some(IfBranch::True)
+        } else if ctx.in_if_false {
+            Some(IfBranch::False)
+        } else {
+            None
+        };
+
         let new_field = Field {
             name: tname,
             field_type: map_type,
@@ -976,6 +1023,8 @@ fn process_table_tag(
             } else {
                 None
             },
+            if_branch,
+            if_false_branch_type: None,
         };
 
         // If we're in an <if> block, collect fields separately
@@ -1319,6 +1368,43 @@ impl ConditionKey {
     }
 }
 
+/// Generate a read for a field that appears in both true and false branches
+/// 
+/// When a field appears in both branches but with different types (e.g., true reads u64, false reads u32),
+/// we merge to the larger type and cast when reading from the false branch.
+fn generate_both_branch_field_read(
+    ctx: &ReaderContext,
+    field: &Field,
+    all_fields: &[Field],
+    field_name: &str,
+    out: &mut String,
+) {
+    // Check if this field has a different type in the false branch
+    if let Some(false_type_str) = &field.if_false_branch_type {
+        let rust_type_merged = get_rust_type(&field.field_type);
+        let rust_type_false = get_rust_type(false_type_str);
+
+        if rust_type_false != rust_type_merged {
+            // Types differ - read the smaller type from false branch and cast to merged type
+            let mut false_field_temp = (*field).clone();
+            false_field_temp.field_type = false_type_str.clone();
+            let false_read_call = generate_base_read_call(ctx, &false_field_temp, all_fields);
+            out.push_str(&format!(
+                "            {} = Some(({})? as {});\n",
+                field_name, false_read_call, rust_type_merged
+            ));
+        } else {
+            // Types match - just read normally
+            let read_call = generate_base_read_call(ctx, field, all_fields);
+            out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
+        }
+    } else {
+        // No type difference recorded, read the merged type normally
+        let read_call = generate_base_read_call(ctx, field, all_fields);
+        out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
+    }
+}
+
 /// Generate reads for a group of fields with the same condition
 fn generate_field_group_reads(
     ctx: &ReaderContext,
@@ -1337,23 +1423,66 @@ fn generate_field_group_reads(
             }
         }
         ConditionKey::IfTest(condition) => {
-            // Generate a single if block for all fields with this condition
+            // Handle <if test="condition"> with <true> and <false> branches
             let rust_condition = convert_condition_expression(condition, all_fields);
 
-            // Initialize all optional fields to None first
+            // Categorize fields by which branch(es) they belong to
+            let mut true_only = Vec::new();
+            let mut false_only = Vec::new();
+            let mut both = Vec::new();
+
             for field in fields {
+                match &field.if_branch {
+                    Some(IfBranch::True) => true_only.push(*field),
+                    Some(IfBranch::False) => false_only.push(*field),
+                    Some(IfBranch::Both) => both.push(*field),
+                    None => both.push(*field), // Fallback for fields without explicit branch
+                }
+            }
+
+            // All conditional fields must be declared before the if block so they're available
+            // for struct construction after the if-else completes
+            for field in true_only.iter().chain(false_only.iter()).chain(both.iter()) {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 out.push_str(&format!("        let mut {} = None;\n", field_name));
             }
 
-            // Generate the if block
+            // Generate if-else block that assigns values to the variables
             out.push_str(&format!("        if {} {{\n", rust_condition));
-            for field in fields {
+
+            // TRUE branch: read all true-only and both-branch fields
+            for field in &true_only {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 let read_call = generate_base_read_call(ctx, field, all_fields);
                 out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
             }
-            out.push_str("        }\n");
+            for field in &both {
+                let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                let read_call = generate_base_read_call(ctx, field, all_fields);
+                out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
+            }
+
+            // FALSE branch: only emit if there are fields to read in the false branch
+            if !false_only.is_empty() || !both.is_empty() {
+                out.push_str("        } else {\n");
+
+                // Read false-only fields
+                for field in &false_only {
+                    let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    let read_call = generate_base_read_call(ctx, field, all_fields);
+                    out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
+                }
+
+                // Read both-branch fields, with type casting if needed
+                for field in &both {
+                    let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    generate_both_branch_field_read(ctx, field, all_fields, &field_name, &mut *out);
+                }
+
+                out.push_str("        }\n");
+            } else {
+                out.push_str("        }\n");
+            }
         }
         ConditionKey::Mask { field: mask_field, value: mask_value } => {
             // Generate a single if block for all fields with this mask
