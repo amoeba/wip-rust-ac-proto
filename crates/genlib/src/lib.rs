@@ -72,6 +72,37 @@ impl ReaderContext {
     }
 }
 
+/// Check if a Rust type is a primitive (including String)
+fn is_primitive_type(rust_type: &str) -> bool {
+    matches!(
+        rust_type,
+        "u8" | "i8" | "u16" | "i16" | "u32" | "i32" | "u64" | "i64" | "f32" | "f64" | "bool" | "String"
+    )
+}
+
+/// Check if a type should be generated as a newtype struct (vs type alias)
+/// Returns true if it's a semantic type with a primitive parent (not a C-style alias)
+fn should_be_newtype_struct(type_name: &str, rust_parent_type: &str) -> bool {
+    // WString is always a newtype struct (has custom UTF-16 wire format)
+    if type_name == "WString" {
+        return true;
+    }
+
+    // Only consider newtype for types with primitive parents
+    if !is_primitive_type(rust_parent_type) {
+        return false;
+    }
+
+    // Hybrid approach: Use newtype structs for semantic types (type safety)
+    // but keep type aliases for C-style primitive names (WORD, DWORD, byte, etc.)
+    // Heuristic: C-style aliases are all-uppercase or all-lowercase
+    let is_all_upper = type_name.chars().all(|c| c.is_uppercase() || !c.is_alphabetic());
+    let is_all_lower = type_name.chars().all(|c| c.is_lowercase() || !c.is_alphabetic());
+    let is_c_style_alias = is_all_upper || is_all_lower;
+
+    !is_c_style_alias
+}
+
 /// Default derives for all generated types
 const DEFAULT_DERIVES: &[&str] = &["Clone", "Debug", "PartialEq", "Serialize", "Deserialize"];
 
@@ -99,7 +130,8 @@ pub fn get_rust_type(xml_type: &str) -> &str {
         "float" => "f32",
         "double" => "f64",
         "bool" => "bool",
-        "string" | "WString" => "String",
+        "string" => "String",
+        // WString is kept as-is so it becomes a newtype struct
         // Keep other types as-is (custom types like ObjectId, Vector3, etc.)
         other => other,
     }
@@ -414,7 +446,7 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
         String::new()
     };
 
-    // Handle non-templated parent types as type aliases
+    // Handle non-templated parent types as type aliases or newtype structs
     // Note: protocol.xml quirk - some types have both parent and templated attributes
     // (e.g., PackableList has parent="List" and templated="T")
     // For templated types, skip the parent alias and continue to struct generation
@@ -423,11 +455,35 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     {
         let rust_type = get_rust_type(parent_type);
 
-        // Only generate alias if the rust type differs from the XML type name
+        // Only generate if the rust type differs from the XML type name
         if rust_type != *original_type_name {
-            out.push_str(&format!(
-                "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
-            ));
+            if should_be_newtype_struct(type_name, rust_type) {
+                // Generate newtype struct for semantic types
+                // WString wraps String (not Copy), others wrap primitives (Copy)
+                if type_name == "WString" {
+                    out.push_str(&format!(
+                        "#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]\n"
+                    ));
+                } else {
+                    out.push_str(&format!(
+                        "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]\n"
+                    ));
+                }
+                out.push_str(&format!(
+                    "#[derive(serde::Serialize, serde::Deserialize)]\n"
+                ));
+                out.push_str(&format!(
+                    "#[serde(transparent)]\n"
+                ));
+                out.push_str(&format!(
+                    "pub struct {type_name}(pub {rust_type});\n\n"
+                ));
+            } else {
+                // Generate type alias for C-style aliases or non-primitive parents
+                out.push_str(&format!(
+                    "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
+                ));
+            }
         }
         return out;
     }
@@ -1029,10 +1085,45 @@ fn generate_reader_impl(ctx: &ReaderContext, protocol_type: &ProtocolType) -> St
     let type_name = &protocol_type.name;
     let safe_type_name = safe_identifier(type_name, IdentifierType::Type);
 
-    // Handle primitive types and aliases - they don't need readers
-    if protocol_type.is_primitive
-        || protocol_type.parent.is_some() && protocol_type.fields.is_none()
-    {
+    // Handle primitive types - they don't need readers
+    if protocol_type.is_primitive {
+        return String::new();
+    }
+
+    // Handle newtype structs (parent type with no fields, but not C-style aliases)
+    // These are generated as newtype structs and need a read() method
+    if protocol_type.parent.is_some() && protocol_type.fields.is_none() {
+        if let Some(parent_type) = &protocol_type.parent {
+            let rust_type = get_rust_type(parent_type);
+
+            if should_be_newtype_struct(&safe_type_name.name, rust_type) {
+                // Generate read() for newtype struct
+                // Strategy: Try to use a read_* helper function
+                // - For numeric primitives: use read_u32(), read_i16(), etc.
+                // - For String/WString types: use read_{typename}() helper
+                let read_call = match rust_type {
+                    "u8" => "read_u8(reader)".to_string(),
+                    "i8" => "read_i8(reader)".to_string(),
+                    "u16" => "read_u16(reader)".to_string(),
+                    "i16" => "read_i16(reader)".to_string(),
+                    "u32" => "read_u32(reader)".to_string(),
+                    "i32" => "read_i32(reader)".to_string(),
+                    "u64" => "read_u64(reader)".to_string(),
+                    "i64" => "read_i64(reader)".to_string(),
+                    "f32" => "read_f32(reader)".to_string(),
+                    "f64" => "read_f64(reader)".to_string(),
+                    "bool" => "read_bool(reader)".to_string(),
+                    // String or custom parent: call read_{lowercase_typename}()
+                    _ => format!("read_{}(reader)", safe_type_name.name.to_lowercase()),
+                };
+
+                return format!(
+                    "impl {} {{\n    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self({}?))\n    }}\n}}\n\n",
+                    safe_type_name.name, read_call
+                );
+            }
+        }
+        // Type alias - doesn't need a reader
         return String::new();
     }
 
@@ -1268,7 +1359,13 @@ fn generate_read_call(
                 format!("unimplemented!(\"PackableHashTable reading not yet implemented\")")
             } else {
                 // Custom struct type - call its read method
-                format!("{}::read(reader)", field_type)
+                // If the type has generic parameters (contains '<'), we need turbofish syntax
+                if let Some(pos) = field_type.find('<') {
+                    let (type_name, generics) = field_type.split_at(pos);
+                    format!("{type_name}::{generics}::read(reader)")
+                } else {
+                    format!("{field_type}::read(reader)")
+                }
             }
         }
     };

@@ -30,8 +30,10 @@ pub type double = f64;
 #[allow(non_camel_case_types)]
 pub type string = String;
 
-#[allow(non_camel_case_types)]
-pub type WString = String;
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct WString(pub String);
 
 #[allow(non_camel_case_types)]
 pub type WORD = u16;
@@ -45,14 +47,20 @@ pub struct PackedWORD {}
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PackedDWORD {}
 
-#[allow(non_camel_case_types)]
-pub type ObjectId = u32;
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct ObjectId(pub u32);
 
-#[allow(non_camel_case_types)]
-pub type LandcellId = u32;
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct LandcellId(pub u32);
 
-#[allow(non_camel_case_types)]
-pub type SpellId = u16;
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct SpellId(pub u16);
 
 #[allow(non_camel_case_types)]
 pub type DataId = PackedDWORD;
@@ -203,7 +211,7 @@ pub enum LoginRequestHeader {
     #[serde(rename = "AccountToLoginAs")]
     account_to_login_as: String,
     #[serde(rename = "Password")]
-    password: String,
+    password: WString,
     },
     #[serde(rename = "0x40000002")]
     Type40000002 {
@@ -1208,7 +1216,7 @@ pub enum WindowProperty {
     #[serde(rename = "Value_j")]
     value_j: u64,
     #[serde(rename = "Value_a")]
-    value_a: String,
+    value_a: WString,
     },
 }
 

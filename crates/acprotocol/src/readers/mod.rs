@@ -107,3 +107,32 @@ pub fn read_string(reader: &mut impl Read) -> Result<String, Box<dyn std::error:
 pub fn read_object_id(reader: &mut impl Read) -> Result<u32, Box<dyn std::error::Error>> {
     read_u32(reader)
 }
+
+/// Read a WString (variable-length Unicode string)
+/// Length encoding: 1 byte if < 128, or 2 bytes if high bit set in first byte
+/// String encoding: UTF-16LE
+pub fn read_wstring(reader: &mut impl Read) -> Result<String, Box<dyn std::error::Error>> {
+    // Read length with variable encoding
+    let first_byte = read_u8(reader)?;
+    let length = if (first_byte & 0x80) != 0 {
+        // High bit set: 2-byte length
+        let second_byte = read_u8(reader)?;
+        (((first_byte & 0x7f) as usize) << 8) | (second_byte as usize)
+    } else {
+        // Single byte length
+        first_byte as usize
+    };
+
+    // Read UTF-16 bytes (2 bytes per character)
+    let byte_count = length * 2;
+    let mut buf = vec![0u8; byte_count];
+    reader.read_exact(&mut buf)?;
+
+    // Decode as UTF-16LE
+    let u16_vec: Vec<u16> = buf
+        .chunks_exact(2)
+        .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
+        .collect();
+
+    Ok(String::from_utf16(&u16_vec)?)
+}
