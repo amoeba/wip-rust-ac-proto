@@ -1,6 +1,14 @@
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone)]
+pub struct Subfield {
+    pub(crate) name: String,
+    pub(crate) field_type: String,
+    /// Expression to compute this subfield's value (e.g., "Size - 16" or "PackedSize & 0xFFFFFF")
+    pub(crate) value_expression: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct Field {
     pub(crate) name: String,
     pub(crate) field_type: String,
@@ -18,6 +26,8 @@ pub struct Field {
     pub(crate) if_branch: Option<IfBranch>,
     /// For fields in both branches with different types: the original type from the false branch
     pub(crate) if_false_branch_type: Option<String>,
+    /// Subfields computed from this field's value (e.g., extracting bits or doing arithmetic)
+    pub(crate) subfields: Vec<Subfield>,
 }
 
 /// Tracks which branch of an if/true/false block a field belongs to

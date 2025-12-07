@@ -6,7 +6,7 @@ use quick_xml::{Reader, events::Event};
 
 use crate::{
     identifiers::{IdentifierType, safe_enum_variant_name, safe_identifier},
-    types::{EnumValue, Field, FieldSet, IfBranch, ProtocolEnum, ProtocolType},
+    types::{EnumValue, Field, FieldSet, IfBranch, ProtocolEnum, ProtocolType, Subfield},
     util::{format_hex_value, parse_hex_string},
 };
 
@@ -30,6 +30,10 @@ struct FieldContext {
     current_maskmap_field: Option<String>,
     /// The current mask value (e.g., "0x8")
     current_mask_value: Option<String>,
+    /// Track when we're inside a field tag (to collect subfields)
+    in_field: bool,
+    /// The current field being built (accumulates subfields)
+    current_field: Option<Field>,
 }
 
 /// Context for code generation, controlling what gets generated
@@ -806,11 +810,35 @@ fn process_enum_value_tag(
     }
 }
 
-fn process_field_tag(
+fn process_subfield_tag(e: &quick_xml::events::BytesStart) -> Option<Subfield> {
+    let mut name = None;
+    let mut field_type = None;
+    let mut value_expression = None;
+
+    for attr in e.attributes().flatten() {
+        match attr.key.as_ref() {
+            b"name" => name = Some(attr.unescape_value().unwrap().into_owned()),
+            b"type" => field_type = Some(attr.unescape_value().unwrap().into_owned()),
+            b"value" => value_expression = Some(attr.unescape_value().unwrap().into_owned()),
+            _ => {}
+        }
+    }
+
+    if let (Some(name), Some(field_type), Some(value_expression)) = (name, field_type, value_expression) {
+        Some(Subfield {
+            name,
+            field_type,
+            value_expression,
+        })
+    } else {
+        None
+    }
+}
+
+fn create_field_from_tag(
     e: &quick_xml::events::BytesStart,
-    current_field_set: &mut Option<FieldSet>,
-    ctx: &mut FieldContext,
-) {
+    ctx: &FieldContext,
+) -> Option<Field> {
     let mut field_type = None;
     let mut field_name = None;
     let mut generic_key = None;
@@ -851,7 +879,7 @@ fn process_field_tag(
             None
         };
 
-        let new_field = Field {
+        Some(Field {
             name: fname,
             field_type: ftype,
             is_optional,
@@ -873,8 +901,49 @@ fn process_field_tag(
             },
             if_branch,
             if_false_branch_type: None,
-        };
+            subfields: Vec::new(),
+        })
+    } else {
+        None
+    }
+}
 
+fn add_field_to_set(
+    field: Field,
+    current_field_set: &mut Option<FieldSet>,
+    ctx: &FieldContext,
+) {
+    // If we're in an <if> block, this shouldn't be called - fields are handled separately
+    // This is just for normal fields
+
+    // Normal field processing
+    if let Some(field_set) = current_field_set {
+        if ctx.in_switch {
+            if let (Some(case_vals), Some(variant_fields)) =
+                (&ctx.current_case_values, &mut field_set.variant_fields)
+            {
+                // Add the same field to all values in this case
+                for case_val in case_vals {
+                    variant_fields
+                        .entry(case_val.clone())
+                        .or_insert_with(Vec::new)
+                        .push(field.clone());
+                    debug!("Added field to variant case {case_val}");
+                }
+            }
+        } else {
+            field_set.common_fields.push(field);
+            debug!("Added field to common_fields");
+        }
+    }
+}
+
+fn process_field_tag(
+    e: &quick_xml::events::BytesStart,
+    current_field_set: &mut Option<FieldSet>,
+    ctx: &mut FieldContext,
+) {
+    if let Some(new_field) = create_field_from_tag(e, ctx) {
         // If we're in an <if> block, collect fields separately
         if ctx.in_if_true {
             ctx.if_true_fields.push(new_field);
@@ -886,26 +955,7 @@ fn process_field_tag(
             return;
         }
 
-        // Normal field processing
-        if let Some(field_set) = current_field_set {
-            if ctx.in_switch {
-                if let (Some(case_vals), Some(variant_fields)) =
-                    (&ctx.current_case_values, &mut field_set.variant_fields)
-                {
-                    // Add the same field to all values in this case
-                    for case_val in case_vals {
-                        variant_fields
-                            .entry(case_val.clone())
-                            .or_insert_with(Vec::new)
-                            .push(new_field.clone());
-                        debug!("Added field to variant case {case_val}");
-                    }
-                }
-            } else {
-                field_set.common_fields.push(new_field);
-                debug!("Added field to common_fields");
-            }
-        }
+        add_field_to_set(new_field, current_field_set, ctx);
     }
 }
 
@@ -964,6 +1014,7 @@ fn process_vector_tag(
             },
             if_branch,
             if_false_branch_type: None,
+            subfields: Vec::new(),
         };
 
         // If we're in an <if> block, collect fields separately
@@ -1057,6 +1108,7 @@ fn process_table_tag(
             },
             if_branch,
             if_false_branch_type: None,
+            subfields: Vec::new(),
         };
 
         // If we're in an <if> block, collect fields separately
@@ -1493,6 +1545,13 @@ fn generate_field_group_reads(
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 let read_call = generate_base_read_call(ctx, field, all_fields);
                 out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
+
+                // Generate subfield computations if any
+                for subfield in &field.subfields {
+                    let subfield_name = safe_identifier(&subfield.name, IdentifierType::Field).name;
+                    let subfield_expr = convert_condition_expression(&subfield.value_expression, all_fields);
+                    out.push_str(&format!("        let {} = {};\n", subfield_name, subfield_expr));
+                }
             }
         }
         ConditionKey::IfTest(condition) => {
@@ -1737,6 +1796,13 @@ fn generate_variant_reader_impl(
         let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
         let read_call = generate_read_call(ctx, field, &field_set.common_fields);
         out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
+
+        // Generate subfield computations if any
+        for subfield in &field.subfields {
+            let subfield_name = safe_identifier(&subfield.name, IdentifierType::Field).name;
+            let subfield_expr = convert_condition_expression(&subfield.value_expression, &field_set.common_fields);
+            out.push_str(&format!("        let {} = {};\n", subfield_name, subfield_expr));
+        }
     }
 
     // Generate match on switch field
@@ -2335,6 +2401,8 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
         current_if_condition: None,
         current_maskmap_field: None,
         current_mask_value: None,
+        in_field: false,
+        current_field: None,
     };
 
     loop {
@@ -2373,7 +2441,18 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                 } else if tag_name == "enum" {
                     process_enum_start_tag(&e, &mut current_enum);
                 } else if tag_name == "field" {
-                    process_field_tag(&e, &mut current_field_set, &mut field_ctx);
+                    // Start of a field tag with potential subfields
+                    field_ctx.in_field = true;
+                    field_ctx.current_field = create_field_from_tag(&e, &field_ctx);
+                    debug!("Started field tag with potential subfields");
+                } else if tag_name == "subfield" {
+                    // Process subfield and add to current field
+                    if let Some(subfield) = process_subfield_tag(&e) {
+                        if let Some(ref mut field) = field_ctx.current_field {
+                            field.subfields.push(subfield);
+                            debug!("Added subfield to current field");
+                        }
+                    }
                 } else if tag_name == "switch" {
                     field_ctx.in_switch = process_switch_tag(&e, &mut current_field_set);
                 } else if tag_name == "case" {
@@ -2445,6 +2524,14 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                     );
                 } else if tag_name == "field" {
                     process_field_tag(&e, &mut current_field_set, &mut field_ctx);
+                } else if tag_name == "subfield" {
+                    // Process subfield and add to current field (for Event::Empty tags)
+                    if let Some(subfield) = process_subfield_tag(&e) {
+                        if let Some(ref mut field) = field_ctx.current_field {
+                            field.subfields.push(subfield);
+                            debug!("Added subfield to current field (empty tag)");
+                        }
+                    }
                 } else if tag_name == "vector" {
                     process_vector_tag(&e, &mut current_field_set, &mut field_ctx);
                 } else if tag_name == "table" {
@@ -2489,6 +2576,25 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                 } else if e.name().as_ref() == b"gameevents" {
                     current_direction = MessageDirection::None;
                     debug!("Exited gameevents section");
+                } else if e.name().as_ref() == b"field" {
+                    // End of field tag - finalize and add the field
+                    if field_ctx.in_field {
+                        if let Some(field) = field_ctx.current_field.take() {
+                            debug!("Finalizing field with {} subfields", field.subfields.len());
+
+                            // If we're in an <if> block, collect fields separately
+                            if field_ctx.in_if_true {
+                                field_ctx.if_true_fields.push(field);
+                                debug!("Added field to if_true_fields");
+                            } else if field_ctx.in_if_false {
+                                field_ctx.if_false_fields.push(field);
+                                debug!("Added field to if_false_fields");
+                            } else {
+                                add_field_to_set(field, &mut current_field_set, &field_ctx);
+                            }
+                        }
+                        field_ctx.in_field = false;
+                    }
                 } else if e.name().as_ref() == b"switch" {
                     field_ctx.in_switch = false;
                     debug!("Exited switch");

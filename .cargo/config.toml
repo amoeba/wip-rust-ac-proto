@@ -1,2 +1,2 @@
 [env]
-FILTER_TYPES = "Emote"
+FILTER_TYPES = "BlobFragments,ItemProfile,PackedMotionCommand,RawMotionState,InterpertedMotionState,DDDRevision,PHashTable"
