@@ -1205,9 +1205,13 @@ fn generate_readers_for_types(
         std::collections::HashMap::new();
     for protocol_enum in enums {
         for enum_value in &protocol_enum.values {
+            // Use safe enum variant name when referring to variant
+            // i.e., EmoteType::RefuseEmoteCategory instead of EmoteType::Refuse_EmoteCategory
+            let safe_variant = safe_enum_variant_name(&enum_value.name);
+
             enum_value_map.insert(
                 (protocol_enum.name.clone(), enum_value.value.clone()),
-                enum_value.name.clone(),
+                safe_variant.name,
             );
         }
     }
