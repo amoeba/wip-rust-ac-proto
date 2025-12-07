@@ -1183,6 +1183,7 @@ fn generate_readers_for_types(
     if module_name == "common" {
         out.push_str("use crate::types::*;\n");
     } else {
+        out.push_str("use crate::types::*;\n");
         out.push_str("use crate::types::");
         out.push_str(module_name);
         out.push_str("::*;\n");
@@ -1230,6 +1231,11 @@ fn generate_reader_impl(ctx: &ReaderContext, protocol_type: &ProtocolType) -> St
 
     // Handle primitive types - they don't need readers
     if protocol_type.is_primitive {
+        return String::new();
+    }
+
+    // Skip templated/generic types - they have helper functions instead
+    if protocol_type.templated.is_some() {
         return String::new();
     }
 
