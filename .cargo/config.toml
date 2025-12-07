@@ -1,2 +1,2 @@
 [env]
-FILTER_TYPES = ""
+FILTER_TYPES = "Vector3,Quartionion,LandcellId,Frame,ObjectId,Position,AllegianceData,AllegianceHierarchy,AllegianceRecord"

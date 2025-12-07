@@ -6,6 +6,10 @@ pub struct Field {
     pub(crate) field_type: String,
     /// Whether this field is optional (from <if> or <maskmap>)
     pub(crate) is_optional: bool,
+    /// For Vec types, the length expression (e.g., "RecordCount - 1")
+    pub(crate) length_expression: Option<String>,
+    /// For optional fields, the condition under which they are present (e.g., "RecordCount > 0")
+    pub(crate) optional_condition: Option<String>,
 }
 
 #[derive(Debug, Clone)]

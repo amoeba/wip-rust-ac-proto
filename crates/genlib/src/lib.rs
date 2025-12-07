@@ -22,6 +22,8 @@ struct FieldContext {
     in_maskmap: bool,
     if_true_fields: Vec<Field>,
     if_false_fields: Vec<Field>,
+    /// The test condition from the current <if> block (e.g., "RecordCount > 0")
+    current_if_condition: Option<String>,
 }
 
 /// Context for code generation, controlling what gets generated
@@ -76,7 +78,17 @@ impl ReaderContext {
 fn is_primitive_type(rust_type: &str) -> bool {
     matches!(
         rust_type,
-        "u8" | "i8" | "u16" | "i16" | "u32" | "i32" | "u64" | "i64" | "f32" | "f64" | "bool" | "String"
+        "u8" | "i8"
+            | "u16"
+            | "i16"
+            | "u32"
+            | "i32"
+            | "u64"
+            | "i64"
+            | "f32"
+            | "f64"
+            | "bool"
+            | "String"
     )
 }
 
@@ -96,8 +108,12 @@ fn should_be_newtype_struct(type_name: &str, rust_parent_type: &str) -> bool {
     // Hybrid approach: Use newtype structs for semantic types (type safety)
     // but keep type aliases for C-style primitive names (WORD, DWORD, byte, etc.)
     // Heuristic: C-style aliases are all-uppercase or all-lowercase
-    let is_all_upper = type_name.chars().all(|c| c.is_uppercase() || !c.is_alphabetic());
-    let is_all_lower = type_name.chars().all(|c| c.is_lowercase() || !c.is_alphabetic());
+    let is_all_upper = type_name
+        .chars()
+        .all(|c| c.is_uppercase() || !c.is_alphabetic());
+    let is_all_lower = type_name
+        .chars()
+        .all(|c| c.is_lowercase() || !c.is_alphabetic());
     let is_c_style_alias = is_all_upper || is_all_lower;
 
     !is_c_style_alias
@@ -472,12 +488,8 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
                 out.push_str(&format!(
                     "#[derive(serde::Serialize, serde::Deserialize)]\n"
                 ));
-                out.push_str(&format!(
-                    "#[serde(transparent)]\n"
-                ));
-                out.push_str(&format!(
-                    "pub struct {type_name}(pub {rust_type});\n\n"
-                ));
+                out.push_str(&format!("#[serde(transparent)]\n"));
+                out.push_str(&format!("pub struct {type_name}(pub {rust_type});\n\n"));
             } else {
                 // Generate type alias for C-style aliases or non-primitive parents
                 out.push_str(&format!(
@@ -780,6 +792,12 @@ fn process_field_tag(
             name: fname,
             field_type: ftype,
             is_optional,
+            length_expression: None, // Regular fields don't have length expressions
+            optional_condition: if is_optional {
+                ctx.current_if_condition.clone()
+            } else {
+                None
+            },
         };
 
         // If we're in an <if> block, collect fields separately
@@ -823,16 +841,18 @@ fn process_vector_tag(
 ) {
     let mut vector_type = None;
     let mut vector_name = None;
+    let mut length_expr = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"type" => vector_type = Some(attr.unescape_value().unwrap().into_owned()),
             b"name" => vector_name = Some(attr.unescape_value().unwrap().into_owned()),
+            b"length" => length_expr = Some(attr.unescape_value().unwrap().into_owned()),
             _ => {}
         }
     }
 
-    debug!("Processing vector {vector_name:?} of type {vector_type:?}");
+    debug!("Processing vector {vector_name:?} of type {vector_type:?} with length {length_expr:?}");
 
     if let (Some(vname), Some(vtype)) = (vector_name, vector_type) {
         // Create a field with Vec<T> type
@@ -843,6 +863,12 @@ fn process_vector_tag(
             name: vname,
             field_type: vec_type,
             is_optional,
+            length_expression: length_expr,
+            optional_condition: if is_optional {
+                ctx.current_if_condition.clone()
+            } else {
+                None
+            },
         };
 
         // If we're in an <if> block, collect fields separately
@@ -885,17 +911,21 @@ fn process_table_tag(
     let mut table_name = None;
     let mut key_type = None;
     let mut value_type = None;
+    let mut length_expr = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
             b"name" => table_name = Some(attr.unescape_value().unwrap().into_owned()),
             b"key" => key_type = Some(attr.unescape_value().unwrap().into_owned()),
             b"value" => value_type = Some(attr.unescape_value().unwrap().into_owned()),
+            b"length" => length_expr = Some(attr.unescape_value().unwrap().into_owned()),
             _ => {}
         }
     }
 
-    debug!("Processing table {table_name:?} with key={key_type:?}, value={value_type:?}");
+    debug!(
+        "Processing table {table_name:?} with key={key_type:?}, value={value_type:?}, length={length_expr:?}"
+    );
 
     if let (Some(tname), Some(ktype), Some(vtype)) = (table_name, key_type, value_type) {
         // Create a field with HashMap<K, V> type
@@ -906,6 +936,12 @@ fn process_table_tag(
             name: tname,
             field_type: map_type,
             is_optional,
+            length_expression: length_expr,
+            optional_condition: if is_optional {
+                ctx.current_if_condition.clone()
+            } else {
+                None
+            },
         };
 
         // If we're in an <if> block, collect fields separately
@@ -1160,7 +1196,7 @@ fn generate_struct_reader_impl(
     // Read all fields
     for field in &field_set.common_fields {
         let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-        let read_call = generate_read_call(ctx, &field.field_type, field.is_optional);
+        let read_call = generate_read_call(ctx, field, &field_set.common_fields);
         out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
     }
 
@@ -1203,7 +1239,7 @@ fn generate_variant_reader_impl(
     // Read all common fields
     for field in &field_set.common_fields {
         let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-        let read_call = generate_read_call(ctx, &field.field_type, field.is_optional);
+        let read_call = generate_read_call(ctx, field, &field_set.common_fields);
         out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
     }
 
@@ -1224,8 +1260,9 @@ fn generate_variant_reader_impl(
         let case_pattern = if let Some(switch_type) = switch_field_type {
             if ctx.enum_parent_map.contains_key(switch_type) {
                 // It's an enum - look up the enum variant name from the value
-                if let Some(variant_name) =
-                    ctx.enum_value_map.get(&(switch_type.clone(), case_value.clone()))
+                if let Some(variant_name) = ctx
+                    .enum_value_map
+                    .get(&(switch_type.clone(), case_value.clone()))
                 {
                     // Use the enum variant: EnumType::VariantName
                     format!("{}::{}", switch_type, variant_name)
@@ -1245,7 +1282,10 @@ fn generate_variant_reader_impl(
         // Read variant-specific fields
         for field in case_fields {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-            let read_call = generate_read_call(ctx, &field.field_type, field.is_optional);
+            // For variant fields, we need to look at all available fields (common + case)
+            let mut all_fields = field_set.common_fields.clone();
+            all_fields.extend(case_fields.clone());
+            let read_call = generate_read_call(ctx, field, &all_fields);
             out.push_str(&format!(
                 "                let {} = {}?;\n",
                 field_name, read_call
@@ -1307,12 +1347,15 @@ fn generate_variant_reader_impl(
     out
 }
 
-/// Generate the appropriate read call for a given type
-fn generate_read_call(
-    ctx: &ReaderContext,
-    field_type: &str,
-    is_optional: bool,
-) -> String {
+/// Generate the appropriate read call for a given field
+///
+/// # Arguments
+/// * `ctx` - Reader context with enum information
+/// * `field` - The field to generate a read call for
+/// * `all_fields` - All fields available in the current scope (used to resolve length expressions)
+fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
+    let field_type = &field.field_type;
+    let is_optional = field.is_optional;
     let rust_type = get_rust_type(field_type);
 
     let base_read = match rust_type {
@@ -1346,14 +1389,40 @@ fn generate_read_call(
                 };
                 format!("{}::try_from({}(reader)?)", field_type, read_fn)
             } else if field_type.starts_with("Vec<") {
-                // TODO: Handle Vec
-                format!("unimplemented!(\"Vec reading not yet implemented\")")
+                // Handle Vec - extract element type
+                let element_type = &field_type[4..field_type.len() - 1];
+
+                if let Some(length_expr) = &field.length_expression {
+                    // Convert length expression to Rust code
+                    let length_code = convert_length_expression(length_expr, all_fields);
+                    generate_vec_read_with_length(element_type, &length_code, ctx)
+                } else {
+                    format!("unimplemented!(\"Vec reading without length not yet implemented\")")
+                }
             } else if field_type.starts_with("PackableList<") {
                 // TODO: Handle PackableList
                 format!("unimplemented!(\"PackableList reading not yet implemented\")")
             } else if field_type.starts_with("std::collections::HashMap<") {
-                // TODO: Handle HashMap
-                format!("unimplemented!(\"HashMap reading not yet implemented\")")
+                // Handle HashMap - extract key and value types
+                let inner = &field_type["std::collections::HashMap<".len()..field_type.len() - 1];
+                if let Some(comma_pos) = inner.find(',') {
+                    let key_type = inner[..comma_pos].trim();
+                    let value_type = inner[comma_pos + 1..].trim();
+
+                    if let Some(length_expr) = &field.length_expression {
+                        // Convert length expression to Rust code
+                        let length_code = convert_length_expression(length_expr, all_fields);
+                        generate_hashmap_read_with_length(key_type, value_type, &length_code, ctx)
+                    } else {
+                        format!(
+                            "unimplemented!(\"HashMap reading without length not yet implemented\")"
+                        )
+                    }
+                } else {
+                    format!(
+                        "unimplemented!(\"HashMap reading with invalid type not yet implemented\")"
+                    )
+                }
             } else if field_type.starts_with("PackableHashTable<") {
                 // TODO: Handle PackableHashTable
                 format!("unimplemented!(\"PackableHashTable reading not yet implemented\")")
@@ -1371,12 +1440,259 @@ fn generate_read_call(
     };
 
     if is_optional {
-        // TODO: Handle optional fields properly
-        // For now, just read them as normal
-        base_read
+        // Generate conditional read based on the test condition
+        if let Some(condition) = &field.optional_condition {
+            // Convert the condition to Rust code (e.g., "RecordCount > 0" -> "record_count > 0")
+            let rust_condition = convert_condition_expression(condition, all_fields);
+            // The base_read returns Result<T, E>, we want Result<Option<T>, E>
+            // If condition is true, read and wrap in Some; otherwise return Ok(None)
+            format!(
+                "if {} {{ {}.map(Some) }} else {{ Ok(None) }}",
+                rust_condition, base_read
+            )
+        } else {
+            // No condition - this shouldn't happen for truly optional fields, but handle it
+            base_read
+        }
     } else {
         base_read
     }
+}
+
+/// Convert a condition expression from XML format to Rust code
+/// Examples: "RecordCount > 0" -> "record_count > 0"
+fn convert_condition_expression(expr: &str, all_fields: &[Field]) -> String {
+    let expr = expr.trim();
+    let mut result = String::new();
+    let mut current_token = String::new();
+
+    for ch in expr.chars() {
+        if ch.is_whitespace()
+            || ch == '>'
+            || ch == '<'
+            || ch == '='
+            || ch == '!'
+            || ch == '&'
+            || ch == '|'
+            || ch == '('
+            || ch == ')'
+        {
+            if !current_token.is_empty() {
+                // Try to find a field with this name
+                if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+                    let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    result.push_str(&safe_name);
+                } else if current_token.chars().all(|c| c.is_numeric()) {
+                    // It's a number
+                    result.push_str(&current_token);
+                } else {
+                    // Unknown token - keep as-is but make it snake_case
+                    let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
+                    result.push_str(&safe_name);
+                }
+                current_token.clear();
+            }
+
+            if !ch.is_whitespace() {
+                result.push(ch);
+            } else if !result.is_empty() && !result.ends_with(' ') {
+                result.push(' ');
+            }
+        } else {
+            current_token.push(ch);
+        }
+    }
+
+    // Handle any remaining token
+    if !current_token.is_empty() {
+        if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+            let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
+            result.push_str(&safe_name);
+        } else if current_token.chars().all(|c| c.is_numeric()) {
+            result.push_str(&current_token);
+        } else {
+            let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
+            result.push_str(&safe_name);
+        }
+    }
+
+    result.trim().to_string()
+}
+
+/// Convert a length expression from XML format to Rust code
+/// Examples: "Count" -> "count", "RecordCount - 1" -> "(record_count - 1)"
+fn convert_length_expression(expr: &str, all_fields: &[Field]) -> String {
+    // Simple expression parsing - handle basic arithmetic
+    let expr = expr.trim();
+
+    // Check if it's a simple field reference
+    if let Some(field) = all_fields.iter().find(|f| f.name == expr) {
+        let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
+        return format!("{} as usize", safe_name);
+    }
+
+    // Handle arithmetic expressions (e.g., "RecordCount - 1")
+    // Split on operators and convert field names
+    let mut result = String::new();
+    let mut current_token = String::new();
+
+    for ch in expr.chars() {
+        if ch.is_whitespace()
+            || ch == '+'
+            || ch == '-'
+            || ch == '*'
+            || ch == '/'
+            || ch == '('
+            || ch == ')'
+        {
+            if !current_token.is_empty() {
+                // Try to find a field with this name
+                if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+                    let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    result.push_str(&format!("({} as usize)", safe_name));
+                } else if current_token.chars().all(|c| c.is_numeric()) {
+                    // It's a number
+                    result.push_str(&current_token);
+                } else {
+                    // Unknown token - keep as-is but make it snake_case
+                    let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
+                    result.push_str(&format!("({} as usize)", safe_name));
+                }
+                current_token.clear();
+            }
+
+            if !ch.is_whitespace() {
+                result.push(' ');
+                result.push(ch);
+                result.push(' ');
+            }
+        } else {
+            current_token.push(ch);
+        }
+    }
+
+    // Handle any remaining token
+    if !current_token.is_empty() {
+        if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+            let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
+            result.push_str(&format!("({} as usize)", safe_name));
+        } else if current_token.chars().all(|c| c.is_numeric()) {
+            result.push_str(&current_token);
+        } else {
+            let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
+            result.push_str(&format!("({} as usize)", safe_name));
+        }
+    }
+
+    result.trim().to_string()
+}
+
+/// Generate a Vec read with a known length
+fn generate_vec_read_with_length(
+    element_type: &str,
+    length_code: &str,
+    ctx: &ReaderContext,
+) -> String {
+    // Check if the element type is a primitive that we can read directly
+    let rust_type = get_rust_type(element_type);
+    let element_read = match rust_type {
+        "u8" => "read_u8(reader)?".to_string(),
+        "i8" => "read_i8(reader)?".to_string(),
+        "u16" => "read_u16(reader)?".to_string(),
+        "i16" => "read_i16(reader)?".to_string(),
+        "u32" => "read_u32(reader)?".to_string(),
+        "i32" => "read_i32(reader)?".to_string(),
+        "u64" => "read_u64(reader)?".to_string(),
+        "i64" => "read_i64(reader)?".to_string(),
+        "f32" => "read_f32(reader)?".to_string(),
+        "f64" => "read_f64(reader)?".to_string(),
+        "bool" => "read_bool(reader)?".to_string(),
+        "String" => "read_string(reader)?".to_string(),
+        _ => {
+            // Check if it's an enum
+            if let Some(parent_type) = ctx.enum_parent_map.get(element_type) {
+                let parent_rust_type = get_rust_type(parent_type);
+                let read_fn = match parent_rust_type {
+                    "u8" => "read_u8",
+                    "i8" => "read_i8",
+                    "u16" => "read_u16",
+                    "i16" => "read_i16",
+                    "u32" => "read_u32",
+                    "i32" => "read_i32",
+                    "u64" => "read_u64",
+                    "i64" => "read_i64",
+                    _ => panic!("Unsupported enum parent type: {}", parent_type),
+                };
+                format!("{}::try_from({}(reader)?)?", element_type, read_fn)
+            } else {
+                // Custom type - call its read method
+                format!("{}::read(reader)?", element_type)
+            }
+        }
+    };
+
+    // The block is an expression that evaluates to Result<Vec<T>, Error>
+    // We use ? inside the block and wrap in Ok() at the end
+    format!(
+        "(|| -> Result<_, Box<dyn std::error::Error>> {{\n            let length = {};\n            let mut vec = Vec::with_capacity(length);\n            for _ in 0..length {{\n                vec.push({});\n            }}\n            Ok(vec)\n        }})()",
+        length_code, element_read
+    )
+}
+
+/// Generate a HashMap read with a known length
+fn generate_hashmap_read_with_length(
+    key_type: &str,
+    value_type: &str,
+    length_code: &str,
+    ctx: &ReaderContext,
+) -> String {
+    // Helper to generate read code for a type
+    let generate_simple_read = |typ: &str| -> String {
+        let rust_type = get_rust_type(typ);
+        match rust_type {
+            "u8" => "read_u8(reader)?".to_string(),
+            "i8" => "read_i8(reader)?".to_string(),
+            "u16" => "read_u16(reader)?".to_string(),
+            "i16" => "read_i16(reader)?".to_string(),
+            "u32" => "read_u32(reader)?".to_string(),
+            "i32" => "read_i32(reader)?".to_string(),
+            "u64" => "read_u64(reader)?".to_string(),
+            "i64" => "read_i64(reader)?".to_string(),
+            "f32" => "read_f32(reader)?".to_string(),
+            "f64" => "read_f64(reader)?".to_string(),
+            "bool" => "read_bool(reader)?".to_string(),
+            "String" => "read_string(reader)?".to_string(),
+            _ => {
+                if let Some(parent_type) = ctx.enum_parent_map.get(typ) {
+                    let parent_rust_type = get_rust_type(parent_type);
+                    let read_fn = match parent_rust_type {
+                        "u8" => "read_u8",
+                        "i8" => "read_i8",
+                        "u16" => "read_u16",
+                        "i16" => "read_i16",
+                        "u32" => "read_u32",
+                        "i32" => "read_i32",
+                        "u64" => "read_u64",
+                        "i64" => "read_i64",
+                        _ => panic!("Unsupported enum parent type: {}", parent_type),
+                    };
+                    format!("{}::try_from({}(reader)?)?", typ, read_fn)
+                } else {
+                    format!("{}::read(reader)?", typ)
+                }
+            }
+        }
+    };
+
+    let key_read = generate_simple_read(key_type);
+    let value_read = generate_simple_read(value_type);
+
+    // The block is an expression that evaluates to Result<HashMap<K, V>, Error>
+    // We use ? inside the block and wrap in Ok() at the end
+    format!(
+        "(|| -> Result<_, Box<dyn std::error::Error>> {{\n            let length = {};\n            let mut map = std::collections::HashMap::with_capacity(length);\n            for _ in 0..length {{\n                let key = {};\n                let value = {};\n                map.insert(key, value);\n            }}\n            Ok(map)\n        }})()",
+        length_code, key_read, value_read
+    )
 }
 
 pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
@@ -1405,6 +1721,7 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
         in_maskmap: false,
         if_true_fields: Vec::new(),
         if_false_fields: Vec::new(),
+        current_if_condition: None,
     };
 
     loop {
@@ -1450,7 +1767,17 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                     field_ctx.current_case_values = process_case_tag(&e);
                 } else if tag_name == "if" {
                     _in_if = true;
-                    debug!("Entered <if> block");
+                    // Parse the test attribute
+                    for attr in e.attributes().flatten() {
+                        if attr.key.as_ref() == b"test" {
+                            field_ctx.current_if_condition =
+                                Some(attr.unescape_value().unwrap().into_owned());
+                        }
+                    }
+                    debug!(
+                        "Entered <if> block with condition {:?}",
+                        field_ctx.current_if_condition
+                    );
                 } else if tag_name == "true" {
                     field_ctx.in_if_true = true;
                     field_ctx.if_true_fields.clear();
@@ -1564,6 +1891,7 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                     }
 
                     _in_if = false;
+                    field_ctx.current_if_condition = None;
                     debug!("Exited <if> block");
                 } else if e.name().as_ref() == b"true" {
                     field_ctx.in_if_true = false;
