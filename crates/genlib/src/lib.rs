@@ -107,11 +107,11 @@ fn generate_field_line(field: &Field) -> String {
 
     if safe_id.needs_rename {
         format!(
-            "        #[serde(rename = \"{original_name}\")]\n        {}: {rust_type}",
+            "    #[serde(rename = \"{original_name}\")]\n    {}: {rust_type}",
             safe_id.name
         )
     } else {
-        format!("        {}: {rust_type}", safe_id.name)
+        format!("    {}: {rust_type}", safe_id.name)
     }
 }
 
