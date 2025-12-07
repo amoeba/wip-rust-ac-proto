@@ -1392,36 +1392,8 @@ pub struct AdminSendAdminRestoreCharacter {
 // Send or receive a message using Turbine Chat.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Communication_TurbineChat")]
-#[serde(tag = "BlobDispatchType")]
+#[serde(tag = "Type")]
 pub enum CommunicationTurbineChat {
-    #[serde(rename = "0x01")]
-    #[serde(alias = "0x02")]
-    Type1 {
-    #[serde(rename = "MmessageSize")]
-    mmessage_size: u32,
-    #[serde(rename = "Type")]
-    type_: TurbineChatType,
-    #[serde(rename = "TargetType")]
-    target_type: i32,
-    #[serde(rename = "TargetId")]
-    target_id: i32,
-    #[serde(rename = "TransportType")]
-    transport_type: i32,
-    #[serde(rename = "TransportId")]
-    transport_id: i32,
-    #[serde(rename = "Cookie")]
-    cookie: i32,
-    #[serde(rename = "PayloadSize")]
-    payload_size: u32,
-    #[serde(rename = "ContextId")]
-    context_id: u32,
-    #[serde(rename = "ResponseId")]
-    response_id: u32,
-    #[serde(rename = "MethodId")]
-    method_id: u32,
-    #[serde(rename = "HResult")]
-    h_result: i32,
-    },
 }
 
 // DDD request for data

@@ -28,6 +28,8 @@ pub struct Field {
     pub(crate) if_false_branch_type: Option<String>,
     /// Subfields computed from this field's value (e.g., extracting bits or doing arithmetic)
     pub(crate) subfields: Vec<Subfield>,
+    /// For fields with nested switches (switch following this field)
+    pub(crate) nested_field_set: Option<Box<FieldSet>>,
 }
 
 /// Tracks which branch of an if/true/false block a field belongs to
@@ -49,6 +51,20 @@ pub struct FieldSet {
     pub(crate) common_fields: Vec<Field>,
     /// Per-variant fields, keyed by case value (parsed as i64). None if no switch.
     pub(crate) variant_fields: Option<BTreeMap<i64, Vec<Field>>>,
+    /// Nested switches within cases, keyed by case value (parsed as i64). None if no nested switches.
+    pub(crate) nested_switches: Option<BTreeMap<i64, NestedSwitch>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NestedSwitch {
+    /// The name of the discriminator field for this nested switch (e.g., "TitleSource")
+    pub(crate) switch_field: String,
+    /// Fields that appear before the nested switch (within the case)
+    pub(crate) common_fields: Vec<Field>,
+    /// Fields after the nested switch (still within the case)
+    pub(crate) trailing_fields: Vec<Field>,
+    /// Per-variant fields for the nested switch, keyed by case value
+    pub(crate) variant_fields: BTreeMap<i64, Vec<Field>>,
 }
 
 #[derive(Debug, Clone)]

@@ -1725,18 +1725,21 @@ pub struct CharacterSetPlayerVisualDesc {
 
 // Character creation screen initilised.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CharacterCharGenVerificationResponse_1 {
+    #[serde(rename = "CharacterId")]
+    pub character_id: ObjectId,
+    #[serde(rename = "Name")]
+    pub name: String,
+    #[serde(rename = "SecondsUntilDeletion")]
+    pub seconds_until_deletion: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Character_CharGenVerificationResponse")]
 #[serde(tag = "ResponseType")]
 pub enum CharacterCharGenVerificationResponse {
     #[serde(rename = "0x01")]
-    Type1 {
-    #[serde(rename = "CharacterId")]
-    character_id: ObjectId,
-    #[serde(rename = "Name")]
-    name: String,
-    #[serde(rename = "SecondsUntilDeletion")]
-    seconds_until_deletion: u32,
-    },
+    Type1(CharacterCharGenVerificationResponse_1),
 }
 
 // Sent when your subsciption is about to expire
@@ -1998,36 +2001,8 @@ pub struct LoginAccountBooted {
 // Send or receive a message using Turbine Chat.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Communication_TurbineChat")]
-#[serde(tag = "BlobDispatchType")]
+#[serde(tag = "Type")]
 pub enum CommunicationTurbineChat {
-    #[serde(rename = "0x01")]
-    #[serde(alias = "0x02")]
-    Type1 {
-    #[serde(rename = "MessageSize")]
-    message_size: u32,
-    #[serde(rename = "Type")]
-    type_: TurbineChatType,
-    #[serde(rename = "TargetType")]
-    target_type: i32,
-    #[serde(rename = "TargetId")]
-    target_id: i32,
-    #[serde(rename = "TransportType")]
-    transport_type: i32,
-    #[serde(rename = "TransportId")]
-    transport_id: i32,
-    #[serde(rename = "Cookie")]
-    cookie: i32,
-    #[serde(rename = "PayloadSize")]
-    payload_size: u32,
-    #[serde(rename = "ContextId")]
-    context_id: u32,
-    #[serde(rename = "ResponseId")]
-    response_id: u32,
-    #[serde(rename = "MethodId")]
-    method_id: u32,
-    #[serde(rename = "HResult")]
-    h_result: i32,
-    },
 }
 
 // Switch from the character display to the game display.
@@ -2059,44 +2034,50 @@ pub struct LoginWorldInfo {
 
 // Add or update a dat file Resource.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DDDDataMessage_0 {
+    #[serde(rename = "DatFile")]
+    pub dat_file: DatFileType,
+    #[serde(rename = "ResourceType")]
+    pub resource_type: u32,
+    #[serde(rename = "ResourceId")]
+    pub resource_id: DataId,
+    #[serde(rename = "Iteration")]
+    pub iteration: u32,
+    #[serde(rename = "Version")]
+    pub version: u32,
+    #[serde(rename = "DataSize")]
+    pub data_size: u32,
+    #[serde(rename = "Data")]
+    pub data: Vec<byte>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct DDDDataMessage_1 {
+    #[serde(rename = "DatFile")]
+    pub dat_file: DatFileType,
+    #[serde(rename = "ResourceType")]
+    pub resource_type: u32,
+    #[serde(rename = "ResourceId")]
+    pub resource_id: DataId,
+    #[serde(rename = "Iteration")]
+    pub iteration: u32,
+    #[serde(rename = "Version")]
+    pub version: u32,
+    #[serde(rename = "DataSize")]
+    pub data_size: u32,
+    #[serde(rename = "FileSize")]
+    pub file_size: u32,
+    pub data: Vec<byte>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "DDD_DataMessage")]
 #[serde(tag = "Compression")]
 pub enum DDDDataMessage {
     #[serde(rename = "0x00")]
-    Type0 {
-    #[serde(rename = "DatFile")]
-    dat_file: DatFileType,
-    #[serde(rename = "ResourceType")]
-    resource_type: u32,
-    #[serde(rename = "ResourceId")]
-    resource_id: DataId,
-    #[serde(rename = "Iteration")]
-    iteration: u32,
-    #[serde(rename = "Version")]
-    version: u32,
-    #[serde(rename = "DataSize")]
-    data_size: u32,
-    #[serde(rename = "Data")]
-    data: Vec<byte>,
-    },
+    Type0(DDDDataMessage_0),
     #[serde(rename = "0x01")]
-    Type1 {
-    #[serde(rename = "DatFile")]
-    dat_file: DatFileType,
-    #[serde(rename = "ResourceType")]
-    resource_type: u32,
-    #[serde(rename = "ResourceId")]
-    resource_id: DataId,
-    #[serde(rename = "Iteration")]
-    iteration: u32,
-    #[serde(rename = "Version")]
-    version: u32,
-    #[serde(rename = "DataSize")]
-    data_size: u32,
-    #[serde(rename = "FileSize")]
-    file_size: u32,
-    data: Vec<byte>,
-    },
+    Type1(DDDDataMessage_1),
 }
 
 // DDD error

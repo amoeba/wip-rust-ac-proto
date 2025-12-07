@@ -1,2 +1,2 @@
 [env]
-FILTER_TYPES = "BlobFragments,ItemProfile,PackedMotionCommand,RawMotionState,InterpertedMotionState,DDDRevision,PHashTable"
+FILTER_TYPES = "WindowOption,OptionProperty,WindowProperty,ObjectId"
