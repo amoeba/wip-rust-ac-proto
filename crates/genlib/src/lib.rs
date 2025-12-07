@@ -477,6 +477,7 @@ fn process_type_tag(
 }
 
 pub struct GeneratedCode {
+    pub enums: String,
     pub common: String,
     pub c2s: String,
     pub s2c: String,
@@ -649,13 +650,17 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> GeneratedCode {
         out
     };
 
-    // Generate common code (enums and common types)
-    let mut common_out = String::new();
-    common_out.push_str("use serde::{Serialize, Deserialize};\n\n");
+    // Generate enums
+    let mut enums_out = String::new();
+    enums_out.push_str("use serde::{Serialize, Deserialize};\n\n");
 
     for protocol_enum in &enums {
-        common_out.push_str(&generate_enum(protocol_enum));
+        enums_out.push_str(&generate_enum(protocol_enum));
     }
+
+    // Generate common types
+    let mut common_out = String::new();
+    common_out.push_str("use serde::{Serialize, Deserialize};\n\n");
 
     for protocol_type in &common_types {
         if protocol_type.is_primitive {
@@ -675,6 +680,7 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> GeneratedCode {
     }
 
     GeneratedCode {
+        enums: enums_out,
         common: common_out,
         c2s: generate_types_code(&c2s_types),
         s2c: generate_types_code(&s2c_types),

@@ -8,12 +8,15 @@ fn main() {
     let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
     let protocol_path = workspace_root.join("ACProtocol/protocol.xml");
 
-    let generated_dir = manifest_dir.join("src/generated");
-    fs::create_dir_all(&generated_dir).unwrap();
+    let enums_dir = manifest_dir.join("src/enums");
+    let types_dir = manifest_dir.join("src/types");
+    fs::create_dir_all(&enums_dir).unwrap();
+    fs::create_dir_all(&types_dir).unwrap();
 
-    let common_path = generated_dir.join("common.rs");
-    let c2s_path = generated_dir.join("c2s.rs");
-    let s2c_path = generated_dir.join("s2c.rs");
+    let enums_path = enums_dir.join("mod.rs");
+    let types_common_path = types_dir.join("common.rs");
+    let types_c2s_path = types_dir.join("c2s.rs");
+    let types_s2c_path = types_dir.join("s2c.rs");
 
     // Commented out for testing
     // println!("cargo:rerun-if-changed={}", protocol_path.display());
@@ -32,7 +35,8 @@ fn main() {
     let xml = fs::read_to_string(&protocol_path).unwrap();
     let generated_code = genlib::generate(&xml, filter_types);
 
-    fs::write(common_path, generated_code.common).unwrap();
-    fs::write(c2s_path, generated_code.c2s).unwrap();
-    fs::write(s2c_path, generated_code.s2c).unwrap();
+    fs::write(enums_path, generated_code.enums).unwrap();
+    fs::write(types_common_path, generated_code.common).unwrap();
+    fs::write(types_c2s_path, generated_code.c2s).unwrap();
+    fs::write(types_s2c_path, generated_code.s2c).unwrap();
 }

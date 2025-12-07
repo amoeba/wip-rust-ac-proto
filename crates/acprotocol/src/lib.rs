@@ -1,14 +1,20 @@
 use std::{error::Error, io::Read};
 
-pub mod generated {
-    pub mod common {
-        include!("generated/common.rs");
-    }
+pub mod enums;
+
+pub mod types {
+    use super::enums::*;
+
+    // Common types are at the module level
+    include!("types/common.rs");
+
     pub mod c2s {
-        include!("generated/c2s.rs");
+        use super::*;
+        include!("types/c2s.rs");
     }
     pub mod s2c {
-        include!("generated/s2c.rs");
+        use super::*;
+        include!("types/s2c.rs");
     }
 }
 
