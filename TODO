@@ -9,3 +9,4 @@ TODOs
   - Enchantment
   - SpellBookPage
   - PHashTable"
+- Ensure code genreation passes cargo fmt and cargo clippy
