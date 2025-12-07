@@ -75,6 +75,87 @@ fn normalize_hex_value(value: &str) -> String {
     }
 }
 
+/// Generate a mask field expression for bitwise AND operations
+/// Handles enum types (cast to u32) and Optional types (unwrap with default 0)
+fn generate_mask_field_expression(
+    ctx: &ReaderContext,
+    mask_field: &str,
+    mask_field_safe: &str,
+    all_fields: &[Field],
+) -> String {
+    if let Some(mask_field_obj) = all_fields.iter().find(|f| f.name == mask_field) {
+        let base_expr = if ctx.enum_parent_map.contains_key(&mask_field_obj.field_type) {
+            // It's an enum - clone and cast to u32 (enums don't derive Copy)
+            format!("{}.clone() as u32", mask_field_safe)
+        } else {
+            mask_field_safe.to_string()
+        };
+        // If the mask field is optional, unwrap it with a default of 0
+        if mask_field_obj.is_optional {
+            format!("{}.unwrap_or(0)", base_expr)
+        } else {
+            base_expr
+        }
+    } else {
+        mask_field_safe.to_string()
+    }
+}
+
+/// Generate a variant name from a case value
+/// Examples: "0x4" -> "Type4", "0xAB" -> "TypeAB", "-1" -> "TypeNeg1", "4" -> "Type4"
+fn generate_variant_name_from_value(value: &str) -> String {
+    if value.starts_with("0x") || value.starts_with("0X") {
+        // Hex value: "0x4" -> "Type4", "0xAB" -> "TypeAB"
+        format!("Type{}", &value[2..].to_uppercase())
+    } else if let Some(stripped) = value.strip_prefix('-') {
+        // Negative value: "-1" -> "TypeNeg1"
+        format!("TypeNeg{}", stripped)
+    } else {
+        // Decimal value: "4" -> "Type4"
+        format!("Type{}", value)
+    }
+}
+
+/// Generate a field signature for grouping case fields by their structure
+/// Example: field1:Type1;field2:Type2
+fn generate_field_signature(fields: &[Field]) -> String {
+    fields
+        .iter()
+        .map(|f| format!("{}:{}", f.name, f.field_type))
+        .collect::<Vec<_>>()
+        .join(";")
+}
+
+/// Generate a case pattern for a switch statement
+/// Converts raw values to enum variants if the switch type is an enum
+fn generate_case_pattern(
+    ctx: &ReaderContext,
+    case_value: &str,
+    switch_field_type: Option<&String>,
+) -> String {
+    if let Some(switch_type) = switch_field_type {
+        if ctx.enum_parent_map.contains_key(switch_type) {
+            // It's an enum - look up the enum variant name from the value
+            // Normalize the case value to match how enum values are stored
+            let normalized_value = normalize_hex_value(case_value);
+            if let Some(variant_name) = ctx
+                .enum_value_map
+                .get(&(switch_type.clone(), normalized_value))
+            {
+                // Use the enum variant: EnumType::VariantName
+                format!("{}::{}", switch_type, variant_name)
+            } else {
+                // Fallback to raw value if variant not found
+                case_value.to_string()
+            }
+        } else {
+            case_value.to_string()
+        }
+    } else {
+        case_value.to_string()
+    }
+}
+
 /// Context for reader generation containing type information
 pub struct ReaderContext {
     /// Map from enum name to its parent type (e.g., "NetAuthType" -> "uint")
@@ -606,11 +687,7 @@ pub enum {type_name}{type_generics} {{\n"
 
         for (case_value, case_fields) in variant_fields {
             // Create a signature for these fields to group identical field sets
-            let field_sig = case_fields
-                .iter()
-                .map(|f| format!("{}:{}", f.name, f.field_type))
-                .collect::<Vec<_>>()
-                .join(";");
+            let field_sig = generate_field_signature(case_fields);
 
             field_groups
                 .entry(field_sig)
@@ -631,16 +708,7 @@ pub enum {type_name}{type_generics} {{\n"
             let first_value = &all_values[0];
 
             // Generate variant name from first sorted case value
-            let variant_name = if first_value.starts_with("0x") || first_value.starts_with("0X") {
-                // Hex value: "0x4" -> "Type4", "0xAB" -> "TypeAB"
-                format!("Type{}", &first_value[2..].to_uppercase())
-            } else if let Some(stripped) = first_value.strip_prefix('-') {
-                // Negative value: "-1" -> "TypeNeg1"
-                format!("TypeNeg{stripped}")
-            } else {
-                // Decimal value: "4" -> "Type4"
-                format!("Type{first_value}")
-            };
+            let variant_name = generate_variant_name_from_value(first_value);
 
             // Primary serde rename
             out.push_str(&format!("    #[serde(rename = \"{first_value}\")]\n"));
@@ -1195,12 +1263,10 @@ fn generate_readers_for_types(
     out.push_str("#[allow(unused_imports)]\n");
     out.push_str("use std::io::Read;\n");
     out.push_str("#[allow(unused_imports)]\n");
+    out.push_str("use crate::types::*;\n");
 
-    // Common types are directly in crate::types, c2s/s2c are in submodules
-    if module_name == "common" {
-        out.push_str("use crate::types::*;\n");
-    } else {
-        out.push_str("use crate::types::*;\n");
+    // Add module-specific imports for c2s/s2c types
+    if module_name != "common" {
         out.push_str("#[allow(unused_imports)]\n");
         out.push_str("use crate::types::");
         out.push_str(module_name);
@@ -1609,25 +1675,8 @@ fn generate_field_group_reads(
             }
 
             // Generate the if block
-            // Cast mask field to u32 if it's an enum type, unwrap if it's Option
-            let mask_field_expr = if let Some(mask_field_obj) =
-                all_fields.iter().find(|f| f.name == *mask_field)
-            {
-                let base_expr = if ctx.enum_parent_map.contains_key(&mask_field_obj.field_type) {
-                    // It's an enum - clone and cast to u32 (enums don't derive Copy)
-                    format!("{}.clone() as u32", mask_field_safe)
-                } else {
-                    mask_field_safe.clone()
-                };
-                // If the mask field is optional, unwrap it with a default of 0
-                if mask_field_obj.is_optional {
-                    format!("{}.unwrap_or(0)", base_expr)
-                } else {
-                    base_expr
-                }
-            } else {
-                mask_field_safe.clone()
-            };
+            let mask_field_expr =
+                generate_mask_field_expression(ctx, mask_field, &mask_field_safe, all_fields);
 
             out.push_str(&format!(
                 "        if ({} & {}) != 0 {{\n",
@@ -1784,11 +1833,7 @@ fn generate_variant_reader_impl(
 
     for (case_value, case_fields) in variant_fields {
         // Create a signature for these fields to group identical field sets
-        let field_sig = case_fields
-            .iter()
-            .map(|f| format!("{}:{}", f.name, f.field_type))
-            .collect::<Vec<_>>()
-            .join(";");
+        let field_sig = generate_field_signature(case_fields);
 
         field_groups
             .entry(field_sig)
@@ -1813,32 +1858,10 @@ fn generate_variant_reader_impl(
             .expect("Field group must have fields");
 
         // Generate match patterns for ALL values in this group
-        let mut case_patterns = Vec::new();
-        for case_value in &all_values {
-            // Convert case value to enum variant pattern if switch field is an enum
-            let case_pattern = if let Some(switch_type) = switch_field_type {
-                if ctx.enum_parent_map.contains_key(switch_type) {
-                    // It's an enum - look up the enum variant name from the value
-                    // Normalize the case value to match how enum values are stored
-                    let normalized_value = normalize_hex_value(case_value);
-                    if let Some(variant_name) = ctx
-                        .enum_value_map
-                        .get(&(switch_type.clone(), normalized_value))
-                    {
-                        // Use the enum variant: EnumType::VariantName
-                        format!("{}::{}", switch_type, variant_name)
-                    } else {
-                        // Fallback to raw value if variant not found
-                        case_value.clone()
-                    }
-                } else {
-                    case_value.clone()
-                }
-            } else {
-                case_value.clone()
-            };
-            case_patterns.push(case_pattern);
-        }
+        let case_patterns: Vec<String> = all_values
+            .iter()
+            .map(|case_value| generate_case_pattern(ctx, case_value, switch_field_type))
+            .collect();
 
         // Join all patterns with |
         out.push_str(&format!(
@@ -1861,13 +1884,7 @@ fn generate_variant_reader_impl(
 
         // Construct the variant
         // Generate variant name from first case value (must match type generator)
-        let variant_name = if first_value.starts_with("0x") || first_value.starts_with("0X") {
-            format!("Type{}", &first_value[2..].to_uppercase())
-        } else if let Some(stripped) = first_value.strip_prefix('-') {
-            format!("TypeNeg{}", stripped)
-        } else {
-            format!("Type{}", first_value)
-        };
+        let variant_name = generate_variant_name_from_value(first_value);
 
         out.push('\n');
         out.push_str(&format!("                Ok(Self::{} {{\n", variant_name));
@@ -2057,25 +2074,8 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                 mask_value.clone()
             };
 
-            // Cast mask field to u32 if it's an enum type, unwrap if it's Option
-            let mask_field_expr = if let Some(mask_field_obj) =
-                all_fields.iter().find(|f| f.name == *mask_field)
-            {
-                let base_expr = if ctx.enum_parent_map.contains_key(&mask_field_obj.field_type) {
-                    // It's an enum - clone and cast to u32 (enums don't derive Copy)
-                    format!("{}.clone() as u32", mask_field_safe)
-                } else {
-                    mask_field_safe.clone()
-                };
-                // If the mask field is optional, unwrap it with a default of 0
-                if mask_field_obj.is_optional {
-                    format!("{}.unwrap_or(0)", base_expr)
-                } else {
-                    base_expr
-                }
-            } else {
-                mask_field_safe.clone()
-            };
+            let mask_field_expr =
+                generate_mask_field_expression(ctx, mask_field, &mask_field_safe, all_fields);
 
             // Generate: if (flags.clone() as u32 & 0x8) != 0 { read().map(Some) } else { Ok(None) }
             format!(
