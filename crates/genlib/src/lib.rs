@@ -2898,6 +2898,7 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
         "f64" => "read_f64(reader)".to_string(),
         "bool" => "read_bool(reader)".to_string(),
         "String" => "read_string(reader)".to_string(),
+        "WString" => "read_wstring(reader).map(WString)".to_string(),
         _ => {
             // Check if it's an enum
             if let Some(parent_type) = ctx.enum_parent_map.get(field_type) {
