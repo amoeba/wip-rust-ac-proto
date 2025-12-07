@@ -1536,14 +1536,13 @@ fn process_type_tag(
     }
 }
 
+pub struct GeneratedFile {
+    pub path: String,
+    pub content: String,
+}
+
 pub struct GeneratedCode {
-    pub enums: String,
-    pub common: String,
-    pub c2s: String,
-    pub s2c: String,
-    pub readers_common: String,
-    pub readers_c2s: String,
-    pub readers_s2c: String,
+    pub files: Vec<GeneratedFile>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -1555,65 +1554,46 @@ enum MessageDirection {
     GameEvents,  // <gameevents> section (S2C)
 }
 
-/// Generate readers for a list of types
-fn generate_readers_for_types(
-    ctx: &GenerationContext,
-    types: &[ProtocolType],
-    enums: &[ProtocolEnum],
-    module_name: &str,
+/// Generate a single file containing both type definition and reader implementation
+fn generate_type_and_reader_file(
+    gen_ctx: &GenerationContext,
+    reader_ctx: &ReaderContext,
+    protocol_type: &ProtocolType,
 ) -> String {
     let mut out = String::new();
-    out.push_str("// Binary readers for ");
-    out.push_str(module_name);
-    out.push_str(" types\n\n");
+
+    // Add imports
+    out.push_str("use serde::{Serialize, Deserialize};\n");
     out.push_str("#[allow(unused_imports)]\n");
     out.push_str("use std::io::Read;\n");
     out.push_str("#[allow(unused_imports)]\n");
     out.push_str("use crate::readers::ACReader;\n");
     out.push_str("#[allow(unused_imports)]\n");
+    out.push_str("use crate::readers::*;\n");
+    out.push_str("#[allow(unused_imports)]\n");
+    out.push_str("use crate::types::*;\n");
+    out.push_str("#[allow(unused_imports)]\n");
+    out.push_str("use crate::enums::*;\n\n");
 
-    // Common types are directly in crate::types, c2s/s2c are in submodules
-    if module_name == "common" {
-        out.push_str("use crate::types::*;\n");
+    // Generate type definition
+    if protocol_type.is_primitive {
+        let type_name = &protocol_type.name;
+        let rust_type = get_rust_type(type_name);
+        if rust_type != type_name {
+            if let Some(ref text) = protocol_type.text {
+                out.push_str(&format!("/// {text}\n"));
+            }
+            out.push_str(&format!(
+                "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
+            ));
+        }
     } else {
-        out.push_str("use crate::types::*;\n");
-        out.push_str("use crate::types::");
-        out.push_str(module_name);
-        out.push_str("::*;\n");
+        out.push_str(&generate_type(protocol_type));
     }
 
-    out.push_str("#[allow(unused_imports)]\n");
-    out.push_str("use crate::enums::*;\n");
-    out.push_str("#[allow(unused_imports)]\n");
-    out.push_str("use super::*;\n\n");
-
-    // Build a map of enum names to their parent types for quick lookup
-    let enum_parent_map: std::collections::HashMap<String, String> = enums
-        .iter()
-        .map(|e| (e.name.clone(), e.parent.clone()))
-        .collect();
-
-    // Build a map of (enum_name, value) -> variant_name for switch pattern matching
-    let mut enum_value_map: std::collections::HashMap<(String, i64), String> =
-        std::collections::HashMap::new();
-    for protocol_enum in enums {
-        for enum_value in &protocol_enum.values {
-            // Use safe enum variant name when referring to variant
-            let safe_variant = safe_enum_variant_name(&enum_value.name);
-            enum_value_map.insert(
-                (protocol_enum.name.clone(), enum_value.value),
-                safe_variant.name,
-            );
-        }
-    }
-
-    // Create reader context with enum information
-    let reader_ctx = ReaderContext::new(enum_parent_map, enum_value_map);
-
-    for protocol_type in types {
-        if ctx.should_generate_reader(&protocol_type.name) {
-            out.push_str(&generate_reader_impl(&reader_ctx, protocol_type));
-        }
+    // Generate reader implementation if requested
+    if gen_ctx.should_generate_reader(&protocol_type.name) {
+        out.push_str(&generate_reader_impl(reader_ctx, protocol_type));
     }
 
     out
@@ -3563,33 +3543,6 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
         &mut rectified_s2c_types,
     );
 
-    // Helper function to generate code for a list of types
-    let generate_types_code = |types: &Vec<ProtocolType>| -> String {
-        let mut out = String::new();
-        out.push_str("use serde::{Serialize, Deserialize};\n\n");
-
-        for protocol_type in types {
-            if protocol_type.is_primitive {
-                // Generate type alias for primitive types
-                let type_name = &protocol_type.name;
-                let rust_type = get_rust_type(type_name);
-
-                // Only generate alias if the rust type differs from the XML type name
-                if rust_type != type_name {
-                    if let Some(ref text) = protocol_type.text {
-                        out.push_str(&format!("/// {text}\n"));
-                    }
-                    out.push_str(&format!(
-                        "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
-                    ));
-                }
-            } else {
-                out.push_str(&generate_type(protocol_type));
-            }
-        }
-        out
-    };
-
     // Generate enums
     let mut enums_out = String::new();
     enums_out.push_str("use serde::{Serialize, Deserialize};\n");
@@ -3600,9 +3553,17 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
         enums_out.push_str(&generate_enum(protocol_enum));
     }
 
-    // Generate common types
-    let mut common_out = String::new();
-    common_out.push_str("use serde::{Serialize, Deserialize};\n\n");
+    // Generate common types - will add readers after building reader context
+    let mut common_types_out = String::new();
+    common_types_out.push_str("use serde::{Serialize, Deserialize};\n");
+    common_types_out.push_str("#[allow(unused_imports)]\n");
+    common_types_out.push_str("use std::io::Read;\n");
+    common_types_out.push_str("#[allow(unused_imports)]\n");
+    common_types_out.push_str("use crate::readers::ACReader;\n");
+    common_types_out.push_str("#[allow(unused_imports)]\n");
+    common_types_out.push_str("use crate::readers::*;\n");
+    common_types_out.push_str("#[allow(unused_imports)]\n");
+    common_types_out.push_str("use crate::enums::*;\n\n");
 
     for protocol_type in &rectified_common_types {
         if protocol_type.is_primitive {
@@ -3610,30 +3571,138 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
             let rust_type = get_rust_type(type_name);
             if rust_type != type_name {
                 if let Some(ref text) = protocol_type.text {
-                    common_out.push_str(&format!("/// {text}\n"));
+                    common_types_out.push_str(&format!("/// {text}\n"));
                 }
-                common_out.push_str(&format!(
+                common_types_out.push_str(&format!(
                     "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
                 ));
             }
         } else {
-            common_out.push_str(&generate_type(protocol_type));
+            common_types_out.push_str(&generate_type(protocol_type));
         }
     }
 
-    // Generate reader modules
-    let readers_common =
-        generate_readers_for_types(&ctx, &rectified_common_types, &enums, "common");
-    let readers_c2s = generate_readers_for_types(&ctx, &rectified_c2s_types, &enums, "c2s");
-    let readers_s2c = generate_readers_for_types(&ctx, &rectified_s2c_types, &enums, "s2c");
+    // Build a map of enum names to their parent types for reader generation
+    let enum_parent_map: std::collections::HashMap<String, String> = enums
+        .iter()
+        .map(|e| (e.name.clone(), e.parent.clone()))
+        .collect();
 
-    GeneratedCode {
-        enums: enums_out,
-        common: common_out,
-        c2s: generate_types_code(&rectified_c2s_types),
-        s2c: generate_types_code(&rectified_s2c_types),
-        readers_common,
-        readers_c2s,
-        readers_s2c,
+    // Build a map of (enum_name, value) -> variant_name for switch pattern matching
+    let mut enum_value_map: std::collections::HashMap<(String, i64), String> =
+        std::collections::HashMap::new();
+    for protocol_enum in &enums {
+        for enum_value in &protocol_enum.values {
+            let safe_variant = safe_enum_variant_name(&enum_value.name);
+            enum_value_map.insert(
+                (protocol_enum.name.clone(), enum_value.value),
+                safe_variant.name,
+            );
+        }
     }
+
+    let reader_ctx = ReaderContext::new(enum_parent_map, enum_value_map);
+
+    // Add reader implementations to common types
+    for protocol_type in &rectified_common_types {
+        if ctx.should_generate_reader(&protocol_type.name) {
+            common_types_out.push_str(&generate_reader_impl(&reader_ctx, protocol_type));
+        }
+    }
+
+    // Generate individual files for each type
+    let mut files = Vec::new();
+
+    // Add enums file
+    files.push(GeneratedFile {
+        path: "enums/mod.rs".to_string(),
+        content: enums_out,
+    });
+
+    // Generate common types (still as a single file since they're shared)
+    files.push(GeneratedFile {
+        path: "types/common.rs".to_string(),
+        content: common_types_out,
+    });
+
+    // Track module names for generating mod.rs files
+    let mut c2s_modules = Vec::new();
+    let mut s2c_modules = Vec::new();
+
+    // Generate individual files for C2S messages
+    for protocol_type in &rectified_c2s_types {
+        if !protocol_type.is_primitive {
+            let type_name = &protocol_type.name;
+            c2s_modules.push(type_name.clone());
+            let content = generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+            files.push(GeneratedFile {
+                path: format!("messages/c2s/{}.rs", type_name),
+                content,
+            });
+        }
+    }
+
+    // Generate individual files for S2C messages
+    for protocol_type in &rectified_s2c_types {
+        if !protocol_type.is_primitive {
+            let type_name = &protocol_type.name;
+            s2c_modules.push(type_name.clone());
+            let content = generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+            files.push(GeneratedFile {
+                path: format!("messages/s2c/{}.rs", type_name),
+                content,
+            });
+        }
+    }
+
+    // Generate mod.rs for c2s
+    let mut c2s_mod = String::new();
+    for module_name in &c2s_modules {
+        c2s_mod.push_str(&format!("pub mod {};\n", module_name));
+    }
+    c2s_mod.push('\n');
+    for module_name in &c2s_modules {
+        c2s_mod.push_str(&format!("pub use {}::*;\n", module_name));
+    }
+    files.push(GeneratedFile {
+        path: "messages/c2s/mod.rs".to_string(),
+        content: c2s_mod,
+    });
+
+    // Generate mod.rs for s2c
+    let mut s2c_mod = String::new();
+    for module_name in &s2c_modules {
+        s2c_mod.push_str(&format!("pub mod {};\n", module_name));
+    }
+    s2c_mod.push('\n');
+    for module_name in &s2c_modules {
+        s2c_mod.push_str(&format!("pub use {}::*;\n", module_name));
+    }
+    files.push(GeneratedFile {
+        path: "messages/s2c/mod.rs".to_string(),
+        content: s2c_mod,
+    });
+
+    // Generate mod.rs for messages
+    let messages_mod = "pub mod c2s;\npub mod s2c;\n\npub use c2s::*;\npub use s2c::*;\n";
+    files.push(GeneratedFile {
+        path: "messages/mod.rs".to_string(),
+        content: messages_mod.to_string(),
+    });
+
+    // Generate mod.rs for types
+    let types_mod = "use crate::enums::*;\n\npub mod common;\n\npub use common::*;\n";
+    files.push(GeneratedFile {
+        path: "types/mod.rs".to_string(),
+        content: types_mod.to_string(),
+    });
+
+    // Generate root mod.rs for generated
+    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\n\npub use enums::*;\npub use types::*;\npub use messages::*;\n";
+    files.push(GeneratedFile {
+        path: "mod.rs".to_string(),
+        content: generated_mod.to_string(),
+    });
+
+    GeneratedCode { files }
 }

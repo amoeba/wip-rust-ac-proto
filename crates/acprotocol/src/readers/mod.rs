@@ -9,18 +9,6 @@ pub mod traits;
 pub use alignment::{align, align_dword, align_qword, align_word};
 pub use traits::{ACDataType, ACReader};
 
-pub mod common {
-    include!("../generated/readers/common.rs");
-}
-
-pub mod c2s {
-    include!("../generated/readers/c2s.rs");
-}
-
-pub mod s2c {
-    include!("../generated/readers/s2c.rs");
-}
-
 /// Read an item of type T from the reader
 pub fn read_item<T: ACDataType>(reader: &mut dyn ACReader) -> Result<T, Box<dyn Error>> {
     T::read(reader)

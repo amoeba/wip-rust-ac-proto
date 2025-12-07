@@ -1,23 +1,10 @@
-pub mod enums {
-    include!("generated/enums/mod.rs");
+mod generated {
+    include!("generated/mod.rs");
 }
 
-pub mod types {
-    // Import enums for use in common types
-    use crate::enums::*;
-
-    // Common types are at the module level
-    include!("generated/types/common.rs");
-
-    pub mod c2s {
-        use super::*;
-        include!("generated/types/c2s.rs");
-    }
-    pub mod s2c {
-        use super::*;
-        include!("generated/types/s2c.rs");
-    }
-}
+pub use generated::enums;
+pub use generated::types;
+pub use generated::messages;
 
 pub mod readers;
 

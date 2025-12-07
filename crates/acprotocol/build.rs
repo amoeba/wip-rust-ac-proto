@@ -9,20 +9,11 @@ fn main() {
     let protocol_path = workspace_root.join("ACProtocol/protocol.xml");
 
     let generated_dir = manifest_dir.join("src/generated");
-    let enums_dir = generated_dir.join("enums");
-    let types_dir = generated_dir.join("types");
-    let readers_dir = generated_dir.join("readers");
-    fs::create_dir_all(&enums_dir).unwrap();
-    fs::create_dir_all(&types_dir).unwrap();
-    fs::create_dir_all(&readers_dir).unwrap();
 
-    let enums_path = enums_dir.join("mod.rs");
-    let types_common_path = types_dir.join("common.rs");
-    let types_c2s_path = types_dir.join("c2s.rs");
-    let types_s2c_path = types_dir.join("s2c.rs");
-    let readers_common_path = readers_dir.join("common.rs");
-    let readers_c2s_path = readers_dir.join("c2s.rs");
-    let readers_s2c_path = readers_dir.join("s2c.rs");
+    // Clean the generated directory to remove old structure
+    if generated_dir.exists() {
+        fs::remove_dir_all(&generated_dir).unwrap();
+    }
 
     // Commented out for testing
     // println!("cargo:rerun-if-changed={}", protocol_path.display());
@@ -45,11 +36,15 @@ fn main() {
     let xml = fs::read_to_string(&protocol_path).unwrap();
     let generated_code = genlib::generate(&xml, &filter_types);
 
-    fs::write(enums_path, generated_code.enums).unwrap();
-    fs::write(types_common_path, generated_code.common).unwrap();
-    fs::write(types_c2s_path, generated_code.c2s).unwrap();
-    fs::write(types_s2c_path, generated_code.s2c).unwrap();
-    fs::write(readers_common_path, generated_code.readers_common).unwrap();
-    fs::write(readers_c2s_path, generated_code.readers_c2s).unwrap();
-    fs::write(readers_s2c_path, generated_code.readers_s2c).unwrap();
+    // Write all generated files
+    for file in generated_code.files {
+        let file_path = generated_dir.join(&file.path);
+
+        // Create parent directories if they don't exist
+        if let Some(parent) = file_path.parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+
+        fs::write(&file_path, file.content).unwrap();
+    }
 }

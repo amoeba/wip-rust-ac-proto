@@ -1,3 +1,3 @@
 [env]
 # FILTER_TYPES = "WindowOption,OptionProperty,WindowProperty,ObjectId"
-FILTER_TYPES = "*"
+FILTER_TYPES = "Communication_TurbineChat,ObjectId,WString,ChatType"
