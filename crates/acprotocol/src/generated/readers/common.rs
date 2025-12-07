@@ -15,7 +15,7 @@ impl BlobFragments {
         let id = read_u32(reader)?;
         let count = read_u16(reader)?;
         let size = read_u16(reader)?;
-        let body_size = size - 16;
+        let body_size = (size - 16) as u16;
         let index = read_u16(reader)?;
         let group = FragmentGroup::try_from(read_u16(reader)?)?;
         let data = read_vec::<u8>(reader, (body_size as usize))?;
@@ -41,11 +41,29 @@ impl crate::readers::ACDataType for BlobFragments {
 impl ItemProfile {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let packed_amount = read_u32(reader)?;
-        let amount = packed_amount & 0x_ffffff;
-        let pwd_type = packed_amount >> 24;
+        let amount = (packed_amount & 0x_ffffff) as i32;
+        let pwd_type = (packed_amount >> 24) as i32;
         let object_id = ObjectId::read(reader)?;
 
         match pwd_type {
+            -1 => {
+                let weenie_description = PublicWeenieDesc::read(reader)?;
+
+                Ok(Self::TypeNeg1 {
+                    packed_amount,
+                    object_id,
+                    weenie_description,
+                })
+            }
+            0x01 => {
+                let old_weenie_description = OldPublicWeenieDesc::read(reader)?;
+
+                Ok(Self::Type1 {
+                    packed_amount,
+                    object_id,
+                    old_weenie_description,
+                })
+            }
             _ => Err(format!("Unknown PwdType value: {:#x}", pwd_type).into())
         }
     }
@@ -61,8 +79,8 @@ impl PackedMotionCommand {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let command_id = Command::try_from(read_u16(reader)?)?;
         let packed_sequence = read_u16(reader)?;
-        let server_action_sequence = packed_sequence & 0x7fff;
-        let autonomous = (packed_sequence >> 15) & 0x1;
+        let server_action_sequence = (packed_sequence & 0x7fff) as u16;
+        let autonomous = ((packed_sequence >> 15) & 0x1) as u16;
         let speed = read_f32(reader)?;
 
         Ok(Self {
@@ -82,7 +100,7 @@ impl crate::readers::ACDataType for PackedMotionCommand {
 impl RawMotionState {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
-        let command_list_length = (flags >> 11) & 0x_f8;
+        let command_list_length = ((flags >> 11) & 0x_f8) as u16;
         let mut current_holdkey = None;
         if (flags & 0x00000001) != 0 {
             current_holdkey = Some(HoldKey::try_from(read_u32(reader)?)?);
@@ -156,7 +174,7 @@ impl crate::readers::ACDataType for RawMotionState {
 impl InterpertedMotionState {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
-        let command_list_length = (flags >> 7) & 0x7f;
+        let command_list_length = ((flags >> 7) & 0x7f) as u32;
         let mut current_style = None;
         if (flags & 0x00000001) != 0 {
             current_style = Some(StanceMode::try_from(read_u16(reader)?)?);
@@ -210,7 +228,7 @@ impl crate::readers::ACDataType for InterpertedMotionState {
 impl DDDRevision {
     pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let id_dat_file = read_u64(reader)?;
-        let dat_file_type = id_dat_file >> 32;
+        let dat_file_type = (id_dat_file >> 32) as u32;
         let iteration = read_u32(reader)?;
         let ids_to_download = read_packable_list::<DataId>(reader)?;
         let ids_to_purge = read_packable_list::<DataId>(reader)?;

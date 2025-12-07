@@ -1466,6 +1466,24 @@ pub struct FriendData {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "PwdType")]
 pub enum ItemProfile {
+    #[serde(rename = "-1")]
+    TypeNeg1 {
+    #[serde(rename = "PackedAmount")]
+    packed_amount: u32,
+    #[serde(rename = "ObjectId")]
+    object_id: ObjectId,
+    #[serde(rename = "WeenieDescription")]
+    weenie_description: PublicWeenieDesc,
+    },
+    #[serde(rename = "0x01")]
+    Type1 {
+    #[serde(rename = "PackedAmount")]
+    packed_amount: u32,
+    #[serde(rename = "ObjectId")]
+    object_id: ObjectId,
+    #[serde(rename = "OldWeenieDescription")]
+    old_weenie_description: OldPublicWeenieDesc,
+    },
 }
 
 // The PublicWeenieDesc structure defines an object's game behavior.
