@@ -201,7 +201,20 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     // Handle templated types - we'll generate them as generic structs
     // Continue processing to include fields
     let type_generics = if let Some(template_params) = &protocol_type.templated {
-        format!("<{}>", template_params)
+        if protocol_type.hash_bounds.is_empty() {
+            format!("<{}>", template_params)
+        } else {
+            // Add Hash + Eq bounds to generic parameters that need them
+            let params: Vec<&str> = template_params.split(',').map(|s| s.trim()).collect();
+            let bounded_params: Vec<String> = params.iter().map(|param| {
+                if protocol_type.hash_bounds.contains(&param.to_string()) {
+                    format!("{}: std::cmp::Eq + std::hash::Hash", param)
+                } else {
+                    param.to_string()
+                }
+            }).collect();
+            format!("<{}>", bounded_params.join(", "))
+        }
     } else {
         String::new()
     };
@@ -751,6 +764,7 @@ fn process_type_tag(
             rust_type: None,
             parent,
             templated,
+            hash_bounds: Vec::new(),
         };
 
         // For self-closing tags, push immediately
@@ -944,6 +958,8 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> GeneratedCode {
                     if let Some(mut ty) = current_type.take() {
                         if !ty.is_primitive {
                             ty.fields = current_field_set.take();
+                            // Extract hash bounds for HashMap key types
+                            ty.extract_hash_bounds();
                         }
                         let types_vec = match current_direction {
                             MessageDirection::C2S | MessageDirection::GameActions => &mut c2s_types,

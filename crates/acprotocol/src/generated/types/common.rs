@@ -77,7 +77,7 @@ pub struct PackableList<T> {
 
 // HashTable which is packable for network
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PackableHashTable<T,U> {
+pub struct PackableHashTable<T: std::cmp::Eq + std::hash::Hash, U> {
         #[serde(rename = "Count")]
         count: u16,
         #[serde(rename = "MaxSize")]
@@ -88,7 +88,7 @@ pub struct PackableHashTable<T,U> {
 
 // HashTable which is packable for network
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PHashTable<T,U> {
+pub struct PHashTable<T: std::cmp::Eq + std::hash::Hash, U> {
         #[serde(rename = "PackedSize")]
         packed_size: u32,
         #[serde(rename = "Table")]
