@@ -341,11 +341,33 @@ fn generate_enum(protocol_enum: &ProtocolEnum) -> String {
             }
         }
     }
-
+    
     out.push_str("}\n\n");
-
+    
+    // Add ACDataType implementation for enums
+    if !protocol_enum.parent.is_empty() {
+        let parent_rust = get_rust_type(&protocol_enum.parent);
+        let read_fn = match parent_rust {
+            "u8" => "read_u8",
+            "i8" => "read_i8",
+            "u16" => "read_u16",
+            "i16" => "read_i16",
+            "u32" => "read_u32",
+            "i32" => "read_i32",
+            "u64" => "read_u64",
+            "i64" => "read_i64",
+            _ => "",
+        };
+        if !read_fn.is_empty() {
+            out.push_str(&format!(
+                "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        let value = crate::readers::{read_fn}(reader)?;\n        Ok({}::try_from(value)?)\n    }}\n}}\n\n",
+                enum_name, enum_name
+            ));
+        }
+    }
+    
     out
-}
+    }
 
 /// Analyze all types and add extra derives where needed
 fn rectify_dependencies(
@@ -1242,10 +1264,15 @@ fn generate_reader_impl(ctx: &ReaderContext, protocol_type: &ProtocolType) -> St
                     _ => format!("read_{}(reader)", safe_type_name.name.to_lowercase()),
                 };
 
-                return format!(
-                    "impl {} {{\n    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self({}?))\n    }}\n}}\n\n",
+                let impl_code = format!(
+                    "impl {} {{\n    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self({}?))\n    }}\n}}\n\n",
                     safe_type_name.name, read_call
                 );
+                let acdatatype_code = format!(
+                    "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+                    safe_type_name.name, safe_type_name.name
+                );
+                return format!("{}{}", impl_code, acdatatype_code);
             }
         }
         // Type alias - doesn't need a reader
@@ -1254,10 +1281,15 @@ fn generate_reader_impl(ctx: &ReaderContext, protocol_type: &ProtocolType) -> St
 
     let Some(field_set) = &protocol_type.fields else {
         // Empty struct - no fields to read
-        return format!(
-            "impl {} {{\n    pub fn read(_reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self {{}})\n    }}\n}}\n\n",
+        let impl_code = format!(
+            "impl {} {{\n    pub fn read(_reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self {{}})\n    }}\n}}\n\n",
             safe_type_name.name
         );
+        let acdatatype_code = format!(
+            "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+            safe_type_name.name, safe_type_name.name
+        );
+        return format!("{}{}", impl_code, acdatatype_code);
     };
 
     // Check if this is a variant type (has switch)
@@ -1279,7 +1311,7 @@ fn generate_struct_reader_impl(
 
     out.push_str(&format!("impl {} {{\n", type_name));
     out.push_str(
-        "    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {\n",
+        "    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {\n",
     );
 
     // Group consecutive fields with the same condition
@@ -1305,9 +1337,15 @@ fn generate_struct_reader_impl(
     out.push_str("        })\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
-
+    
+    // Add ACDataType implementation
+    out.push_str(&format!(
+        "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+        type_name, type_name
+    ));
+    
     out
-}
+    }
 
 /// A group of consecutive fields with the same condition
 #[derive(Debug)]
@@ -1607,7 +1645,8 @@ fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Fie
                     format!("unimplemented!(\"Vec reading without length not yet implemented\")")
                 }
             } else if field_type.starts_with("PackableList<") {
-                format!("unimplemented!(\"PackableList reading not yet implemented\")")
+                let element_type = &field_type[13..field_type.len() - 1];
+                generate_packable_list_read(element_type, ctx)
             } else if field_type.starts_with("std::collections::HashMap<") {
                 let inner = &field_type["std::collections::HashMap<".len()..field_type.len() - 1];
                 if let Some(comma_pos) = inner.find(',') {
@@ -1627,7 +1666,23 @@ fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Fie
                     )
                 }
             } else if field_type.starts_with("PackableHashTable<") {
-                format!("unimplemented!(\"PackableHashTable reading not yet implemented\")")
+                let inner = &field_type["PackableHashTable<".len()..field_type.len() - 1];
+                if let Some(comma_pos) = inner.find(',') {
+                    let key_type = inner[..comma_pos].trim();
+                    let value_type = inner[comma_pos + 1..].trim();
+                    generate_packable_hash_table_read(key_type, value_type, ctx)
+                } else {
+                    format!("unimplemented!(\"PackableHashTable with invalid type not yet implemented\")")
+                }
+            } else if field_type.starts_with("PHashTable<") {
+                let inner = &field_type["PHashTable<".len()..field_type.len() - 1];
+                if let Some(comma_pos) = inner.find(',') {
+                    let key_type = inner[..comma_pos].trim();
+                    let value_type = inner[comma_pos + 1..].trim();
+                    generate_phash_table_read(key_type, value_type, ctx)
+                } else {
+                    format!("unimplemented!(\"PHashTable with invalid type not yet implemented\")")
+                }
             } else {
                 if let Some(pos) = field_type.find('<') {
                     let (type_name, generics) = field_type.split_at(pos);
@@ -1660,7 +1715,7 @@ fn generate_variant_reader_impl(
 
     out.push_str(&format!("impl {} {{\n", type_name));
     out.push_str(
-        "    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {\n",
+        "    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {\n",
     );
 
     // Read all common fields
@@ -1770,9 +1825,15 @@ fn generate_variant_reader_impl(
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
-
+    
+    // Add ACDataType implementation
+    out.push_str(&format!(
+        "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+        type_name, type_name
+    ));
+    
     out
-}
+    }
 
 /// Generate the appropriate read call for a given field
 ///
@@ -1827,8 +1888,8 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                     format!("unimplemented!(\"Vec reading without length not yet implemented\")")
                 }
             } else if field_type.starts_with("PackableList<") {
-                // TODO: Handle PackableList
-                format!("unimplemented!(\"PackableList reading not yet implemented\")")
+                let element_type = &field_type[13..field_type.len() - 1];
+                generate_packable_list_read(element_type, ctx)
             } else if field_type.starts_with("std::collections::HashMap<") {
                 // Handle HashMap - extract key and value types
                 let inner = &field_type["std::collections::HashMap<".len()..field_type.len() - 1];
@@ -1851,8 +1912,23 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                     )
                 }
             } else if field_type.starts_with("PackableHashTable<") {
-                // TODO: Handle PackableHashTable
-                format!("unimplemented!(\"PackableHashTable reading not yet implemented\")")
+                let inner = &field_type["PackableHashTable<".len()..field_type.len() - 1];
+                if let Some(comma_pos) = inner.find(',') {
+                    let key_type = inner[..comma_pos].trim();
+                    let value_type = inner[comma_pos + 1..].trim();
+                    generate_packable_hash_table_read(key_type, value_type, ctx)
+                } else {
+                    format!("unimplemented!(\"PackableHashTable with invalid type not yet implemented\")")
+                }
+            } else if field_type.starts_with("PHashTable<") {
+                let inner = &field_type["PHashTable<".len()..field_type.len() - 1];
+                if let Some(comma_pos) = inner.find(',') {
+                    let key_type = inner[..comma_pos].trim();
+                    let value_type = inner[comma_pos + 1..].trim();
+                    generate_phash_table_read(key_type, value_type, ctx)
+                } else {
+                    format!("unimplemented!(\"PHashTable with invalid type not yet implemented\")")
+                }
             } else {
                 // Custom struct type - call its read method
                 // If the type has generic parameters (contains '<'), we need turbofish syntax
@@ -2043,50 +2119,90 @@ fn generate_vec_read_with_length(
     length_code: &str,
     ctx: &ReaderContext,
 ) -> String {
-    // Check if the element type is a primitive that we can read directly
+    // All types that can be read (primitives, enums, or custom structs) implement ACDataType
     let rust_type = get_rust_type(element_type);
-    let element_read = match rust_type {
-        "u8" => "read_u8(reader)?".to_string(),
-        "i8" => "read_i8(reader)?".to_string(),
-        "u16" => "read_u16(reader)?".to_string(),
-        "i16" => "read_i16(reader)?".to_string(),
-        "u32" => "read_u32(reader)?".to_string(),
-        "i32" => "read_i32(reader)?".to_string(),
-        "u64" => "read_u64(reader)?".to_string(),
-        "i64" => "read_i64(reader)?".to_string(),
-        "f32" => "read_f32(reader)?".to_string(),
-        "f64" => "read_f64(reader)?".to_string(),
-        "bool" => "read_bool(reader)?".to_string(),
-        "String" => "read_string(reader)?".to_string(),
-        _ => {
-            // Check if it's an enum
-            if let Some(parent_type) = ctx.enum_parent_map.get(element_type) {
-                let parent_rust_type = get_rust_type(parent_type);
-                let read_fn = match parent_rust_type {
-                    "u8" => "read_u8",
-                    "i8" => "read_i8",
-                    "u16" => "read_u16",
-                    "i16" => "read_i16",
-                    "u32" => "read_u32",
-                    "i32" => "read_i32",
-                    "u64" => "read_u64",
-                    "i64" => "read_i64",
-                    _ => panic!("Unsupported enum parent type: {}", parent_type),
-                };
-                format!("{}::try_from({}(reader)?)?", element_type, read_fn)
-            } else {
-                // Custom type - call its read method
-                format!("{}::read(reader)?", element_type)
+    format!("read_vec::<{}>(reader, {})", rust_type, length_code)
+}
+
+/// Generate a PackableList read (count + vector of items)
+fn generate_packable_list_read(
+    element_type: &str,
+    ctx: &ReaderContext,
+) -> String {
+    // All types that can be read (primitives, enums, or custom structs) implement ACDataType
+    let rust_type = get_rust_type(element_type);
+    format!("read_packable_list::<{}>(reader)", rust_type)
+}
+
+/// Generate a PackableHashTable read (count + max_size + table of items)
+fn generate_packable_hash_table_read(
+    key_type: &str,
+    value_type: &str,
+    ctx: &ReaderContext,
+) -> String {
+    // Helper to generate read code for a type
+    let generate_simple_read = |typ: &str| -> String {
+        let rust_type = get_rust_type(typ);
+        match rust_type {
+            "u8" => "read_u8(reader)?".to_string(),
+            "i8" => "read_i8(reader)?".to_string(),
+            "u16" => "read_u16(reader)?".to_string(),
+            "i16" => "read_i16(reader)?".to_string(),
+            "u32" => "read_u32(reader)?".to_string(),
+            "i32" => "read_i32(reader)?".to_string(),
+            "u64" => "read_u64(reader)?".to_string(),
+            "i64" => "read_i64(reader)?".to_string(),
+            "f32" => "read_f32(reader)?".to_string(),
+            "f64" => "read_f64(reader)?".to_string(),
+            "bool" => "read_bool(reader)?".to_string(),
+            "String" => "read_string(reader)?".to_string(),
+            _ => {
+                if let Some(parent_type) = ctx.enum_parent_map.get(typ) {
+                    let parent_rust_type = get_rust_type(parent_type);
+                    let read_fn = match parent_rust_type {
+                        "u8" => "read_u8",
+                        "i8" => "read_i8",
+                        "u16" => "read_u16",
+                        "i16" => "read_i16",
+                        "u32" => "read_u32",
+                        "i32" => "read_i32",
+                        "u64" => "read_u64",
+                        "i64" => "read_i64",
+                        _ => panic!("Unsupported enum parent type: {}", parent_type),
+                    };
+                    format!("{}::try_from({}(reader)?)?", typ, read_fn)
+                } else {
+                    format!("{}::read(reader)?", typ)
+                }
             }
         }
     };
 
-    // The block is an expression that evaluates to Result<Vec<T>, Error>
-    // We use ? inside the block and wrap in Ok() at the end
+    let key_read = generate_simple_read(key_type);
+    let value_read = generate_simple_read(value_type);
+
+    // Call the read_packable_hash_table_with helper function
     format!(
-        "(|| -> Result<_, Box<dyn std::error::Error>> {{\n            let length = {};\n            let mut vec = Vec::with_capacity(length);\n            for _ in 0..length {{\n                vec.push({});\n            }}\n            Ok(vec)\n        }})()",
-        length_code, element_read
+        "read_packable_hash_table_with(reader, |r| {{
+            {}
+        }}, |r| {{
+            {}
+        }})",
+        format!("Ok({})", key_read).replace("reader", "r"),
+        format!("Ok({})", value_read).replace("reader", "r")
     )
+}
+
+/// Generate a PHashTable read (packed_size + table of items)
+fn generate_phash_table_read(
+    key_type: &str,
+    value_type: &str,
+    ctx: &ReaderContext,
+) -> String {
+    // All types that can be read (primitives, enums, or custom structs) implement ACDataType
+    let key_rust = get_rust_type(key_type);
+    let value_rust = get_rust_type(value_type);
+    format!("read_phash_table::<{}, {}>(reader)", key_rust, value_rust)
 }
 
 /// Generate a HashMap read with a known length

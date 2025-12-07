@@ -29,6 +29,13 @@ pub enum PacketHeaderFlags {
     Flow = 0x08000000,
 }
 
+impl crate::readers::ACDataType for PacketHeaderFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PacketHeaderFlags::try_from(value)?)
+    }
+}
+
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum FragmentGroup {
@@ -37,12 +44,26 @@ pub enum FragmentGroup {
     Object = 10,
 }
 
+impl crate::readers::ACDataType for FragmentGroup {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(FragmentGroup::try_from(value)?)
+    }
+}
+
 /// The type of server to switch
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum ServerSwitchType {
     World = 0,
     Logon = 1,
+}
+
+impl crate::readers::ACDataType for ServerSwitchType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ServerSwitchType::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -54,6 +75,13 @@ pub enum AuthFlags {
     LastDefault = 0x4,
 }
 
+impl crate::readers::ACDataType for AuthFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AuthFlags::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum NetAuthType {
@@ -61,6 +89,13 @@ pub enum NetAuthType {
     Account = 0x00000001,
     AccountPassword = 0x00000002,
     GlsTicket = 0x40000002,
+}
+
+impl crate::readers::ACDataType for NetAuthType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(NetAuthType::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -76,6 +111,13 @@ pub enum GameMessageGroup {
     SecureLogin = 0x0008,
     UIQueue = 0x0009,
     SmartBox = 0x000A,
+}
+
+impl crate::readers::ACDataType for GameMessageGroup {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(GameMessageGroup::try_from(value)?)
+    }
 }
 
 /// Client to Server message opcodes
@@ -112,6 +154,13 @@ pub enum C2SMessage {
     DDDEndDDDMessage = 0xF7EB,
     #[serde(rename = "Ordered_GameAction")]
     OrderedGameAction = 0xF7B1,
+}
+
+impl crate::readers::ACDataType for C2SMessage {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(C2SMessage::try_from(value)?)
+    }
 }
 
 /// Server to Client message opcodes
@@ -302,6 +351,13 @@ pub enum S2CMessage {
     DDDOnEndDDD = 0xF7EA,
     #[serde(rename = "Ordered_GameEvent")]
     OrderedGameEvent = 0xF7B0,
+}
+
+impl crate::readers::ACDataType for S2CMessage {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(S2CMessage::try_from(value)?)
+    }
 }
 
 /// Ordered (0xF7B0) Server to Client opcodes
@@ -508,6 +564,13 @@ pub enum GameEvent {
     SocialSendClientContractTrackerTable = 0x0314,
     #[serde(rename = "Social_SendClientContractTracker")]
     SocialSendClientContractTracker = 0x0315,
+}
+
+impl crate::readers::ACDataType for GameEvent {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(GameEvent::try_from(value)?)
+    }
 }
 
 /// Ordered (0xF7B1) Client to server opcodes
@@ -828,6 +891,13 @@ pub enum GameAction {
     MovementJumpNonAutonomous = 0xF7C9,
 }
 
+impl crate::readers::ACDataType for GameAction {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(GameAction::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum WeenieType {
@@ -906,6 +976,13 @@ pub enum WeenieType {
     CombatPet = 71,
 }
 
+impl crate::readers::ACDataType for WeenieType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(WeenieType::try_from(value)?)
+    }
+}
+
 /// Flags that dictate what property tables are included with the ACBaseQuali
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -919,6 +996,13 @@ pub enum ACBaseQualitiesFlags {
     PropertyPosition = 0x0020,
     PropertyInstanceId = 0x0040,
     PropertyInt64 = 0x0080,
+}
+
+impl crate::readers::ACDataType for ACBaseQualitiesFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ACBaseQualitiesFlags::try_from(value)?)
+    }
 }
 
 /// Set of predefined error messages that accept interpolated string argument
@@ -1101,6 +1185,13 @@ pub enum WeenieErrorWithString {
     #[serde(rename = "YouRestoreAllegianceChatPrivilegesTo_")]
     YouRestoreAllegianceChatPrivilegesTo = 0x0583,
     CowersFromYou = 0x058A,
+}
+
+impl crate::readers::ACDataType for WeenieErrorWithString {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(WeenieErrorWithString::try_from(value)?)
+    }
 }
 
 /// Set of predefined error messages
@@ -1481,6 +1572,13 @@ pub enum WeenieError {
     ContractError = 0x0594,
 }
 
+impl crate::readers::ACDataType for WeenieError {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(WeenieError::try_from(value)?)
+    }
+}
+
 /// The PositionFlags value defines the fields present in the Position structure.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -1494,6 +1592,13 @@ pub enum PositionFlags {
     OrientationHasNoZ = 0x0040,
 }
 
+impl crate::readers::ACDataType for PositionFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PositionFlags::try_from(value)?)
+    }
+}
+
 /// Height of the attack.  TODO these need to be verified.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -1503,6 +1608,13 @@ pub enum AttackHeight {
     Low = 0x03,
 }
 
+impl crate::readers::ACDataType for AttackHeight {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AttackHeight::try_from(value)?)
+    }
+}
+
 /// Container properties of an item
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -1510,6 +1622,13 @@ pub enum ContainerProperties {
     None = 0x00,
     Container = 0x01,
     Foci = 0x02,
+}
+
+impl crate::readers::ACDataType for ContainerProperties {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ContainerProperties::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -1531,6 +1650,13 @@ pub enum AttackType {
     OffhandTripleSlash = 0x1000,
     OffhandDoubleThrust = 0x2000,
     OffhandTripleThrust = 0x4000,
+}
+
+impl crate::readers::ACDataType for AttackType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AttackType::try_from(value)?)
+    }
 }
 
 /// The objects type information
@@ -1568,6 +1694,13 @@ pub enum ItemType {
     TinkeringTool = 0x20000000,
     TinkeringMaterial = 0x40000000,
     Gameboard = 0x80000000,
+}
+
+impl crate::readers::ACDataType for ItemType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ItemType::try_from(value)?)
+    }
 }
 
 /// The Skill identifies a specific Character skill.
@@ -1629,6 +1762,13 @@ pub enum SkillId {
     Summoning = 0x36,
 }
 
+impl crate::readers::ACDataType for SkillId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(SkillId::try_from(value)?)
+    }
+}
+
 /// The SkillAdvancementClass identifies whether a skill is untrained, trained or specialized.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -1636,6 +1776,13 @@ pub enum SkillAdvancementClass {
     Untrained = 0x01,
     Trained = 0x02,
     Specialized = 0x03,
+}
+
+impl crate::readers::ACDataType for SkillAdvancementClass {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(SkillAdvancementClass::try_from(value)?)
+    }
 }
 
 #[repr(u16)]
@@ -1648,6 +1795,13 @@ pub enum PropertyAttribute2nd {
     Stamina = 0x04,
     MaxMana = 0x05,
     Mana = 0x06,
+}
+
+impl crate::readers::ACDataType for PropertyAttribute2nd {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(PropertyAttribute2nd::try_from(value)?)
+    }
 }
 
 /// The EmoteType identifies the type of emote action
@@ -1900,6 +2054,13 @@ pub enum EmoteType {
     InqContractsFullEmoteType = 0x79,
 }
 
+impl crate::readers::ACDataType for EmoteType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EmoteType::try_from(value)?)
+    }
+}
+
 /// The EmoteCategory identifies the category of an emote.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive, Hash, Eq)]
@@ -1984,6 +2145,13 @@ pub enum EmoteCategory {
     ReceiveTalkDirectEmoteCategory = 0x26,
 }
 
+impl crate::readers::ACDataType for EmoteCategory {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EmoteCategory::try_from(value)?)
+    }
+}
+
 /// The CharacterOptions1 word contains character options.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2021,6 +2189,13 @@ pub enum CharacterOptions1 {
     UseCraftSuccessDialog = 0x80000000,
 }
 
+impl crate::readers::ACDataType for CharacterOptions1 {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CharacterOptions1::try_from(value)?)
+    }
+}
+
 /// The CharacterOptions2 word contains additional character options.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2053,6 +2228,13 @@ pub enum CharacterOptions2 {
     HearPKDeath = 0x02000000,
 }
 
+impl crate::readers::ACDataType for CharacterOptions2 {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CharacterOptions2::try_from(value)?)
+    }
+}
+
 /// The various options for filtering the spellbook
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2072,6 +2254,13 @@ pub enum SpellBookFilterOptions {
     Level8 = 0x00000800,
     Level9 = 0x00001000,
     Void = 0x00002000,
+}
+
+impl crate::readers::ACDataType for SpellBookFilterOptions {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(SpellBookFilterOptions::try_from(value)?)
+    }
 }
 
 /// The EquipMask value describes the equipment slots an item uses.
@@ -2105,6 +2294,13 @@ pub enum EquipMask {
     Wand = 0x01000000,
 }
 
+impl crate::readers::ACDataType for EquipMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EquipMask::try_from(value)?)
+    }
+}
+
 /// The type of the friend change event.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2115,6 +2311,13 @@ pub enum FriendsUpdateType {
     LoginChange = 0x0004,
 }
 
+impl crate::readers::ACDataType for FriendsUpdateType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(FriendsUpdateType::try_from(value)?)
+    }
+}
+
 /// The permission levels that can be given to an allegiance officer
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2122,6 +2325,13 @@ pub enum AllegianceOfficerLevel {
     Speaker = 0x01,
     Seneschal = 0x02,
     Castellan = 0x03,
+}
+
+impl crate::readers::ACDataType for AllegianceOfficerLevel {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AllegianceOfficerLevel::try_from(value)?)
+    }
 }
 
 /// Actions related to /allegiance lock
@@ -2136,6 +2346,13 @@ pub enum AllegianceLockAction {
     ClearBypass = 0x06,
 }
 
+impl crate::readers::ACDataType for AllegianceLockAction {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AllegianceLockAction::try_from(value)?)
+    }
+}
+
 /// Actions related to /allegiance house
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2145,6 +2362,13 @@ pub enum AllegianceHouseAction {
     GuestClosed = 0x03,
     StorageOpen = 0x04,
     StorageClosed = 0x05,
+}
+
+impl crate::readers::ACDataType for AllegianceHouseAction {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AllegianceHouseAction::try_from(value)?)
+    }
 }
 
 /// The AttributeId identifies a specific Character attribute.
@@ -2160,6 +2384,13 @@ pub enum AttributeId {
     Self_ = 0x06,
 }
 
+impl crate::readers::ACDataType for AttributeId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AttributeId::try_from(value)?)
+    }
+}
+
 /// The VitalId identifies a specific Character vital (secondary attribute).
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2167,6 +2398,13 @@ pub enum VitalId {
     MaximumHealth = 0x01,
     MaximumStamina = 0x03,
     MaximumMana = 0x05,
+}
+
+impl crate::readers::ACDataType for VitalId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(VitalId::try_from(value)?)
+    }
 }
 
 /// The CurVitalId identifies a specific Character vital (secondary attribute).
@@ -2178,6 +2416,13 @@ pub enum CurVitalId {
     CurrentMana = 0x06,
 }
 
+impl crate::readers::ACDataType for CurVitalId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CurVitalId::try_from(value)?)
+    }
+}
+
 /// The combat mode for a character or monster.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2186,6 +2431,13 @@ pub enum CombatMode {
     Melee = 0x2,
     Missle = 0x4,
     Magic = 0x8,
+}
+
+impl crate::readers::ACDataType for CombatMode {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CombatMode::try_from(value)?)
+    }
 }
 
 #[repr(i32)]
@@ -2431,6 +2683,13 @@ pub enum Sound {
     SkillDownVoid = 0xCC,
 }
 
+impl crate::readers::ACDataType for Sound {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(Sound::try_from(value)?)
+    }
+}
+
 /// The ChatFragmentType categorizes chat window messages to control color and filtering.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2461,6 +2720,13 @@ pub enum ChatFragmentType {
     Craft = 0x18,
     Salvaging = 0x19,
     AdminTell = 0x1F,
+}
+
+impl crate::readers::ACDataType for ChatFragmentType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ChatFragmentType::try_from(value)?)
+    }
 }
 
 /// Flags related to the use of the item.
@@ -2499,6 +2765,13 @@ pub enum ObjectDescriptionFlag {
     WieldLeft = 0x40000000,
 }
 
+impl crate::readers::ACDataType for ObjectDescriptionFlag {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ObjectDescriptionFlag::try_from(value)?)
+    }
+}
+
 /// The AmmoType value describes the type of ammunition a missile weapon uses.
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2507,6 +2780,13 @@ pub enum AmmoType {
     Arrow = 0x0001,
     Bolt = 0x0002,
     Dart = 0x0004,
+}
+
+impl crate::readers::ACDataType for AmmoType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(AmmoType::try_from(value)?)
+    }
 }
 
 /// The useablilty flags of the object
@@ -2531,6 +2811,13 @@ pub enum Usable {
     TargetObjectSelf = 0x00800000,
 }
 
+impl crate::readers::ACDataType for Usable {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(Usable::try_from(value)?)
+    }
+}
+
 /// The CoverageMask value describes what parts of the body an item protects.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2552,6 +2839,13 @@ pub enum CoverageMask {
     Feet = 0x00010000,
 }
 
+impl crate::readers::ACDataType for CoverageMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CoverageMask::try_from(value)?)
+    }
+}
+
 /// The HookType identifies the types of dwelling hooks.
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2561,6 +2855,13 @@ pub enum HookType {
     Ceiling = 0x0004,
     Yard = 0x0008,
     Roof = 0x0010,
+}
+
+impl crate::readers::ACDataType for HookType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(HookType::try_from(value)?)
+    }
 }
 
 /// The MaterialType identifies the material an object is made of.
@@ -2641,6 +2942,13 @@ pub enum MaterialType {
     Teak = 0x0000004D,
 }
 
+impl crate::readers::ACDataType for MaterialType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(MaterialType::try_from(value)?)
+    }
+}
+
 /// The ConfirmationType identifies the specific confirmation panel to be displayed.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2652,6 +2960,13 @@ pub enum ConfirmationType {
     Craft = 0x05,
     Augmentation = 0x06,
     YesNo = 0x07,
+}
+
+impl crate::readers::ACDataType for ConfirmationType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ConfirmationType::try_from(value)?)
+    }
 }
 
 /// The EnvrionChangeType identifies the environment option set.
@@ -2688,6 +3003,13 @@ pub enum EnvrionChangeType {
     Thunder6Sound = 0x7B,
 }
 
+impl crate::readers::ACDataType for EnvrionChangeType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EnvrionChangeType::try_from(value)?)
+    }
+}
+
 /// The movement type defines the fields for the rest of the message
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2699,6 +3021,13 @@ pub enum MovementType {
     TurnToPosition = 0x09,
 }
 
+impl crate::readers::ACDataType for MovementType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(MovementType::try_from(value)?)
+    }
+}
+
 /// Additional movement options
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -2706,6 +3035,13 @@ pub enum MovementOption {
     None = 0x00,
     StickToObject = 0x01,
     StandingLongJump = 0x02,
+}
+
+impl crate::readers::ACDataType for MovementOption {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(MovementOption::try_from(value)?)
+    }
 }
 
 /// Command types
@@ -3123,6 +3459,13 @@ pub enum Command {
     OffhandPunchSlowLow = 0x197,
 }
 
+impl crate::readers::ACDataType for Command {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(Command::try_from(value)?)
+    }
+}
+
 /// The stance for a character or monster.
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3145,6 +3488,13 @@ pub enum StanceMode {
     ThrownShieldCombat = 0x139,
 }
 
+impl crate::readers::ACDataType for StanceMode {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(StanceMode::try_from(value)?)
+    }
+}
+
 /// The movement (forward, side, turn) for a character or monster.
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3160,6 +3510,13 @@ pub enum MovementCommand {
     SideStepLeft = 0x10,
 }
 
+impl crate::readers::ACDataType for MovementCommand {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(MovementCommand::try_from(value)?)
+    }
+}
+
 /// House flags
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3167,6 +3524,13 @@ pub enum HouseBitfield {
     Undef = 0x0,
     Active = 0x1,
     RequiresMonarch = 0x2,
+}
+
+impl crate::readers::ACDataType for HouseBitfield {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(HouseBitfield::try_from(value)?)
+    }
 }
 
 /// The type response to a chargen request
@@ -3180,6 +3544,13 @@ pub enum CharGenResponseType {
     #[serde(rename = "Corrupt_0x0006")]
     Corrupt0x0006 = 0x0006,
     AdminPrivilegeDenied = 0x0007,
+}
+
+impl crate::readers::ACDataType for CharGenResponseType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CharGenResponseType::try_from(value)?)
+    }
 }
 
 /// The CharacterErrorType identifies the type of character error that has occured.
@@ -3207,6 +3578,13 @@ pub enum CharacterErrorType {
     LogonServerFull = 0x15,
     EnterGameCharacterLocked = 0x17,
     SubscriptionExpired = 0x18,
+}
+
+impl crate::readers::ACDataType for CharacterErrorType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CharacterErrorType::try_from(value)?)
+    }
 }
 
 /// The state flags for an object
@@ -3239,6 +3617,13 @@ pub enum PhysicsState {
     Frozen = 0x01000000,
 }
 
+impl crate::readers::ACDataType for PhysicsState {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PhysicsState::try_from(value)?)
+    }
+}
+
 /// The TurbineChatType identifies the type of Turbine Chat message.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3246,6 +3631,13 @@ pub enum TurbineChatType {
     ServerToClientMessage = 0x01,
     ClientToServerMessage = 0x03,
     AckClientToServerMessage = 0x05,
+}
+
+impl crate::readers::ACDataType for TurbineChatType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(TurbineChatType::try_from(value)?)
+    }
 }
 
 /// The DatFileType identifies the dat file to be used.
@@ -3260,12 +3652,26 @@ pub enum DatFileType {
     ClientLocalEnglish = 0x03,
 }
 
+impl crate::readers::ACDataType for DatFileType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i64(reader)?;
+        Ok(DatFileType::try_from(value)?)
+    }
+}
+
 /// The CompressionType identifies the type of data compression used.
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum CompressionType {
     None = 0x00,
     ZLib = 0x01,
+}
+
+impl crate::readers::ACDataType for CompressionType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(CompressionType::try_from(value)?)
+    }
 }
 
 /// The AttributeMask selects which creature attributes highlighting is applied to.
@@ -3284,6 +3690,13 @@ pub enum AttributeMask {
     Mana = 0x0100,
 }
 
+impl crate::readers::ACDataType for AttributeMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(AttributeMask::try_from(value)?)
+    }
+}
+
 /// The DamageType identifies the type of damage.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3297,6 +3710,13 @@ pub enum DamageType {
     Electric = 0x40,
 }
 
+impl crate::readers::ACDataType for DamageType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(DamageType::try_from(value)?)
+    }
+}
+
 /// The HookAppraisalFlags identifies various properties for an item hooked.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3304,6 +3724,13 @@ pub enum HookAppraisalFlags {
     Inscribable = 0x01,
     IsHealer = 0x02,
     IsLockpick = 0x08,
+}
+
+impl crate::readers::ACDataType for HookAppraisalFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(HookAppraisalFlags::try_from(value)?)
+    }
 }
 
 /// The ArmorHighlightMask selects which armor attributes highlighting is applied to.
@@ -3318,6 +3745,13 @@ pub enum ArmorHighlightMask {
     FireProtection = 0x0020,
     AcidProtection = 0x0040,
     ElectricalProtection = 0x0080,
+}
+
+impl crate::readers::ACDataType for ArmorHighlightMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(ArmorHighlightMask::try_from(value)?)
+    }
 }
 
 /// The ResistHighlightMask selects which wand attributes highlighting is applied to.
@@ -3341,6 +3775,13 @@ pub enum ResistHighlightMask {
     ResistNether = 0x4000,
 }
 
+impl crate::readers::ACDataType for ResistHighlightMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(ResistHighlightMask::try_from(value)?)
+    }
+}
+
 /// The WeaponHighlightMask selects which weapon attributes highlighting is applied to.
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3353,6 +3794,13 @@ pub enum WeaponHighlightMask {
     DamageMod = 0x0020,
 }
 
+impl crate::readers::ACDataType for WeaponHighlightMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(WeaponHighlightMask::try_from(value)?)
+    }
+}
+
 /// Additional attack information
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3360,6 +3808,13 @@ pub enum AttackConditionsMask {
     CriticalProtectionAugmentation = 0x01,
     Recklessness = 0x02,
     SneakAttack = 0x04,
+}
+
+impl crate::readers::ACDataType for AttackConditionsMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AttackConditionsMask::try_from(value)?)
+    }
 }
 
 /// The DamageLocation indicates where damage was done.
@@ -3375,6 +3830,13 @@ pub enum DamageLocation {
     UpperLeg = 0x06,
     LowerLeg = 0x07,
     Foot = 0x08,
+}
+
+impl crate::readers::ACDataType for DamageLocation {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(DamageLocation::try_from(value)?)
+    }
 }
 
 /// The LogTextType indicates the kind of text going to the chat area.
@@ -3409,6 +3871,13 @@ pub enum LogTextType {
     AdminTell = 0x1F,
 }
 
+impl crate::readers::ACDataType for LogTextType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(LogTextType::try_from(value)?)
+    }
+}
+
 /// The EndTradeReason identifies the reason trading was ended.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3416,6 +3885,13 @@ pub enum EndTradeReason {
     Normal = 0x00,
     EnteredCombat = 0x02,
     Cancelled = 0x51,
+}
+
+impl crate::readers::ACDataType for EndTradeReason {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EndTradeReason::try_from(value)?)
+    }
 }
 
 /// The TradeSide identifies the side of the trade window.
@@ -3427,6 +3903,13 @@ pub enum TradeSide {
     Partner = 0x02,
 }
 
+impl crate::readers::ACDataType for TradeSide {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(TradeSide::try_from(value)?)
+    }
+}
+
 /// The HouseType identifies the type of house.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3435,6 +3918,13 @@ pub enum HouseType {
     Villa = 0x02,
     Mansion = 0x03,
     Apartment = 0x04,
+}
+
+impl crate::readers::ACDataType for HouseType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(HouseType::try_from(value)?)
+    }
 }
 
 /// Identifies the chess move attempt result.  Negative/0 values are failures.
@@ -3459,6 +3949,13 @@ pub enum ChessMoveResult {
     CheckMatedOpponent = 0x800,
 }
 
+impl crate::readers::ACDataType for ChessMoveResult {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(ChessMoveResult::try_from(value)?)
+    }
+}
+
 /// Type of fellow update
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3466,6 +3963,13 @@ pub enum FellowUpdateType {
     FullUpdate = 0x01,
     UpdateStats = 0x02,
     UpdateVitals = 0x03,
+}
+
+impl crate::readers::ACDataType for FellowUpdateType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(FellowUpdateType::try_from(value)?)
+    }
 }
 
 /// Stage a contract is in.  Values 4+ appear to provide contract specific update messages
@@ -3477,6 +3981,13 @@ pub enum ContractStage {
     DoneOrPendingRepeat = 0x03,
 }
 
+impl crate::readers::ACDataType for ContractStage {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ContractStage::try_from(value)?)
+    }
+}
+
 /// Movement hold key
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3484,6 +3995,13 @@ pub enum HoldKey {
     Invalid = 0x00,
     None = 0x01,
     Run = 0x02,
+}
+
+impl crate::readers::ACDataType for HoldKey {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(HoldKey::try_from(value)?)
+    }
 }
 
 /// Radar behavior
@@ -3497,6 +4015,13 @@ pub enum RadarBehavior {
     ShowAlways = 0x04,
 }
 
+impl crate::readers::ACDataType for RadarBehavior {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(RadarBehavior::try_from(value)?)
+    }
+}
+
 /// Gender of a player
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3506,6 +4031,13 @@ pub enum Gender {
     Female = 0x02,
 }
 
+impl crate::readers::ACDataType for Gender {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(Gender::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum FactionBits {
@@ -3513,6 +4045,13 @@ pub enum FactionBits {
     CelestialHand = 0x01,
     EldrytchWeb = 0x02,
     RadiantBlood = 0x04,
+}
+
+impl crate::readers::ACDataType for FactionBits {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(FactionBits::try_from(value)?)
+    }
 }
 
 /// Creature type
@@ -3622,6 +4161,13 @@ pub enum CreatureType {
     Anekshay = 101,
 }
 
+impl crate::readers::ACDataType for CreatureType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CreatureType::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum CombatStyle {
@@ -3648,6 +4194,13 @@ pub enum CombatStyle {
     StubbornMissile = 0x80000,
 }
 
+impl crate::readers::ACDataType for CombatStyle {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(CombatStyle::try_from(value)?)
+    }
+}
+
 /// Indicates what data is present in the ACQualities data
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -3666,6 +4219,13 @@ pub enum ACQualitiesFlags {
     GeneratorQueue = 0x00000800,
 }
 
+impl crate::readers::ACDataType for ACQualitiesFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ACQualitiesFlags::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum GeneratorDestruct {
@@ -3673,6 +4233,13 @@ pub enum GeneratorDestruct {
     Nothing = 1,
     Destroy = 2,
     Kill = 3,
+}
+
+impl crate::readers::ACDataType for GeneratorDestruct {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(GeneratorDestruct::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -3686,12 +4253,26 @@ pub enum GeneratorTimeType {
     Day = 5,
 }
 
+impl crate::readers::ACDataType for GeneratorTimeType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(GeneratorTimeType::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum GeneratorType {
     Undef = 0,
     Relative = 1,
     Absolute = 2,
+}
+
+impl crate::readers::ACDataType for GeneratorType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(GeneratorType::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -3718,6 +4299,13 @@ pub enum ImbuedEffectType {
     IgnoreAllArmor = 0x80000000,
 }
 
+impl crate::readers::ACDataType for ImbuedEffectType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ImbuedEffectType::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum ItemXpStyle {
@@ -3725,6 +4313,13 @@ pub enum ItemXpStyle {
     Fixed = 1,
     ScalesWithLevel = 2,
     FixedPlusBase = 3,
+}
+
+impl crate::readers::ACDataType for ItemXpStyle {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ItemXpStyle::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -3740,6 +4335,13 @@ pub enum SubscriptionStatus {
     ThroneOfDestinySubscription = 3,
     #[serde(rename = "ThroneOfDestiny_Preordered")]
     ThroneOfDestinyPreordered = 4,
+}
+
+impl crate::readers::ACDataType for SubscriptionStatus {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(SubscriptionStatus::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -3760,6 +4362,13 @@ pub enum WeaponType {
     Magic = 12,
 }
 
+impl crate::readers::ACDataType for WeaponType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(WeaponType::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum ActivationResponse {
@@ -3772,6 +4381,13 @@ pub enum ActivationResponse {
     Generate = 0x10000,
 }
 
+impl crate::readers::ACDataType for ActivationResponse {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ActivationResponse::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum AetheriaBitfield {
@@ -3779,6 +4395,13 @@ pub enum AetheriaBitfield {
     Blue = 0x1,
     Yellow = 0x2,
     Red = 0x4,
+}
+
+impl crate::readers::ACDataType for AetheriaBitfield {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AetheriaBitfield::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -3793,6 +4416,13 @@ pub enum HookGroupType {
     SpellTeachingItems = 0x20,
 }
 
+impl crate::readers::ACDataType for HookGroupType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(HookGroupType::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum ArmorType {
@@ -3805,12 +4435,26 @@ pub enum ArmorType {
     Metal = 32,
 }
 
+impl crate::readers::ACDataType for ArmorType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ArmorType::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum AttunedStatus {
     Normal = 0,
     Attuned = 1,
     Sticky = 2,
+}
+
+impl crate::readers::ACDataType for AttunedStatus {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(AttunedStatus::try_from(value)?)
+    }
 }
 
 #[repr(i32)]
@@ -3823,12 +4467,26 @@ pub enum BondedStatus {
     Sticky = 2,
 }
 
+impl crate::readers::ACDataType for BondedStatus {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(BondedStatus::try_from(value)?)
+    }
+}
+
 #[repr(i32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum HouseStatus {
     Disabled = -1,
     InActive = 0,
     Active = 1,
+}
+
+impl crate::readers::ACDataType for HouseStatus {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(HouseStatus::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -3850,6 +4508,13 @@ pub enum UiEffects {
     Nether = 0x1000,
 }
 
+impl crate::readers::ACDataType for UiEffects {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(UiEffects::try_from(value)?)
+    }
+}
+
 #[repr(i32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum PortalBitmask {
@@ -3864,6 +4529,13 @@ pub enum PortalBitmask {
     NoOlthoiPCs = 0x80,
     NoVitae = 0x100,
     NoNewAccounts = 0x200,
+}
+
+impl crate::readers::ACDataType for PortalBitmask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(PortalBitmask::try_from(value)?)
+    }
 }
 
 #[repr(i32)]
@@ -3882,6 +4554,13 @@ pub enum WieldRequirement {
     BoolStat = 10,
     CreatureType = 11,
     HeritageType = 12,
+}
+
+impl crate::readers::ACDataType for WieldRequirement {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(WieldRequirement::try_from(value)?)
+    }
 }
 
 #[repr(i32)]
@@ -3983,6 +4662,13 @@ pub enum PaletteTemplate {
     DyeSpringBlack = 93,
 }
 
+impl crate::readers::ACDataType for PaletteTemplate {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(PaletteTemplate::try_from(value)?)
+    }
+}
+
 #[repr(i32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum SummoningMastery {
@@ -3990,6 +4676,13 @@ pub enum SummoningMastery {
     Primalist = 1,
     Necromancer = 2,
     Naturalist = 3,
+}
+
+impl crate::readers::ACDataType for SummoningMastery {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_i32(reader)?;
+        Ok(SummoningMastery::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -4642,6 +5335,13 @@ pub enum ContractId {
     Contract322KillTouTouVoidLords = 322,
 }
 
+impl crate::readers::ACDataType for ContractId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ContractId::try_from(value)?)
+    }
+}
+
 /// The PropertyInt64 identifies a specific Character or Object int64 property.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive, Hash, Eq)]
@@ -4654,6 +5354,13 @@ pub enum PropertyInt64 {
     AvailableLuminance = 0x0006,
     MaximumLuminance = 0x0007,
     InteractionReqs = 0x0008,
+}
+
+impl crate::readers::ACDataType for PropertyInt64 {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyInt64::try_from(value)?)
+    }
 }
 
 /// The PropertyBool identifies a specific Character or Object boolean property.
@@ -4793,6 +5500,13 @@ pub enum PropertyBool {
     AutowieldLeft = 130,
 }
 
+impl crate::readers::ACDataType for PropertyBool {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyBool::try_from(value)?)
+    }
+}
+
 /// The DataPropertyId identifies a specific Character or Object data property.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive, Hash, Eq)]
@@ -4858,6 +5572,13 @@ pub enum PropertyDataId {
     YellowSurgeSpell = 59,
     RedSurgeSpell = 60,
     OlthoiDeathTreasureType = 61,
+}
+
+impl crate::readers::ACDataType for PropertyDataId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyDataId::try_from(value)?)
+    }
 }
 
 /// The PropertyInt identifies a specific Character or Object int property.
@@ -5256,6 +5977,13 @@ pub enum PropertyInt {
     Enlightenment = 390,
 }
 
+impl crate::readers::ACDataType for PropertyInt {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyInt::try_from(value)?)
+    }
+}
+
 /// The PropertyInstanceId identifies a specific Character or Object instance property.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive, Hash, Eq)]
@@ -5307,6 +6035,13 @@ pub enum PropertyInstanceId {
     PetDevice = 45,
 }
 
+impl crate::readers::ACDataType for PropertyInstanceId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyInstanceId::try_from(value)?)
+    }
+}
+
 /// The PropertyPosition identifies a specific Character or Object position property.
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive, Hash, Eq)]
@@ -5338,6 +6073,13 @@ pub enum PropertyPosition {
     Save9 = 25,
     RelativeDestination = 26,
     TeleportedCharacter = 27,
+}
+
+impl crate::readers::ACDataType for PropertyPosition {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyPosition::try_from(value)?)
+    }
 }
 
 /// The PropertyString identifies a specific Character or Object string property.
@@ -5396,6 +6138,13 @@ pub enum PropertyString {
     KillQuest3 = 50,
     UseSendsSignal = 51,
     GearPlatingName = 52,
+}
+
+impl crate::readers::ACDataType for PropertyString {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyString::try_from(value)?)
+    }
 }
 
 /// The PropertyFloat identifies a specific Character or Object float property.
@@ -5576,6 +6325,13 @@ pub enum PropertyFloat {
     WeaponAuraManaConv = 171,
 }
 
+impl crate::readers::ACDataType for PropertyFloat {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(PropertyFloat::try_from(value)?)
+    }
+}
+
 /// Chat channels
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -5615,6 +6371,13 @@ pub enum Channel {
     SocietyRadBloBroadcast = 0x20000000,
     Olthoi = 0x40000000,
     GhostChans = 0x7F007800,
+}
+
+impl crate::readers::ACDataType for Channel {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(Channel::try_from(value)?)
+    }
 }
 
 /// Equipment Set Ids
@@ -5765,6 +6528,13 @@ pub enum EquipmentSet {
     ParagonMelee = 140,
 }
 
+impl crate::readers::ACDataType for EquipmentSet {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EquipmentSet::try_from(value)?)
+    }
+}
+
 /// Radar Color
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -5782,6 +6552,13 @@ pub enum RadarColor {
     BrightGreen = 0x10,
 }
 
+impl crate::readers::ACDataType for RadarColor {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(RadarColor::try_from(value)?)
+    }
+}
+
 /// Flags that determine what data is contained in the EnchantmentRegistry
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -5790,6 +6567,13 @@ pub enum EnchantmentRegistryFlags {
     CreatureSpells = 0x0002,
     Vitae = 0x0004,
     Cooldowns = 0x0008,
+}
+
+impl crate::readers::ACDataType for EnchantmentRegistryFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EnchantmentRegistryFlags::try_from(value)?)
+    }
 }
 
 #[repr(u16)]
@@ -6526,6 +7310,13 @@ pub enum SpellCategory {
     GauntletCriticalDamageReductionRatingRaising = 733,
 }
 
+impl crate::readers::ACDataType for SpellCategory {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u16(reader)?;
+        Ok(SpellCategory::try_from(value)?)
+    }
+}
+
 /// Heritage of a player
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -6544,6 +7335,13 @@ pub enum HeritageGroup {
     Undead = 0x0B,
     Olthoi = 0x0C,
     OlthoiAcid = 0x0D,
+}
+
+impl crate::readers::ACDataType for HeritageGroup {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(HeritageGroup::try_from(value)?)
+    }
 }
 
 /// the type of highlight (outline) applied to the object's icon
@@ -6566,6 +7364,13 @@ pub enum IconHighlight {
     Nether = 0x1000,
 }
 
+impl crate::readers::ACDataType for IconHighlight {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(IconHighlight::try_from(value)?)
+    }
+}
+
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum CombatUse {
@@ -6577,6 +7382,13 @@ pub enum CombatUse {
     TwoHanded = 0x05,
 }
 
+impl crate::readers::ACDataType for CombatUse {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(CombatUse::try_from(value)?)
+    }
+}
+
 /// the type of wieldable item this is
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -6586,6 +7398,13 @@ pub enum WieldType {
     Armor = 0x00000002,
     Clothing = 0x00000004,
     Jewelry = 0x00000008,
+}
+
+impl crate::readers::ACDataType for WieldType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u8(reader)?;
+        Ok(WieldType::try_from(value)?)
+    }
 }
 
 /// Chat channel type, for turbine chat
@@ -6605,6 +7424,13 @@ pub enum ChatType {
     Olthoi = 0x0000000a,
 }
 
+impl crate::readers::ACDataType for ChatType {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ChatType::try_from(value)?)
+    }
+}
+
 /// The ChatDisplayMask identifies that types of chat that are displayed in each chat window. 
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
@@ -6621,6 +7447,13 @@ pub enum ChatDisplayMask {
     TradeChannel = 0x10000000,
     LFGChannel = 0x20000000,
     RoleplayChannel = 0x40000000,
+}
+
+impl crate::readers::ACDataType for ChatDisplayMask {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ChatDisplayMask::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -6650,6 +7483,13 @@ pub enum EnchantmentTypeFlags {
     StatTypes = 0x00000FF,
 }
 
+impl crate::readers::ACDataType for EnchantmentTypeFlags {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(EnchantmentTypeFlags::try_from(value)?)
+    }
+}
+
 #[repr(u32)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum ParentLocation {
@@ -6663,6 +7503,13 @@ pub enum ParentLocation {
     Mouth = 0x0000007,
     LeftWeapon = 0x0000008,
     LeftUnarmed = 0x0000009,
+}
+
+impl crate::readers::ACDataType for ParentLocation {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(ParentLocation::try_from(value)?)
+    }
 }
 
 #[repr(u32)]
@@ -6706,5 +7553,12 @@ pub enum Placement {
     XXXUnknown84 = 0x00000084,
     XXXUnknownF0 = 0x000000F0,
     XXXUnknown3F2 = 0x000003F2,
+}
+
+impl crate::readers::ACDataType for Placement {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        let value = crate::readers::read_u32(reader)?;
+        Ok(Placement::try_from(value)?)
+    }
 }
 

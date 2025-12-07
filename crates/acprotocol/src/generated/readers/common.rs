@@ -10,25 +10,43 @@ use crate::enums::*;
 use super::*;
 
 impl PackedDWORD {
-    pub fn read(_reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(_reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {})
     }
 }
 
+impl crate::readers::ACDataType for PackedDWORD {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        PackedDWORD::read(reader)
+    }
+}
+
 impl ObjectId {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self(read_u32(reader)?))
+    }
+}
+
+impl crate::readers::ACDataType for ObjectId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        ObjectId::read(reader)
     }
 }
 
 impl LandcellId {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self(read_u32(reader)?))
     }
 }
 
+impl crate::readers::ACDataType for LandcellId {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        LandcellId::read(reader)
+    }
+}
+
 impl Vector3 {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let x = read_f32(reader)?;
         let y = read_f32(reader)?;
         let z = read_f32(reader)?;
@@ -41,8 +59,14 @@ impl Vector3 {
     }
 }
 
+impl crate::readers::ACDataType for Vector3 {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        Vector3::read(reader)
+    }
+}
+
 impl Quaternion {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let w = read_f32(reader)?;
         let x = read_f32(reader)?;
         let y = read_f32(reader)?;
@@ -57,8 +81,14 @@ impl Quaternion {
     }
 }
 
+impl crate::readers::ACDataType for Quaternion {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        Quaternion::read(reader)
+    }
+}
+
 impl Position {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let landcell = LandcellId::read(reader)?;
         let frame = Frame::read(reader)?;
 
@@ -69,8 +99,14 @@ impl Position {
     }
 }
 
+impl crate::readers::ACDataType for Position {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        Position::read(reader)
+    }
+}
+
 impl Frame {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let origin = Vector3::read(reader)?;
         let orientation = Quaternion::read(reader)?;
 
@@ -81,8 +117,14 @@ impl Frame {
     }
 }
 
+impl crate::readers::ACDataType for Frame {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        Frame::read(reader)
+    }
+}
+
 impl AllegianceRecord {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let tree_parent = ObjectId::read(reader)?;
         let allegiance_data = AllegianceData::read(reader)?;
 
@@ -93,12 +135,18 @@ impl AllegianceRecord {
     }
 }
 
+impl crate::readers::ACDataType for AllegianceRecord {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        AllegianceRecord::read(reader)
+    }
+}
+
 impl AllegianceHierarchy {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let record_count = read_u16(reader)?;
         let old_version = read_u16(reader)?;
-        let officers = PHashTable::<ObjectId, AllegianceOfficerLevel>::read(reader)?;
-        let officer_titles = unimplemented!("PackableList reading not yet implemented")?;
+        let officers = read_phash_table::<ObjectId, AllegianceOfficerLevel>(reader)?;
+        let officer_titles = read_packable_list::<String>(reader)?;
         let monarch_broadcast_time = read_u32(reader)?;
         let monarch_broadcasts_today = read_u32(reader)?;
         let spokes_broadcast_time = read_u32(reader)?;
@@ -115,14 +163,7 @@ impl AllegianceHierarchy {
         if record_count > 0 {
             monarch_data = Some(AllegianceData::read(reader)?);
         }
-        let records = (|| -> Result<_, Box<dyn std::error::Error>> {
-            let length = (record_count as usize) - 1;
-            let mut vec = Vec::with_capacity(length);
-            for _ in 0..length {
-                vec.push(AllegianceRecord::read(reader)?);
-            }
-            Ok(vec)
-        })()?;
+        let records = read_vec::<AllegianceRecord>(reader, (record_count as usize) - 1)?;
 
         Ok(Self {
             record_count,
@@ -147,8 +188,14 @@ impl AllegianceHierarchy {
     }
 }
 
+impl crate::readers::ACDataType for AllegianceHierarchy {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        AllegianceHierarchy::read(reader)
+    }
+}
+
 impl AllegianceData {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let character_id = ObjectId::read(reader)?;
         let xp_cached = read_u32(reader)?;
         let xp_tithed = read_u32(reader)?;
@@ -190,8 +237,14 @@ impl AllegianceData {
     }
 }
 
+impl crate::readers::ACDataType for AllegianceData {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        AllegianceData::read(reader)
+    }
+}
+
 impl ObjDesc {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let version = read_u8(reader)?;
         let palette_count = read_u8(reader)?;
         let texture_count = read_u8(reader)?;
@@ -200,30 +253,9 @@ impl ObjDesc {
         if palette_count > 0 {
             palette = Some(DataId::read(reader)?);
         }
-        let subpalettes = (|| -> Result<_, Box<dyn std::error::Error>> {
-            let length = palette_count as usize;
-            let mut vec = Vec::with_capacity(length);
-            for _ in 0..length {
-                vec.push(Subpalette::read(reader)?);
-            }
-            Ok(vec)
-        })()?;
-        let tm_changes = (|| -> Result<_, Box<dyn std::error::Error>> {
-            let length = texture_count as usize;
-            let mut vec = Vec::with_capacity(length);
-            for _ in 0..length {
-                vec.push(TextureMapChange::read(reader)?);
-            }
-            Ok(vec)
-        })()?;
-        let ap_changes = (|| -> Result<_, Box<dyn std::error::Error>> {
-            let length = model_count as usize;
-            let mut vec = Vec::with_capacity(length);
-            for _ in 0..length {
-                vec.push(AnimPartChange::read(reader)?);
-            }
-            Ok(vec)
-        })()?;
+        let subpalettes = read_vec::<Subpalette>(reader, palette_count as usize)?;
+        let tm_changes = read_vec::<TextureMapChange>(reader, texture_count as usize)?;
+        let ap_changes = read_vec::<AnimPartChange>(reader, model_count as usize)?;
 
         Ok(Self {
             version,
@@ -238,8 +270,14 @@ impl ObjDesc {
     }
 }
 
+impl crate::readers::ACDataType for ObjDesc {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        ObjDesc::read(reader)
+    }
+}
+
 impl Subpalette {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let palette = DataId::read(reader)?;
         let offset = read_u8(reader)?;
         let num_colors = read_u8(reader)?;
@@ -252,8 +290,14 @@ impl Subpalette {
     }
 }
 
+impl crate::readers::ACDataType for Subpalette {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        Subpalette::read(reader)
+    }
+}
+
 impl TextureMapChange {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let part_index = read_u8(reader)?;
         let old_tex_id = DataId::read(reader)?;
         let new_tex_id = DataId::read(reader)?;
@@ -266,8 +310,14 @@ impl TextureMapChange {
     }
 }
 
+impl crate::readers::ACDataType for TextureMapChange {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        TextureMapChange::read(reader)
+    }
+}
+
 impl AnimPartChange {
-    pub fn read(reader: &mut impl Read) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn Read) -> Result<Self, Box<dyn std::error::Error>> {
         let part_index = read_u8(reader)?;
         let part_id = DataId::read(reader)?;
 
@@ -275,6 +325,12 @@ impl AnimPartChange {
             part_index,
             part_id,
         })
+    }
+}
+
+impl crate::readers::ACDataType for AnimPartChange {
+    fn read(reader: &mut dyn std::io::Read) -> Result<Self, Box<dyn std::error::Error>> {
+        AnimPartChange::read(reader)
     }
 }
 
