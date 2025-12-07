@@ -3633,7 +3633,9 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
     for protocol_type in &rectified_c2s_types {
         if !protocol_type.is_primitive {
             let type_name = &protocol_type.name;
-            let module_name = to_snake_case(type_name);
+            // Remove underscores first, then convert to snake_case to avoid double underscores
+            let type_name_no_underscores = type_name.replace('_', "");
+            let module_name = to_snake_case(&type_name_no_underscores);
             c2s_modules.push(module_name.clone());
             let content = generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
             files.push(GeneratedFile {
@@ -3647,7 +3649,9 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
     for protocol_type in &rectified_s2c_types {
         if !protocol_type.is_primitive {
             let type_name = &protocol_type.name;
-            let module_name = to_snake_case(type_name);
+            // Remove underscores first, then convert to snake_case to avoid double underscores
+            let type_name_no_underscores = type_name.replace('_', "");
+            let module_name = to_snake_case(&type_name_no_underscores);
             s2c_modules.push(module_name.clone());
             let content = generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
             files.push(GeneratedFile {
