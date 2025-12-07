@@ -89,7 +89,7 @@ impl ProtocolType {
     /// Extract generic parameter names that need Hash + Eq bounds from HashMap fields
     pub fn extract_hash_bounds(&mut self) {
         let mut hash_params = std::collections::HashSet::new();
-        
+
         if let Some(ref field_set) = self.fields {
             // Check common fields for HashMap types
             for field in &field_set.common_fields {
@@ -110,11 +110,15 @@ impl ProtocolType {
     }
 
     /// Helper to extract hash bounds from a field type string
-    fn extract_hash_bounds_from_field(&self, field_type: &str, hash_params: &mut std::collections::HashSet<String>) {
+    fn extract_hash_bounds_from_field(
+        &self,
+        field_type: &str,
+        hash_params: &mut std::collections::HashSet<String>,
+    ) {
         // Look for HashMap<K, V> patterns
         if field_type.starts_with("std::collections::HashMap<") {
             // Extract the key type from HashMap<K, V>
-            let inner = &field_type["std::collections::HashMap<".len()..field_type.len()-1];
+            let inner = &field_type["std::collections::HashMap<".len()..field_type.len() - 1];
             if let Some(comma_pos) = inner.find(',') {
                 let key_type = inner[..comma_pos].trim();
                 // If the key type is a single letter (like T, U, K, V), it's likely a generic parameter

@@ -189,7 +189,7 @@ fn generate_enum(protocol_enum: &ProtocolEnum) -> String {
 /// Analyze all types and add extra derives where needed
 fn rectify_dependencies(
     common_types: &[ProtocolType],
-    c2s_types: &[ProtocolType], 
+    c2s_types: &[ProtocolType],
     s2c_types: &[ProtocolType],
     enums: &mut Vec<ProtocolEnum>,
     common_types_out: &mut Vec<ProtocolType>,
@@ -197,12 +197,12 @@ fn rectify_dependencies(
     s2c_types_out: &mut Vec<ProtocolType>,
 ) {
     let mut hash_types = std::collections::HashSet::new();
-    
+
     // Collect all type names that need Hash from all type collections
     for protocol_type in common_types.iter().chain(c2s_types).chain(s2c_types) {
         extract_hash_requirements_from_type(protocol_type, &mut hash_types);
     }
-    
+
     // Add Hash+Eq to enums that need them
     for protocol_enum in enums.iter_mut() {
         if hash_types.contains(&protocol_enum.name) {
@@ -210,7 +210,7 @@ fn rectify_dependencies(
             protocol_enum.extra_derives.push("Eq".to_string());
         }
     }
-    
+
     // Add Hash+Eq to types that need them and copy to output vectors
     for protocol_type in common_types {
         let mut updated_type = protocol_type.clone();
@@ -220,7 +220,7 @@ fn rectify_dependencies(
         }
         common_types_out.push(updated_type);
     }
-    
+
     for protocol_type in c2s_types {
         let mut updated_type = protocol_type.clone();
         if hash_types.contains(&protocol_type.name) {
@@ -229,7 +229,7 @@ fn rectify_dependencies(
         }
         c2s_types_out.push(updated_type);
     }
-    
+
     for protocol_type in s2c_types {
         let mut updated_type = protocol_type.clone();
         if hash_types.contains(&protocol_type.name) {
@@ -269,7 +269,7 @@ fn extract_hash_requirements_from_field(
 ) {
     // Look for HashMap<KeyType, V> patterns
     if field_type.starts_with("std::collections::HashMap<") {
-        let inner = &field_type["std::collections::HashMap<".len()..field_type.len()-1];
+        let inner = &field_type["std::collections::HashMap<".len()..field_type.len() - 1];
         if let Some(comma_pos) = inner.find(',') {
             let key_type = inner[..comma_pos].trim();
             // Check if the key type is not a single letter generic (like T, U)
@@ -278,10 +278,10 @@ fn extract_hash_requirements_from_field(
             }
         }
     }
-    
+
     // Also check for PackableHashTable<KeyType, V> patterns
     if field_type.starts_with("PackableHashTable<") {
-        let inner = &field_type["PackableHashTable<".len()..field_type.len()-1];
+        let inner = &field_type["PackableHashTable<".len()..field_type.len() - 1];
         if let Some(comma_pos) = inner.find(',') {
             let key_type = inner[..comma_pos].trim();
             if key_type.len() > 1 && key_type.chars().next().unwrap().is_ascii_uppercase() {
@@ -313,13 +313,16 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
         } else {
             // Add Hash + Eq bounds to generic parameters that need them
             let params: Vec<&str> = template_params.split(',').map(|s| s.trim()).collect();
-            let bounded_params: Vec<String> = params.iter().map(|param| {
-                if protocol_type.hash_bounds.contains(&param.to_string()) {
-                    format!("{}: std::cmp::Eq + std::hash::Hash", param)
-                } else {
-                    param.to_string()
-                }
-            }).collect();
+            let bounded_params: Vec<String> = params
+                .iter()
+                .map(|param| {
+                    if protocol_type.hash_bounds.contains(&param.to_string()) {
+                        format!("{}: std::cmp::Eq + std::hash::Hash", param)
+                    } else {
+                        param.to_string()
+                    }
+                })
+                .collect();
             format!("<{}>", bounded_params.join(", "))
         }
     } else {
@@ -563,14 +566,14 @@ fn process_enum_start_tag(
 
     if let Some(name) = name {
         if let Some(parent) = parent {
-        let new_enum = ProtocolEnum {
-            name,
-            text,
-            parent,
-            values: Vec::new(),
-            is_mask,
-            extra_derives: Vec::new(),
-        };
+            let new_enum = ProtocolEnum {
+                name,
+                text,
+                parent,
+                values: Vec::new(),
+                is_mask,
+                extra_derives: Vec::new(),
+            };
             *current_enum = Some(new_enum);
         }
     }
@@ -1162,9 +1165,9 @@ pub fn generate(xml: &str, filter_types: Option<Vec<String>>) -> GeneratedCode {
     let mut rectified_c2s_types = Vec::new();
     let mut rectified_s2c_types = Vec::new();
     rectify_dependencies(
-        &common_types, 
-        &c2s_types, 
-        &s2c_types, 
+        &common_types,
+        &c2s_types,
+        &s2c_types,
         &mut enums,
         &mut rectified_common_types,
         &mut rectified_c2s_types,
