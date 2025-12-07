@@ -82,11 +82,19 @@ impl GenerationContext {
 pub struct ReaderContext {
     /// Map from enum name to its parent type (e.g., "NetAuthType" -> "uint")
     enum_parent_map: std::collections::HashMap<String, String>,
+    /// Map from (enum_name, value) to variant name (e.g., ("NetAuthType", 2) -> "AccountPassword")
+    enum_value_map: std::collections::HashMap<(String, i64), String>,
 }
 
 impl ReaderContext {
-    pub fn new(enum_parent_map: std::collections::HashMap<String, String>) -> Self {
-        Self { enum_parent_map }
+    pub fn new(
+        enum_parent_map: std::collections::HashMap<String, String>,
+        enum_value_map: std::collections::HashMap<(String, i64), String>,
+    ) -> Self {
+        Self {
+            enum_parent_map,
+            enum_value_map,
+        }
     }
 }
 
@@ -1482,8 +1490,22 @@ fn generate_readers_for_types(
         .map(|e| (e.name.clone(), e.parent.clone()))
         .collect();
 
+    // Build a map of (enum_name, value) -> variant_name for switch pattern matching
+    let mut enum_value_map: std::collections::HashMap<(String, i64), String> =
+        std::collections::HashMap::new();
+    for protocol_enum in enums {
+        for enum_value in &protocol_enum.values {
+            // Use safe enum variant name when referring to variant
+            let safe_variant = safe_enum_variant_name(&enum_value.name);
+            enum_value_map.insert(
+                (protocol_enum.name.clone(), enum_value.value),
+                safe_variant.name,
+            );
+        }
+    }
+
     // Create reader context with enum information
-    let reader_ctx = ReaderContext::new(enum_parent_map);
+    let reader_ctx = ReaderContext::new(enum_parent_map, enum_value_map);
 
     for protocol_type in types {
         if ctx.should_generate_reader(&protocol_type.name) {
@@ -1671,6 +1693,13 @@ fn generate_enum_reader_impl(
     let switch_field_name = safe_identifier(switch_field, IdentifierType::Field).name;
     out.push_str(&format!("\n        match {} {{\n", switch_field_name));
 
+    // Get the type of the switch field to see if it's an enum
+    let switch_field_type = field_set
+        .common_fields
+        .iter()
+        .find(|f| f.name == *switch_field)
+        .map(|f| &f.field_type);
+
     // Group case values by field signature
     let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
 
@@ -1699,7 +1728,26 @@ fn generate_enum_reader_impl(
         // Generate match patterns
         let mut case_patterns = Vec::new();
         for case_value in &sorted_values {
-            case_patterns.push(format_hex_value(*case_value));
+            // Convert case value to enum variant pattern if switch field is an enum
+            let case_pattern = if let Some(switch_type) = switch_field_type {
+                if ctx.enum_parent_map.contains_key(switch_type) {
+                    // It's an enum - look up the variant name
+                    if let Some(variant_name) =
+                        ctx.enum_value_map.get(&(switch_type.clone(), *case_value))
+                    {
+                        // Use the enum variant: EnumType::VariantName
+                        format!("{}::{}", switch_type, variant_name)
+                    } else {
+                        // Fallback to formatted hex value if variant not found
+                        format_hex_value(*case_value)
+                    }
+                } else {
+                    format_hex_value(*case_value)
+                }
+            } else {
+                format_hex_value(*case_value)
+            };
+            case_patterns.push(case_pattern);
         }
 
         out.push_str(&format!(
