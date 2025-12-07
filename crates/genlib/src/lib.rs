@@ -355,17 +355,18 @@ fn generate_type(protocol_type: &ProtocolType) -> String {
     // (e.g., PackableList has parent="List" and templated="T")
     // For templated types, skip the parent alias and continue to struct generation
     if protocol_type.templated.is_none()
-        && let Some(parent_type) = &protocol_type.parent {
-            let rust_type = get_rust_type(parent_type);
+        && let Some(parent_type) = &protocol_type.parent
+    {
+        let rust_type = get_rust_type(parent_type);
 
-            // Only generate alias if the rust type differs from the XML type name
-            if rust_type != *original_type_name {
-                out.push_str(&format!(
-                    "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
-                ));
-            }
-            return out;
+        // Only generate alias if the rust type differs from the XML type name
+        if rust_type != *original_type_name {
+            out.push_str(&format!(
+                "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
+            ));
         }
+        return out;
+    }
 
     let Some(field_set) = &protocol_type.fields else {
         // No fields, generate empty struct
@@ -575,16 +576,17 @@ fn process_enum_start_tag(
     }
 
     if let Some(name) = name
-        && let Some(parent) = parent {
-            let new_enum = ProtocolEnum {
-                name,
-                text,
-                parent,
-                values: Vec::new(),
-                extra_derives: Vec::new(),
-            };
-            *current_enum = Some(new_enum);
-        }
+        && let Some(parent) = parent
+    {
+        let new_enum = ProtocolEnum {
+            name,
+            text,
+            parent,
+            values: Vec::new(),
+            extra_derives: Vec::new(),
+        };
+        *current_enum = Some(new_enum);
+    }
 }
 
 fn process_enum_value_tag(
