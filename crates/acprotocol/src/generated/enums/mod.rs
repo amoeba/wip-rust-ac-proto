@@ -2,38 +2,39 @@ use serde::{Serialize, Deserialize};
 use num_enum::TryFromPrimitive;
 use crate::readers::ACReader;
 
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum PacketHeaderFlags {
-    None = 0x0,
-    Retransmission = 0x1,
-    EncryptedChecksum = 0x2,
-    BlobFragments = 0x4,
-    ServerSwitch = 0x100,
-    LogonServerAddr = 0x200,
-    EmptyHeader1 = 0x400,
-    Referral = 0x800,
-    RequestRetransmit = 0x1000,
-    RejectRetransmit = 0x2000,
-    AckSequence = 0x4000,
-    Disconnect = 0x8000,
-    LoginRequest = 0x10000,
-    WorldLoginRequest = 0x20000,
-    ConnectRequest = 0x40000,
-    ConnectResponse = 0x80000,
-    NetError = 0x100000,
-    NetErrorDisconnect = 0x200000,
-    CICMDCommand = 0x400000,
-    TimeSync = 0x1000000,
-    EchoRequest = 0x2000000,
-    EchoResponse = 0x4000000,
-    Flow = 0x8000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct PacketHeaderFlags: u32 {
+        const NONE = 0x0;
+        const RETRANSMISSION = 0x1;
+        const ENCRYPTED_CHECKSUM = 0x2;
+        const BLOB_FRAGMENTS = 0x4;
+        const SERVER_SWITCH = 0x100;
+        const LOGON_SERVER_ADDR = 0x200;
+        const EMPTY_HEADER1 = 0x400;
+        const REFERRAL = 0x800;
+        const REQUEST_RETRANSMIT = 0x1000;
+        const REJECT_RETRANSMIT = 0x2000;
+        const ACK_SEQUENCE = 0x4000;
+        const DISCONNECT = 0x8000;
+        const LOGIN_REQUEST = 0x10000;
+        const WORLD_LOGIN_REQUEST = 0x20000;
+        const CONNECT_REQUEST = 0x40000;
+        const CONNECT_RESPONSE = 0x80000;
+        const NET_ERROR = 0x100000;
+        const NET_ERROR_DISCONNECT = 0x200000;
+        const CICMDCOMMAND = 0x400000;
+        const TIME_SYNC = 0x1000000;
+        const ECHO_REQUEST = 0x2000000;
+        const ECHO_RESPONSE = 0x4000000;
+        const FLOW = 0x8000000;
+    }
 }
 
 impl crate::readers::ACDataType for PacketHeaderFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(PacketHeaderFlags::try_from(value)?)
+        Ok(PacketHeaderFlags::from_bits_retain(value))
     }
 }
 
@@ -985,24 +986,25 @@ impl crate::readers::ACDataType for WeenieType {
 }
 
 /// Flags that dictate what property tables are included with the ACBaseQuali
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum ACBaseQualitiesFlags {
-    None = 0x0,
-    PropertyInt = 0x1,
-    PropertyBool = 0x2,
-    PropertyFloat = 0x4,
-    PropertyDataId = 0x8,
-    PropertyString = 0x10,
-    PropertyPosition = 0x20,
-    PropertyInstanceId = 0x40,
-    PropertyInt64 = 0x80,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ACBaseQualitiesFlags: u32 {
+        const NONE = 0x0;
+        const PROPERTY_INT = 0x1;
+        const PROPERTY_BOOL = 0x2;
+        const PROPERTY_FLOAT = 0x4;
+        const PROPERTY_DATA_ID = 0x8;
+        const PROPERTY_STRING = 0x10;
+        const PROPERTY_POSITION = 0x20;
+        const PROPERTY_INSTANCE_ID = 0x40;
+        const PROPERTY_INT64 = 0x80;
+    }
 }
 
 impl crate::readers::ACDataType for ACBaseQualitiesFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(ACBaseQualitiesFlags::try_from(value)?)
+        Ok(ACBaseQualitiesFlags::from_bits_retain(value))
     }
 }
 
@@ -1581,22 +1583,23 @@ impl crate::readers::ACDataType for WeenieError {
 }
 
 /// The PositionFlags value defines the fields present in the Position structure.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum PositionFlags {
-    HasVelocity = 0x1,
-    HasPlacementId = 0x2,
-    IsGrounded = 0x4,
-    OrientationHasNoW = 0x8,
-    OrientationHasNoX = 0x10,
-    OrientationHasNoY = 0x20,
-    OrientationHasNoZ = 0x40,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct PositionFlags: u32 {
+        const HAS_VELOCITY = 0x1;
+        const HAS_PLACEMENT_ID = 0x2;
+        const IS_GROUNDED = 0x4;
+        const ORIENTATION_HAS_NO_W = 0x8;
+        const ORIENTATION_HAS_NO_X = 0x10;
+        const ORIENTATION_HAS_NO_Y = 0x20;
+        const ORIENTATION_HAS_NO_Z = 0x40;
+    }
 }
 
 impl crate::readers::ACDataType for PositionFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(PositionFlags::try_from(value)?)
+        Ok(PositionFlags::from_bits_retain(value))
     }
 }
 
@@ -1661,46 +1664,47 @@ impl crate::readers::ACDataType for AttackType {
 }
 
 /// The objects type information
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum ItemType {
-    MeleeWeapon = 0x1,
-    Armor = 0x2,
-    Clothing = 0x4,
-    Jewelry = 0x8,
-    Creature = 0x10,
-    Food = 0x20,
-    Money = 0x40,
-    Misc = 0x80,
-    MissileWeapon = 0x100,
-    Container = 0x200,
-    Useless = 0x400,
-    Gem = 0x800,
-    SpellComponents = 0x1000,
-    Writable = 0x2000,
-    Key = 0x4000,
-    Caster = 0x8000,
-    Portal = 0x10000,
-    Lockable = 0x20000,
-    PromissoryNote = 0x40000,
-    ManaStone = 0x80000,
-    Service = 0x100000,
-    MagicWieldable = 0x200000,
-    CraftCookingBase = 0x400000,
-    CraftAlchemyBase = 0x800000,
-    CraftFletchingBase = 0x2000000,
-    CraftAlchemyIntermediate = 0x4000000,
-    CraftFletchingIntermediate = 0x8000000,
-    LifeStone = 0x10000000,
-    TinkeringTool = 0x20000000,
-    TinkeringMaterial = 0x40000000,
-    Gameboard = 0x80000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ItemType: u32 {
+        const MELEE_WEAPON = 0x1;
+        const ARMOR = 0x2;
+        const CLOTHING = 0x4;
+        const JEWELRY = 0x8;
+        const CREATURE = 0x10;
+        const FOOD = 0x20;
+        const MONEY = 0x40;
+        const MISC = 0x80;
+        const MISSILE_WEAPON = 0x100;
+        const CONTAINER = 0x200;
+        const USELESS = 0x400;
+        const GEM = 0x800;
+        const SPELL_COMPONENTS = 0x1000;
+        const WRITABLE = 0x2000;
+        const KEY = 0x4000;
+        const CASTER = 0x8000;
+        const PORTAL = 0x10000;
+        const LOCKABLE = 0x20000;
+        const PROMISSORY_NOTE = 0x40000;
+        const MANA_STONE = 0x80000;
+        const SERVICE = 0x100000;
+        const MAGIC_WIELDABLE = 0x200000;
+        const CRAFT_COOKING_BASE = 0x400000;
+        const CRAFT_ALCHEMY_BASE = 0x800000;
+        const CRAFT_FLETCHING_BASE = 0x2000000;
+        const CRAFT_ALCHEMY_INTERMEDIATE = 0x4000000;
+        const CRAFT_FLETCHING_INTERMEDIATE = 0x8000000;
+        const LIFE_STONE = 0x10000000;
+        const TINKERING_TOOL = 0x20000000;
+        const TINKERING_MATERIAL = 0x40000000;
+        const GAMEBOARD = 0x80000000;
+    }
 }
 
 impl crate::readers::ACDataType for ItemType {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(ItemType::try_from(value)?)
+        Ok(ItemType::from_bits_retain(value))
     }
 }
 
@@ -2154,168 +2158,173 @@ impl crate::readers::ACDataType for EmoteCategory {
 }
 
 /// The CharacterOptions1 word contains character options.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum CharacterOptions1 {
-    AutoRepeatAttack = 0x2,
-    IgnoreAllegianceRequests = 0x4,
-    IgnoreFellowshipRequests = 0x8,
-    NotUsed2 = 0x10,
-    NotUsed3 = 0x20,
-    AllowGive = 0x40,
-    ViewCombatTarget = 0x80,
-    ShowTooltips = 0x100,
-    UseDeception = 0x200,
-    ToggleRun = 0x400,
-    StayInChatMode = 0x800,
-    AdvancedCombatUI = 0x1000,
-    AutoTarget = 0x2000,
-    NotUsed4 = 0x4000,
-    VividTargetingIndicator = 0x8000,
-    DisableMostWeatherEffects = 0x10000,
-    IgnoreTradeRequests = 0x20000,
-    FellowshipShareXP = 0x40000,
-    AcceptLootPermits = 0x80000,
-    FellowshipShareLoot = 0x100000,
-    SideBySideVitals = 0x200000,
-    CoordinatesOnRadar = 0x400000,
-    SpellDuration = 0x800000,
-    NotUsed5 = 0x1000000,
-    DisableHouseRestrictionEffects = 0x2000000,
-    DragItemOnPlayerOpensSecureTrade = 0x4000000,
-    DisplayAllegianceLogonNotifications = 0x8000000,
-    UseChargeAttack = 0x10000000,
-    AutoAcceptFellowRequest = 0x20000000,
-    HearAllegianceChat = 0x40000000,
-    UseCraftSuccessDialog = 0x80000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct CharacterOptions1: u32 {
+        const AUTO_REPEAT_ATTACK = 0x2;
+        const IGNORE_ALLEGIANCE_REQUESTS = 0x4;
+        const IGNORE_FELLOWSHIP_REQUESTS = 0x8;
+        const NOT_USED2 = 0x10;
+        const NOT_USED3 = 0x20;
+        const ALLOW_GIVE = 0x40;
+        const VIEW_COMBAT_TARGET = 0x80;
+        const SHOW_TOOLTIPS = 0x100;
+        const USE_DECEPTION = 0x200;
+        const TOGGLE_RUN = 0x400;
+        const STAY_IN_CHAT_MODE = 0x800;
+        const ADVANCED_COMBAT_UI = 0x1000;
+        const AUTO_TARGET = 0x2000;
+        const NOT_USED4 = 0x4000;
+        const VIVID_TARGETING_INDICATOR = 0x8000;
+        const DISABLE_MOST_WEATHER_EFFECTS = 0x10000;
+        const IGNORE_TRADE_REQUESTS = 0x20000;
+        const FELLOWSHIP_SHARE_XP = 0x40000;
+        const ACCEPT_LOOT_PERMITS = 0x80000;
+        const FELLOWSHIP_SHARE_LOOT = 0x100000;
+        const SIDE_BY_SIDE_VITALS = 0x200000;
+        const COORDINATES_ON_RADAR = 0x400000;
+        const SPELL_DURATION = 0x800000;
+        const NOT_USED5 = 0x1000000;
+        const DISABLE_HOUSE_RESTRICTION_EFFECTS = 0x2000000;
+        const DRAG_ITEM_ON_PLAYER_OPENS_SECURE_TRADE = 0x4000000;
+        const DISPLAY_ALLEGIANCE_LOGON_NOTIFICATIONS = 0x8000000;
+        const USE_CHARGE_ATTACK = 0x10000000;
+        const AUTO_ACCEPT_FELLOW_REQUEST = 0x20000000;
+        const HEAR_ALLEGIANCE_CHAT = 0x40000000;
+        const USE_CRAFT_SUCCESS_DIALOG = 0x80000000;
+    }
 }
 
 impl crate::readers::ACDataType for CharacterOptions1 {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(CharacterOptions1::try_from(value)?)
+        Ok(CharacterOptions1::from_bits_retain(value))
     }
 }
 
 /// The CharacterOptions2 word contains additional character options.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum CharacterOptions2 {
-    PersistentAtDay = 0x1,
-    DisplayDateOfBirth = 0x2,
-    DisplayChessRank = 0x4,
-    DisplayFishingSkill = 0x8,
-    DisplayNumberDeaths = 0x10,
-    DisplayAge = 0x20,
-    TimeStamp = 0x40,
-    SalvageMultiple = 0x80,
-    HearGeneralChat = 0x100,
-    HearTradeChat = 0x200,
-    HearLFGChat = 0x400,
-    HearRoleplayChat = 0x800,
-    AppearOffline = 0x1000,
-    DisplayNumberCharacterTitles = 0x2000,
-    MainPackPreferred = 0x4000,
-    LeadMissileTargets = 0x8000,
-    UseFastMissiles = 0x10000,
-    FilterLanguage = 0x20000,
-    ConfirmVolatileRareUse = 0x40000,
-    HearSocietyChat = 0x80000,
-    ShowHelm = 0x100000,
-    DisableDistanceFog = 0x200000,
-    UseMouseTurning = 0x400000,
-    ShowCloak = 0x800000,
-    LockUI = 0x1000000,
-    HearPKDeath = 0x2000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct CharacterOptions2: u32 {
+        const PERSISTENT_AT_DAY = 0x1;
+        const DISPLAY_DATE_OF_BIRTH = 0x2;
+        const DISPLAY_CHESS_RANK = 0x4;
+        const DISPLAY_FISHING_SKILL = 0x8;
+        const DISPLAY_NUMBER_DEATHS = 0x10;
+        const DISPLAY_AGE = 0x20;
+        const TIME_STAMP = 0x40;
+        const SALVAGE_MULTIPLE = 0x80;
+        const HEAR_GENERAL_CHAT = 0x100;
+        const HEAR_TRADE_CHAT = 0x200;
+        const HEAR_LFGCHAT = 0x400;
+        const HEAR_ROLEPLAY_CHAT = 0x800;
+        const APPEAR_OFFLINE = 0x1000;
+        const DISPLAY_NUMBER_CHARACTER_TITLES = 0x2000;
+        const MAIN_PACK_PREFERRED = 0x4000;
+        const LEAD_MISSILE_TARGETS = 0x8000;
+        const USE_FAST_MISSILES = 0x10000;
+        const FILTER_LANGUAGE = 0x20000;
+        const CONFIRM_VOLATILE_RARE_USE = 0x40000;
+        const HEAR_SOCIETY_CHAT = 0x80000;
+        const SHOW_HELM = 0x100000;
+        const DISABLE_DISTANCE_FOG = 0x200000;
+        const USE_MOUSE_TURNING = 0x400000;
+        const SHOW_CLOAK = 0x800000;
+        const LOCK_UI = 0x1000000;
+        const HEAR_PKDEATH = 0x2000000;
+    }
 }
 
 impl crate::readers::ACDataType for CharacterOptions2 {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(CharacterOptions2::try_from(value)?)
+        Ok(CharacterOptions2::from_bits_retain(value))
     }
 }
 
 /// The various options for filtering the spellbook
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum SpellBookFilterOptions {
-    None = 0x0,
-    Creature = 0x1,
-    Item = 0x2,
-    Life = 0x4,
-    War = 0x8,
-    Level1 = 0x10,
-    Level2 = 0x20,
-    Level3 = 0x40,
-    Level4 = 0x80,
-    Level5 = 0x100,
-    Level6 = 0x200,
-    Level7 = 0x400,
-    Level8 = 0x800,
-    Level9 = 0x1000,
-    Void = 0x2000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct SpellBookFilterOptions: u32 {
+        const NONE = 0x0;
+        const CREATURE = 0x1;
+        const ITEM = 0x2;
+        const LIFE = 0x4;
+        const WAR = 0x8;
+        const LEVEL1 = 0x10;
+        const LEVEL2 = 0x20;
+        const LEVEL3 = 0x40;
+        const LEVEL4 = 0x80;
+        const LEVEL5 = 0x100;
+        const LEVEL6 = 0x200;
+        const LEVEL7 = 0x400;
+        const LEVEL8 = 0x800;
+        const LEVEL9 = 0x1000;
+        const VOID = 0x2000;
+    }
 }
 
 impl crate::readers::ACDataType for SpellBookFilterOptions {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(SpellBookFilterOptions::try_from(value)?)
+        Ok(SpellBookFilterOptions::from_bits_retain(value))
     }
 }
 
 /// The EquipMask value describes the equipment slots an item uses.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum EquipMask {
-    Head = 0x1,
-    ChestUnderwear = 0x2,
-    AbdomenUnderwear = 0x4,
-    UpperArmsUnderwear = 0x8,
-    LowerArmsUnderwear = 0x10,
-    Hands = 0x20,
-    UpperLegsUnderwear = 0x40,
-    LowerLegsUnderwear = 0x80,
-    Feet = 0x100,
-    Chest = 0x200,
-    Abdomen = 0x400,
-    UpperArms = 0x800,
-    LowerArms = 0x1000,
-    UpperLegs = 0x2000,
-    LowerLegs = 0x4000,
-    Necklace = 0x8000,
-    RightBracelet = 0x10000,
-    LeftBracelet = 0x20000,
-    RightRing = 0x40000,
-    LeftRing = 0x80000,
-    MeleeWeapon = 0x100000,
-    Shield = 0x200000,
-    MissileWeapon = 0x400000,
-    Ammunition = 0x800000,
-    Wand = 0x1000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct EquipMask: u32 {
+        const HEAD = 0x1;
+        const CHEST_UNDERWEAR = 0x2;
+        const ABDOMEN_UNDERWEAR = 0x4;
+        const UPPER_ARMS_UNDERWEAR = 0x8;
+        const LOWER_ARMS_UNDERWEAR = 0x10;
+        const HANDS = 0x20;
+        const UPPER_LEGS_UNDERWEAR = 0x40;
+        const LOWER_LEGS_UNDERWEAR = 0x80;
+        const FEET = 0x100;
+        const CHEST = 0x200;
+        const ABDOMEN = 0x400;
+        const UPPER_ARMS = 0x800;
+        const LOWER_ARMS = 0x1000;
+        const UPPER_LEGS = 0x2000;
+        const LOWER_LEGS = 0x4000;
+        const NECKLACE = 0x8000;
+        const RIGHT_BRACELET = 0x10000;
+        const LEFT_BRACELET = 0x20000;
+        const RIGHT_RING = 0x40000;
+        const LEFT_RING = 0x80000;
+        const MELEE_WEAPON = 0x100000;
+        const SHIELD = 0x200000;
+        const MISSILE_WEAPON = 0x400000;
+        const AMMUNITION = 0x800000;
+        const WAND = 0x1000000;
+    }
 }
 
 impl crate::readers::ACDataType for EquipMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(EquipMask::try_from(value)?)
+        Ok(EquipMask::from_bits_retain(value))
     }
 }
 
 /// The type of the friend change event.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum FriendsUpdateType {
-    Full = 0x0,
-    Added = 0x1,
-    Removed = 0x2,
-    LoginChange = 0x4,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct FriendsUpdateType: u32 {
+        const FULL = 0x0;
+        const ADDED = 0x1;
+        const REMOVED = 0x2;
+        const LOGIN_CHANGE = 0x4;
+    }
 }
 
 impl crate::readers::ACDataType for FriendsUpdateType {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(FriendsUpdateType::try_from(value)?)
+        Ok(FriendsUpdateType::from_bits_retain(value))
     }
 }
 
@@ -2425,19 +2434,20 @@ impl crate::readers::ACDataType for CurVitalId {
 }
 
 /// The combat mode for a character or monster.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum CombatMode {
-    NonCombat = 0x1,
-    Melee = 0x2,
-    Missle = 0x4,
-    Magic = 0x8,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct CombatMode: u32 {
+        const NON_COMBAT = 0x1;
+        const MELEE = 0x2;
+        const MISSLE = 0x4;
+        const MAGIC = 0x8;
+    }
 }
 
 impl crate::readers::ACDataType for CombatMode {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(CombatMode::try_from(value)?)
+        Ok(CombatMode::from_bits_retain(value))
     }
 }
 
@@ -2731,137 +2741,142 @@ impl crate::readers::ACDataType for ChatFragmentType {
 }
 
 /// Flags related to the use of the item.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum ObjectDescriptionFlag {
-    Openable = 0x1,
-    Inscribable = 0x2,
-    Stuck = 0x4,
-    Player = 0x8,
-    Attackable = 0x10,
-    PlayerKiller = 0x20,
-    HiddenAdmin = 0x40,
-    UiHidden = 0x80,
-    Book = 0x100,
-    Vendor = 0x200,
-    PkSwitch = 0x400,
-    NpkSwitch = 0x800,
-    Door = 0x1000,
-    Corpse = 0x2000,
-    LifeStone = 0x4000,
-    Food = 0x8000,
-    Healer = 0x10000,
-    Lockpick = 0x20000,
-    Portal = 0x40000,
-    Admin = 0x100000,
-    FreePkStatus = 0x200000,
-    ImmuneCellRestrictions = 0x400000,
-    RequiresPackSlot = 0x800000,
-    Retained = 0x1000000,
-    PkLiteStatus = 0x2000000,
-    IncludesSecondHeader = 0x4000000,
-    BindStone = 0x8000000,
-    VolatileRare = 0x10000000,
-    WieldOnUse = 0x20000000,
-    WieldLeft = 0x40000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ObjectDescriptionFlag: u32 {
+        const OPENABLE = 0x1;
+        const INSCRIBABLE = 0x2;
+        const STUCK = 0x4;
+        const PLAYER = 0x8;
+        const ATTACKABLE = 0x10;
+        const PLAYER_KILLER = 0x20;
+        const HIDDEN_ADMIN = 0x40;
+        const UI_HIDDEN = 0x80;
+        const BOOK = 0x100;
+        const VENDOR = 0x200;
+        const PK_SWITCH = 0x400;
+        const NPK_SWITCH = 0x800;
+        const DOOR = 0x1000;
+        const CORPSE = 0x2000;
+        const LIFE_STONE = 0x4000;
+        const FOOD = 0x8000;
+        const HEALER = 0x10000;
+        const LOCKPICK = 0x20000;
+        const PORTAL = 0x40000;
+        const ADMIN = 0x100000;
+        const FREE_PK_STATUS = 0x200000;
+        const IMMUNE_CELL_RESTRICTIONS = 0x400000;
+        const REQUIRES_PACK_SLOT = 0x800000;
+        const RETAINED = 0x1000000;
+        const PK_LITE_STATUS = 0x2000000;
+        const INCLUDES_SECOND_HEADER = 0x4000000;
+        const BIND_STONE = 0x8000000;
+        const VOLATILE_RARE = 0x10000000;
+        const WIELD_ON_USE = 0x20000000;
+        const WIELD_LEFT = 0x40000000;
+    }
 }
 
 impl crate::readers::ACDataType for ObjectDescriptionFlag {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(ObjectDescriptionFlag::try_from(value)?)
+        Ok(ObjectDescriptionFlag::from_bits_retain(value))
     }
 }
 
 /// The AmmoType value describes the type of ammunition a missile weapon uses.
-#[repr(u16)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum AmmoType {
-    ThrownWeapon = 0x0,
-    Arrow = 0x1,
-    Bolt = 0x2,
-    Dart = 0x4,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct AmmoType: u16 {
+        const THROWN_WEAPON = 0x0;
+        const ARROW = 0x1;
+        const BOLT = 0x2;
+        const DART = 0x4;
+    }
 }
 
 impl crate::readers::ACDataType for AmmoType {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u16(reader)?;
-        Ok(AmmoType::try_from(value)?)
+        Ok(AmmoType::from_bits_retain(value))
     }
 }
 
 /// The useablilty flags of the object
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum Usable {
-    SourceUnusable = 0x1,
-    SourceSelf = 0x2,
-    SourceWielded = 0x4,
-    SourceContained = 0x8,
-    SourceViewed = 0x10,
-    SourceRemote = 0x20,
-    SourceNoApproach = 0x40,
-    SourceObjectSelf = 0x80,
-    TargetUnusable = 0x10000,
-    TargetSelf = 0x20000,
-    TargetWielded = 0x40000,
-    TargetContained = 0x80000,
-    TargetViewed = 0x100000,
-    TargetRemote = 0x200000,
-    TargetNoApproach = 0x400000,
-    TargetObjectSelf = 0x800000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct Usable: u32 {
+        const SOURCE_UNUSABLE = 0x1;
+        const SOURCE_SELF = 0x2;
+        const SOURCE_WIELDED = 0x4;
+        const SOURCE_CONTAINED = 0x8;
+        const SOURCE_VIEWED = 0x10;
+        const SOURCE_REMOTE = 0x20;
+        const SOURCE_NO_APPROACH = 0x40;
+        const SOURCE_OBJECT_SELF = 0x80;
+        const TARGET_UNUSABLE = 0x10000;
+        const TARGET_SELF = 0x20000;
+        const TARGET_WIELDED = 0x40000;
+        const TARGET_CONTAINED = 0x80000;
+        const TARGET_VIEWED = 0x100000;
+        const TARGET_REMOTE = 0x200000;
+        const TARGET_NO_APPROACH = 0x400000;
+        const TARGET_OBJECT_SELF = 0x800000;
+    }
 }
 
 impl crate::readers::ACDataType for Usable {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(Usable::try_from(value)?)
+        Ok(Usable::from_bits_retain(value))
     }
 }
 
 /// The CoverageMask value describes what parts of the body an item protects.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum CoverageMask {
-    UpperLegsUnderwear = 0x2,
-    LowerLegsUnderwear = 0x4,
-    ChestUnderwear = 0x8,
-    AbdomenUnderwear = 0x10,
-    UpperArmsUnderwear = 0x20,
-    LowerArmsUnderwear = 0x40,
-    UpperLegs = 0x100,
-    LowerLegs = 0x200,
-    Chest = 0x400,
-    Abdomen = 0x800,
-    UpperArms = 0x1000,
-    LowerArms = 0x2000,
-    Head = 0x4000,
-    Hands = 0x8000,
-    Feet = 0x10000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct CoverageMask: u32 {
+        const UPPER_LEGS_UNDERWEAR = 0x2;
+        const LOWER_LEGS_UNDERWEAR = 0x4;
+        const CHEST_UNDERWEAR = 0x8;
+        const ABDOMEN_UNDERWEAR = 0x10;
+        const UPPER_ARMS_UNDERWEAR = 0x20;
+        const LOWER_ARMS_UNDERWEAR = 0x40;
+        const UPPER_LEGS = 0x100;
+        const LOWER_LEGS = 0x200;
+        const CHEST = 0x400;
+        const ABDOMEN = 0x800;
+        const UPPER_ARMS = 0x1000;
+        const LOWER_ARMS = 0x2000;
+        const HEAD = 0x4000;
+        const HANDS = 0x8000;
+        const FEET = 0x10000;
+    }
 }
 
 impl crate::readers::ACDataType for CoverageMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(CoverageMask::try_from(value)?)
+        Ok(CoverageMask::from_bits_retain(value))
     }
 }
 
 /// The HookType identifies the types of dwelling hooks.
-#[repr(u16)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum HookType {
-    Floor = 0x1,
-    Wall = 0x2,
-    Ceiling = 0x4,
-    Yard = 0x8,
-    Roof = 0x10,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct HookType: u16 {
+        const FLOOR = 0x1;
+        const WALL = 0x2;
+        const CEILING = 0x4;
+        const YARD = 0x8;
+        const ROOF = 0x10;
+    }
 }
 
 impl crate::readers::ACDataType for HookType {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u16(reader)?;
-        Ok(HookType::try_from(value)?)
+        Ok(HookType::from_bits_retain(value))
     }
 }
 
@@ -3589,39 +3604,40 @@ impl crate::readers::ACDataType for CharacterErrorType {
 }
 
 /// The state flags for an object
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum PhysicsState {
-    None = 0x0,
-    Static = 0x1,
-    Ethereal = 0x4,
-    ReportCollision = 0x8,
-    IgnoreCollision = 0x10,
-    NoDraw = 0x20,
-    Missle = 0x40,
-    Pushable = 0x80,
-    AlignPath = 0x100,
-    PathClipped = 0x200,
-    Gravity = 0x400,
-    LightingOn = 0x800,
-    ParticleEmitter = 0x1000,
-    Hidden = 0x4000,
-    ScriptedCollision = 0x8000,
-    HasPhysicsBsp = 0x10000,
-    Inelastic = 0x20000,
-    HasDefaultAnim = 0x40000,
-    HasDefaultScript = 0x80000,
-    Cloaked = 0x100000,
-    ReportCollisionAsEnvironment = 0x200000,
-    EdgeSlide = 0x400000,
-    Sledding = 0x800000,
-    Frozen = 0x1000000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct PhysicsState: u32 {
+        const NONE = 0x0;
+        const STATIC = 0x1;
+        const ETHEREAL = 0x4;
+        const REPORT_COLLISION = 0x8;
+        const IGNORE_COLLISION = 0x10;
+        const NO_DRAW = 0x20;
+        const MISSLE = 0x40;
+        const PUSHABLE = 0x80;
+        const ALIGN_PATH = 0x100;
+        const PATH_CLIPPED = 0x200;
+        const GRAVITY = 0x400;
+        const LIGHTING_ON = 0x800;
+        const PARTICLE_EMITTER = 0x1000;
+        const HIDDEN = 0x4000;
+        const SCRIPTED_COLLISION = 0x8000;
+        const HAS_PHYSICS_BSP = 0x10000;
+        const INELASTIC = 0x20000;
+        const HAS_DEFAULT_ANIM = 0x40000;
+        const HAS_DEFAULT_SCRIPT = 0x80000;
+        const CLOAKED = 0x100000;
+        const REPORT_COLLISION_AS_ENVIRONMENT = 0x200000;
+        const EDGE_SLIDE = 0x400000;
+        const SLEDDING = 0x800000;
+        const FROZEN = 0x1000000;
+    }
 }
 
 impl crate::readers::ACDataType for PhysicsState {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(PhysicsState::try_from(value)?)
+        Ok(PhysicsState::from_bits_retain(value))
     }
 }
 
@@ -3676,145 +3692,151 @@ impl crate::readers::ACDataType for CompressionType {
 }
 
 /// The AttributeMask selects which creature attributes highlighting is applied to.
-#[repr(u16)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum AttributeMask {
-    Strength = 0x1,
-    Endurance = 0x2,
-    Quickness = 0x4,
-    Coordination = 0x8,
-    Focus = 0x10,
-    #[serde(rename = "Self")]
-    Self_ = 0x20,
-    Health = 0x40,
-    Stamina = 0x80,
-    Mana = 0x100,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct AttributeMask: u16 {
+        const STRENGTH = 0x1;
+        const ENDURANCE = 0x2;
+        const QUICKNESS = 0x4;
+        const COORDINATION = 0x8;
+        const FOCUS = 0x10;
+        const SELF = 0x20;
+        const HEALTH = 0x40;
+        const STAMINA = 0x80;
+        const MANA = 0x100;
+    }
 }
 
 impl crate::readers::ACDataType for AttributeMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u16(reader)?;
-        Ok(AttributeMask::try_from(value)?)
+        Ok(AttributeMask::from_bits_retain(value))
     }
 }
 
 /// The DamageType identifies the type of damage.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum DamageType {
-    Slashing = 0x1,
-    Piercing = 0x2,
-    Bludgeoning = 0x4,
-    Cold = 0x8,
-    Fire = 0x10,
-    Acid = 0x20,
-    Electric = 0x40,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct DamageType: u32 {
+        const SLASHING = 0x1;
+        const PIERCING = 0x2;
+        const BLUDGEONING = 0x4;
+        const COLD = 0x8;
+        const FIRE = 0x10;
+        const ACID = 0x20;
+        const ELECTRIC = 0x40;
+    }
 }
 
 impl crate::readers::ACDataType for DamageType {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(DamageType::try_from(value)?)
+        Ok(DamageType::from_bits_retain(value))
     }
 }
 
 /// The HookAppraisalFlags identifies various properties for an item hooked.
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum HookAppraisalFlags {
-    Inscribable = 0x1,
-    IsHealer = 0x2,
-    IsLockpick = 0x8,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct HookAppraisalFlags: u32 {
+        const INSCRIBABLE = 0x1;
+        const IS_HEALER = 0x2;
+        const IS_LOCKPICK = 0x8;
+    }
 }
 
 impl crate::readers::ACDataType for HookAppraisalFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(HookAppraisalFlags::try_from(value)?)
+        Ok(HookAppraisalFlags::from_bits_retain(value))
     }
 }
 
 /// The ArmorHighlightMask selects which armor attributes highlighting is applied to.
-#[repr(u16)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum ArmorHighlightMask {
-    ArmorLevel = 0x1,
-    SlashingProtection = 0x2,
-    PiercingProtection = 0x4,
-    BludgeoningProtection = 0x8,
-    ColdProtection = 0x10,
-    FireProtection = 0x20,
-    AcidProtection = 0x40,
-    ElectricalProtection = 0x80,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ArmorHighlightMask: u16 {
+        const ARMOR_LEVEL = 0x1;
+        const SLASHING_PROTECTION = 0x2;
+        const PIERCING_PROTECTION = 0x4;
+        const BLUDGEONING_PROTECTION = 0x8;
+        const COLD_PROTECTION = 0x10;
+        const FIRE_PROTECTION = 0x20;
+        const ACID_PROTECTION = 0x40;
+        const ELECTRICAL_PROTECTION = 0x80;
+    }
 }
 
 impl crate::readers::ACDataType for ArmorHighlightMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u16(reader)?;
-        Ok(ArmorHighlightMask::try_from(value)?)
+        Ok(ArmorHighlightMask::from_bits_retain(value))
     }
 }
 
 /// The ResistHighlightMask selects which wand attributes highlighting is applied to.
-#[repr(u16)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum ResistHighlightMask {
-    ResistSlash = 0x1,
-    ResistPierce = 0x2,
-    ResistBludgeon = 0x4,
-    ResistFire = 0x8,
-    ResistCold = 0x10,
-    ResistAcid = 0x20,
-    ResistElectric = 0x40,
-    ResistHealthBoost = 0x80,
-    ResistStaminaDrain = 0x100,
-    ResistStaminaBoost = 0x200,
-    ResistManaDrain = 0x400,
-    ResistManaBoost = 0x800,
-    ManaConversionMod = 0x1000,
-    ElementalDamageMod = 0x2000,
-    ResistNether = 0x4000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ResistHighlightMask: u16 {
+        const RESIST_SLASH = 0x1;
+        const RESIST_PIERCE = 0x2;
+        const RESIST_BLUDGEON = 0x4;
+        const RESIST_FIRE = 0x8;
+        const RESIST_COLD = 0x10;
+        const RESIST_ACID = 0x20;
+        const RESIST_ELECTRIC = 0x40;
+        const RESIST_HEALTH_BOOST = 0x80;
+        const RESIST_STAMINA_DRAIN = 0x100;
+        const RESIST_STAMINA_BOOST = 0x200;
+        const RESIST_MANA_DRAIN = 0x400;
+        const RESIST_MANA_BOOST = 0x800;
+        const MANA_CONVERSION_MOD = 0x1000;
+        const ELEMENTAL_DAMAGE_MOD = 0x2000;
+        const RESIST_NETHER = 0x4000;
+    }
 }
 
 impl crate::readers::ACDataType for ResistHighlightMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u16(reader)?;
-        Ok(ResistHighlightMask::try_from(value)?)
+        Ok(ResistHighlightMask::from_bits_retain(value))
     }
 }
 
 /// The WeaponHighlightMask selects which weapon attributes highlighting is applied to.
-#[repr(u16)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum WeaponHighlightMask {
-    AttackSkill = 0x1,
-    MeleeDefense = 0x2,
-    Speed = 0x4,
-    Damage = 0x8,
-    DamageVariance = 0x10,
-    DamageMod = 0x20,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct WeaponHighlightMask: u16 {
+        const ATTACK_SKILL = 0x1;
+        const MELEE_DEFENSE = 0x2;
+        const SPEED = 0x4;
+        const DAMAGE = 0x8;
+        const DAMAGE_VARIANCE = 0x10;
+        const DAMAGE_MOD = 0x20;
+    }
 }
 
 impl crate::readers::ACDataType for WeaponHighlightMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u16(reader)?;
-        Ok(WeaponHighlightMask::try_from(value)?)
+        Ok(WeaponHighlightMask::from_bits_retain(value))
     }
 }
 
 /// Additional attack information
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum AttackConditionsMask {
-    CriticalProtectionAugmentation = 0x1,
-    Recklessness = 0x2,
-    SneakAttack = 0x4,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct AttackConditionsMask: u32 {
+        const CRITICAL_PROTECTION_AUGMENTATION = 0x1;
+        const RECKLESSNESS = 0x2;
+        const SNEAK_ATTACK = 0x4;
+    }
 }
 
 impl crate::readers::ACDataType for AttackConditionsMask {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(AttackConditionsMask::try_from(value)?)
+        Ok(AttackConditionsMask::from_bits_retain(value))
     }
 }
 
@@ -4039,19 +4061,20 @@ impl crate::readers::ACDataType for Gender {
     }
 }
 
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum FactionBits {
-    None = 0x0,
-    CelestialHand = 0x1,
-    EldrytchWeb = 0x2,
-    RadiantBlood = 0x4,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct FactionBits: u32 {
+        const NONE = 0x0;
+        const CELESTIAL_HAND = 0x1;
+        const ELDRYTCH_WEB = 0x2;
+        const RADIANT_BLOOD = 0x4;
+    }
 }
 
 impl crate::readers::ACDataType for FactionBits {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(FactionBits::try_from(value)?)
+        Ok(FactionBits::from_bits_retain(value))
     }
 }
 
@@ -4169,61 +4192,63 @@ impl crate::readers::ACDataType for CreatureType {
     }
 }
 
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum CombatStyle {
-    Undef = 0x0,
-    Unarmed = 0x1,
-    OneHanded = 0x2,
-    OneHandedAndShield = 0x4,
-    TwoHanded = 0x8,
-    Bow = 0x10,
-    Crossbow = 0x20,
-    Sling = 0x40,
-    ThrownWeapon = 0x80,
-    DualWield = 0x100,
-    Magic = 0x200,
-    Atlatl = 0x400,
-    ThrownShield = 0x800,
-    Reserved1 = 0x1000,
-    Reserved2 = 0x2000,
-    Reserved3 = 0x4000,
-    Reserved4 = 0x8000,
-    StubbornMagic = 0x10000,
-    StubbornProjectile = 0x20000,
-    StubbornMelee = 0x40000,
-    StubbornMissile = 0x80000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct CombatStyle: u32 {
+        const UNDEF = 0x0;
+        const UNARMED = 0x1;
+        const ONE_HANDED = 0x2;
+        const ONE_HANDED_AND_SHIELD = 0x4;
+        const TWO_HANDED = 0x8;
+        const BOW = 0x10;
+        const CROSSBOW = 0x20;
+        const SLING = 0x40;
+        const THROWN_WEAPON = 0x80;
+        const DUAL_WIELD = 0x100;
+        const MAGIC = 0x200;
+        const ATLATL = 0x400;
+        const THROWN_SHIELD = 0x800;
+        const RESERVED1 = 0x1000;
+        const RESERVED2 = 0x2000;
+        const RESERVED3 = 0x4000;
+        const RESERVED4 = 0x8000;
+        const STUBBORN_MAGIC = 0x10000;
+        const STUBBORN_PROJECTILE = 0x20000;
+        const STUBBORN_MELEE = 0x40000;
+        const STUBBORN_MISSILE = 0x80000;
+    }
 }
 
 impl crate::readers::ACDataType for CombatStyle {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(CombatStyle::try_from(value)?)
+        Ok(CombatStyle::from_bits_retain(value))
     }
 }
 
 /// Indicates what data is present in the ACQualities data
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum ACQualitiesFlags {
-    Attributes = 0x1,
-    Skills = 0x2,
-    Body = 0x4,
-    SpellBook = 0x100,
-    Enchantments = 0x200,
-    EventFilter = 0x8,
-    Emotes = 0x10,
-    CreationProfile = 0x20,
-    PageData = 0x40,
-    Generators = 0x80,
-    GeneratorRegistry = 0x400,
-    GeneratorQueue = 0x800,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ACQualitiesFlags: u32 {
+        const ATTRIBUTES = 0x1;
+        const SKILLS = 0x2;
+        const BODY = 0x4;
+        const SPELL_BOOK = 0x100;
+        const ENCHANTMENTS = 0x200;
+        const EVENT_FILTER = 0x8;
+        const EMOTES = 0x10;
+        const CREATION_PROFILE = 0x20;
+        const PAGE_DATA = 0x40;
+        const GENERATORS = 0x80;
+        const GENERATOR_REGISTRY = 0x400;
+        const GENERATOR_QUEUE = 0x800;
+    }
 }
 
 impl crate::readers::ACDataType for ACQualitiesFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(ACQualitiesFlags::try_from(value)?)
+        Ok(ACQualitiesFlags::from_bits_retain(value))
     }
 }
 
@@ -4490,29 +4515,30 @@ impl crate::readers::ACDataType for HouseStatus {
     }
 }
 
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum UiEffects {
-    Undef = 0x0,
-    Magical = 0x1,
-    Poisoned = 0x2,
-    BoostHealth = 0x4,
-    BoostMana = 0x8,
-    BoostStamina = 0x10,
-    Fire = 0x20,
-    Lightning = 0x40,
-    Frost = 0x80,
-    Acid = 0x100,
-    Bludgeoning = 0x200,
-    Slashing = 0x400,
-    Piercing = 0x800,
-    Nether = 0x1000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct UiEffects: u32 {
+        const UNDEF = 0x0;
+        const MAGICAL = 0x1;
+        const POISONED = 0x2;
+        const BOOST_HEALTH = 0x4;
+        const BOOST_MANA = 0x8;
+        const BOOST_STAMINA = 0x10;
+        const FIRE = 0x20;
+        const LIGHTNING = 0x40;
+        const FROST = 0x80;
+        const ACID = 0x100;
+        const BLUDGEONING = 0x200;
+        const SLASHING = 0x400;
+        const PIERCING = 0x800;
+        const NETHER = 0x1000;
+    }
 }
 
 impl crate::readers::ACDataType for UiEffects {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(UiEffects::try_from(value)?)
+        Ok(UiEffects::from_bits_retain(value))
     }
 }
 
@@ -6334,50 +6360,51 @@ impl crate::readers::ACDataType for PropertyFloat {
 }
 
 /// Chat channels
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum Channel {
-    Undef = 0x0,
-    Abuse = 0x1,
-    Admin = 0x2,
-    Audit = 0x4,
-    Advocate1 = 0x8,
-    Advocate2 = 0x10,
-    Advocate3 = 0x20,
-    QA1 = 0x40,
-    QA2 = 0x80,
-    Debug = 0x100,
-    Sentinel = 0x200,
-    Help = 0x400,
-    AllBroadcast = 0x401,
-    Fellow = 0x800,
-    Vassals = 0x1000,
-    Patron = 0x2000,
-    Monarch = 0x4000,
-    AlArqas = 0x8000,
-    Holtburg = 0x10000,
-    Lytelthorpe = 0x20000,
-    Nanto = 0x40000,
-    Rithwic = 0x80000,
-    Samsur = 0x100000,
-    Shoushi = 0x200000,
-    Yanshi = 0x400000,
-    Yaraq = 0x800000,
-    TownChans = 0xFF8000,
-    CoVassals = 0x1000000,
-    AllegianceBroadcast = 0x2000000,
-    FellowBroadcast = 0x4000000,
-    SocietyCelHanBroadcast = 0x8000000,
-    SocietyEldWebBroadcast = 0x10000000,
-    SocietyRadBloBroadcast = 0x20000000,
-    Olthoi = 0x40000000,
-    GhostChans = 0x7F007800,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct Channel: u32 {
+        const UNDEF = 0x0;
+        const ABUSE = 0x1;
+        const ADMIN = 0x2;
+        const AUDIT = 0x4;
+        const ADVOCATE1 = 0x8;
+        const ADVOCATE2 = 0x10;
+        const ADVOCATE3 = 0x20;
+        const QA1 = 0x40;
+        const QA2 = 0x80;
+        const DEBUG = 0x100;
+        const SENTINEL = 0x200;
+        const HELP = 0x400;
+        const ALL_BROADCAST = 0x401;
+        const FELLOW = 0x800;
+        const VASSALS = 0x1000;
+        const PATRON = 0x2000;
+        const MONARCH = 0x4000;
+        const AL_ARQAS = 0x8000;
+        const HOLTBURG = 0x10000;
+        const LYTELTHORPE = 0x20000;
+        const NANTO = 0x40000;
+        const RITHWIC = 0x80000;
+        const SAMSUR = 0x100000;
+        const SHOUSHI = 0x200000;
+        const YANSHI = 0x400000;
+        const YARAQ = 0x800000;
+        const TOWN_CHANS = 0xFF8000;
+        const CO_VASSALS = 0x1000000;
+        const ALLEGIANCE_BROADCAST = 0x2000000;
+        const FELLOW_BROADCAST = 0x4000000;
+        const SOCIETY_CEL_HAN_BROADCAST = 0x8000000;
+        const SOCIETY_ELD_WEB_BROADCAST = 0x10000000;
+        const SOCIETY_RAD_BLO_BROADCAST = 0x20000000;
+        const OLTHOI = 0x40000000;
+        const GHOST_CHANS = 0x7F007800;
+    }
 }
 
 impl crate::readers::ACDataType for Channel {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(Channel::try_from(value)?)
+        Ok(Channel::from_bits_retain(value))
     }
 }
 
@@ -6561,19 +6588,20 @@ impl crate::readers::ACDataType for RadarColor {
 }
 
 /// Flags that determine what data is contained in the EnchantmentRegistry
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum EnchantmentRegistryFlags {
-    LifeSpells = 0x1,
-    CreatureSpells = 0x2,
-    Vitae = 0x4,
-    Cooldowns = 0x8,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct EnchantmentRegistryFlags: u32 {
+        const LIFE_SPELLS = 0x1;
+        const CREATURE_SPELLS = 0x2;
+        const VITAE = 0x4;
+        const COOLDOWNS = 0x8;
+    }
 }
 
 impl crate::readers::ACDataType for EnchantmentRegistryFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(EnchantmentRegistryFlags::try_from(value)?)
+        Ok(EnchantmentRegistryFlags::from_bits_retain(value))
     }
 }
 
@@ -7346,29 +7374,30 @@ impl crate::readers::ACDataType for HeritageGroup {
 }
 
 /// the type of highlight (outline) applied to the object's icon
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum IconHighlight {
-    Invalid = 0x0,
-    Magical = 0x1,
-    Poisoned = 0x2,
-    BoostHealth = 0x4,
-    BoostMana = 0x8,
-    BoostStamina = 0x10,
-    Fire = 0x20,
-    Lightning = 0x40,
-    Frost = 0x80,
-    Acid = 0x100,
-    Bludgeoning = 0x200,
-    Slashing = 0x400,
-    Piercing = 0x800,
-    Nether = 0x1000,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct IconHighlight: u32 {
+        const INVALID = 0x0;
+        const MAGICAL = 0x1;
+        const POISONED = 0x2;
+        const BOOST_HEALTH = 0x4;
+        const BOOST_MANA = 0x8;
+        const BOOST_STAMINA = 0x10;
+        const FIRE = 0x20;
+        const LIGHTNING = 0x40;
+        const FROST = 0x80;
+        const ACID = 0x100;
+        const BLUDGEONING = 0x200;
+        const SLASHING = 0x400;
+        const PIERCING = 0x800;
+        const NETHER = 0x1000;
+    }
 }
 
 impl crate::readers::ACDataType for IconHighlight {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(IconHighlight::try_from(value)?)
+        Ok(IconHighlight::from_bits_retain(value))
     }
 }
 
@@ -7457,37 +7486,37 @@ impl crate::readers::ACDataType for ChatDisplayMask {
     }
 }
 
-#[repr(u32)]
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
-pub enum EnchantmentTypeFlags {
-    Undef = 0x0,
-    Attribute = 0x1,
-    SecondAtt = 0x2,
-    Int = 0x4,
-    Float = 0x8,
-    Skill = 0x10,
-    BodyDamageValue = 0x20,
-    BodyDamageVariance = 0x40,
-    BodyArmorValue = 0x80,
-    SingleStat = 0x1000,
-    MultipleStat = 0x2000,
-    Multiplicative = 0x4000,
-    Additive = 0x8000,
-    AttackSkills = 0x10000,
-    DefenseSkills = 0x20000,
-    MultiplicativeDegrade = 0x100000,
-    #[serde(rename = "Additive_Degrade")]
-    AdditiveDegrade = 0x200000,
-    Vitae = 0x800000,
-    Cooldown = 0x1000000,
-    Beneficial = 0x2000000,
-    StatTypes = 0xFF,
+bitflags::bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct EnchantmentTypeFlags: u32 {
+        const UNDEF = 0x0;
+        const ATTRIBUTE = 0x1;
+        const SECOND_ATT = 0x2;
+        const INT = 0x4;
+        const FLOAT = 0x8;
+        const SKILL = 0x10;
+        const BODY_DAMAGE_VALUE = 0x20;
+        const BODY_DAMAGE_VARIANCE = 0x40;
+        const BODY_ARMOR_VALUE = 0x80;
+        const SINGLE_STAT = 0x1000;
+        const MULTIPLE_STAT = 0x2000;
+        const MULTIPLICATIVE = 0x4000;
+        const ADDITIVE = 0x8000;
+        const ATTACK_SKILLS = 0x10000;
+        const DEFENSE_SKILLS = 0x20000;
+        const MULTIPLICATIVE_DEGRADE = 0x100000;
+        const ADDITIVE_DEGRADE = 0x200000;
+        const VITAE = 0x800000;
+        const COOLDOWN = 0x1000000;
+        const BENEFICIAL = 0x2000000;
+        const STAT_TYPES = 0xFF;
+    }
 }
 
 impl crate::readers::ACDataType for EnchantmentTypeFlags {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let value = crate::readers::read_u32(reader)?;
-        Ok(EnchantmentTypeFlags::try_from(value)?)
+        Ok(EnchantmentTypeFlags::from_bits_retain(value))
     }
 }
 

@@ -23,7 +23,7 @@ pub struct InventoryGetAndWieldItem {
 impl InventoryGetAndWieldItem {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
-        let slot = EquipMask::try_from(read_u32(reader)?)?;
+        let slot = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             object_id,

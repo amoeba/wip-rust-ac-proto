@@ -81,6 +81,7 @@ pub struct ProtocolEnum {
     pub(crate) parent: String,
     pub(crate) values: Vec<EnumValue>,
     pub(crate) extra_derives: Vec<String>,
+    pub(crate) is_mask: bool,
 }
 
 #[derive(Debug, Clone)]

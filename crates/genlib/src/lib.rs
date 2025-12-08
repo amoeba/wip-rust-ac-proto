@@ -111,16 +111,20 @@ pub struct ReaderContext {
     enum_parent_map: BTreeMap<String, String>,
     /// Map from (enum_name, value) to variant name (e.g., ("NetAuthType", 2) -> "AccountPassword")
     enum_value_map: BTreeMap<(String, i64), String>,
+    /// Set of enum names that are bitflags (mask="true")
+    mask_enums: std::collections::HashSet<String>,
 }
 
 impl ReaderContext {
     pub fn new(
         enum_parent_map: BTreeMap<String, String>,
         enum_value_map: BTreeMap<(String, i64), String>,
+        mask_enums: std::collections::HashSet<String>,
     ) -> Self {
         Self {
             enum_parent_map,
             enum_value_map,
+            mask_enums,
         }
     }
 }
@@ -316,6 +320,83 @@ fn build_derive_string(extra_derives: &[String]) -> String {
     let mut all_derives: Vec<String> = DEFAULT_DERIVES.iter().map(|s| s.to_string()).collect();
     all_derives.extend(extra_derives.iter().cloned());
     format!("#[derive({})]", all_derives.join(", "))
+}
+
+fn generate_bitflags(protocol_enum: &ProtocolEnum) -> String {
+    let enum_name = &protocol_enum.name;
+    let mut out = String::new();
+
+    if let Some(text_str) = &protocol_enum.text {
+        out.push_str(&format!("/// {text_str}\n"));
+    }
+
+    // Get the underlying type for the bitflags
+    let repr_type = if !protocol_enum.parent.is_empty() {
+        get_rust_type(&protocol_enum.parent)
+    } else {
+        "u32" // Default to u32 if no parent specified
+    };
+
+    // Generate bitflags! macro invocation
+    out.push_str("bitflags::bitflags! {\n");
+    out.push_str("    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]\n");
+    out.push_str(&format!("    pub struct {}: {} {{\n", enum_name, repr_type));
+
+    for enum_value in &protocol_enum.values {
+        let original_name = &enum_value.name;
+
+        // Generate constant name - convert to SCREAMING_SNAKE_CASE for bitflags constants
+        let const_name = if let Some(stripped) = original_name.strip_prefix("0x") {
+            format!("TYPE_{}", stripped.to_uppercase())
+        } else {
+            // Convert from PascalCase to SCREAMING_SNAKE_CASE
+            let mut result = String::new();
+            let mut prev_was_lower = false;
+            for (i, ch) in original_name.chars().enumerate() {
+                if ch.is_uppercase() && i > 0 && prev_was_lower {
+                    result.push('_');
+                }
+                result.push(ch.to_ascii_uppercase());
+                prev_was_lower = ch.is_lowercase();
+            }
+            result
+        };
+
+        // Format the value as hex literal
+        let value_literal = if enum_value.value < 0 {
+            format!("{}", enum_value.value)
+        } else {
+            format!("0x{:X}", enum_value.value)
+        };
+
+        out.push_str(&format!("        const {} = {};\n", const_name, value_literal));
+    }
+
+    out.push_str("    }\n");
+    out.push_str("}\n\n");
+
+    // Add ACDataType implementation for bitflags
+    if !protocol_enum.parent.is_empty() {
+        let read_fn = match repr_type {
+            "u8" => "read_u8",
+            "i8" => "read_i8",
+            "u16" => "read_u16",
+            "i16" => "read_i16",
+            "u32" => "read_u32",
+            "i32" => "read_i32",
+            "u64" => "read_u64",
+            "i64" => "read_i64",
+            _ => "",
+        };
+        if !read_fn.is_empty() {
+            out.push_str(&format!(
+                "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        let value = crate::readers::{read_fn}(reader)?;\n        Ok({}::from_bits_retain(value))\n    }}\n}}\n\n",
+                enum_name, enum_name
+            ));
+        }
+    }
+
+    out
 }
 
 fn generate_enum(protocol_enum: &ProtocolEnum) -> String {
@@ -1059,6 +1140,7 @@ fn process_enum_start_tag(
     let mut name = None;
     let mut text = None;
     let mut parent = None;
+    let mut is_mask = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -1068,6 +1150,10 @@ fn process_enum_start_tag(
             }
             b"parent" => {
                 parent = Some(attr.unescape_value().unwrap().into_owned());
+            }
+            b"mask" => {
+                let mask_val = attr.unescape_value().unwrap();
+                is_mask = mask_val == "true";
             }
             _ => {}
         }
@@ -1082,6 +1168,7 @@ fn process_enum_start_tag(
             parent,
             values: Vec::new(),
             extra_derives: Vec::new(),
+            is_mask,
         };
         *current_enum = Some(new_enum);
     }
@@ -2516,8 +2603,14 @@ fn generate_mask_field_expr(
 ) -> String {
     if let Some(mask_field_obj) = all_fields.iter().find(|f| f.name == mask_field_name) {
         let base_expr = if ctx.enum_parent_map.contains_key(&mask_field_obj.field_type) {
-            // It's an enum - clone and cast to u32 (enums don't derive Copy)
-            format!("{}.clone() as u32", mask_field_safe)
+            // It's an enum or bitflags - get bits representation
+            if ctx.mask_enums.contains(&mask_field_obj.field_type) {
+                // Bitflags - use .bits() method
+                format!("{}.bits()", mask_field_safe)
+            } else {
+                // Regular enum - clone and cast to u32 (enums don't derive Copy)
+                format!("{}.clone() as u32", mask_field_safe)
+            }
         } else {
             mask_field_safe.to_string()
         };
@@ -2663,7 +2756,31 @@ fn generate_field_group_reads(
             let mask_value_code = if mask_value.contains('.') {
                 let parts: Vec<&str> = mask_value.split('.').collect();
                 if parts.len() == 2 {
-                    format!("{}::{} as u32", parts[0], parts[1])
+                    let enum_name = parts[0];
+                    let variant_name = parts[1];
+                    // Check if this is a mask enum (bitflags)
+                    if ctx.mask_enums.contains(enum_name) {
+                        // Convert variant name to SCREAMING_SNAKE_CASE for bitflags
+                        let const_name = if let Some(stripped) = variant_name.strip_prefix("0x") {
+                            format!("TYPE_{}", stripped.to_uppercase())
+                        } else {
+                            // Convert from PascalCase to SCREAMING_SNAKE_CASE
+                            let mut result = String::new();
+                            let mut prev_was_lower = false;
+                            for (i, ch) in variant_name.chars().enumerate() {
+                                if ch.is_uppercase() && i > 0 && prev_was_lower {
+                                    result.push('_');
+                                }
+                                result.push(ch.to_ascii_uppercase());
+                                prev_was_lower = ch.is_lowercase();
+                            }
+                            result
+                        };
+                        format!("{}::{}.bits()", enum_name, const_name)
+                    } else {
+                        // Regular enum - cast to u32
+                        format!("{}::{} as u32", enum_name, variant_name)
+                    }
                 } else {
                     mask_value.clone()
                 }
@@ -2744,7 +2861,12 @@ fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Fie
                     "i64" => "read_i64",
                     _ => panic!("Unsupported enum parent type: {}", parent_type),
                 };
-                format!("{}::try_from({}(reader)?)", field_type, read_fn)
+                // Use from_bits_retain for bitflags types, try_from for regular enums
+                if ctx.mask_enums.contains(field_type) {
+                    format!("Ok::<_, Box<dyn std::error::Error>>({}::from_bits_retain({}(reader)?))", field_type, read_fn)
+                } else {
+                    format!("{}::try_from({}(reader)?)", field_type, read_fn)
+                }
             } else if field_type.starts_with("Vec<") {
                 let element_type = &field_type[4..field_type.len() - 1];
                 if let Some(length_expr) = &field.length_expression {
@@ -2854,7 +2976,12 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                     "i64" => "read_i64",
                     _ => panic!("Unsupported enum parent type: {}", parent_type),
                 };
-                format!("{}::try_from({}(reader)?)", field_type, read_fn)
+                // Use from_bits_retain for bitflags types, try_from for regular enums
+                if ctx.mask_enums.contains(field_type) {
+                    format!("Ok::<_, Box<dyn std::error::Error>>({}::from_bits_retain({}(reader)?))", field_type, read_fn)
+                } else {
+                    format!("{}::try_from({}(reader)?)", field_type, read_fn)
+                }
             } else if field_type.starts_with("Vec<") {
                 // Handle Vec - extract element type
                 let element_type = &field_type[4..field_type.len() - 1];
@@ -2943,7 +3070,31 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                 // It's an enum variant reference, convert to Rust format
                 let parts: Vec<&str> = mask_value.split('.').collect();
                 if parts.len() == 2 {
-                    format!("{}::{} as u32", parts[0], parts[1])
+                    let enum_name = parts[0];
+                    let variant_name = parts[1];
+                    // Check if this is a mask enum (bitflags)
+                    if ctx.mask_enums.contains(enum_name) {
+                        // Convert variant name to SCREAMING_SNAKE_CASE for bitflags
+                        let const_name = if let Some(stripped) = variant_name.strip_prefix("0x") {
+                            format!("TYPE_{}", stripped.to_uppercase())
+                        } else {
+                            // Convert from PascalCase to SCREAMING_SNAKE_CASE
+                            let mut result = String::new();
+                            let mut prev_was_lower = false;
+                            for (i, ch) in variant_name.chars().enumerate() {
+                                if ch.is_uppercase() && i > 0 && prev_was_lower {
+                                    result.push('_');
+                                }
+                                result.push(ch.to_ascii_uppercase());
+                                prev_was_lower = ch.is_lowercase();
+                            }
+                            result
+                        };
+                        format!("{}::{}.bits()", enum_name, const_name)
+                    } else {
+                        // Regular enum - cast to u32
+                        format!("{}::{} as u32", enum_name, variant_name)
+                    }
                 } else {
                     mask_value.clone()
                 }
@@ -3147,7 +3298,12 @@ fn generate_packable_hash_table_read(
                         "i64" => "read_i64",
                         _ => panic!("Unsupported enum parent type: {}", parent_type),
                     };
-                    format!("{}::try_from({}(reader)?)?", typ, read_fn)
+                    // Use from_bits_retain for bitflags types, try_from for regular enums
+                    if ctx.mask_enums.contains(typ) {
+                        format!("{}::from_bits_retain({}(reader)?)", typ, read_fn)
+                    } else {
+                        format!("{}::try_from({}(reader)?)?", typ, read_fn)
+                    }
                 } else {
                     format!("{}::read(reader)?", typ)
                 }
@@ -3215,7 +3371,12 @@ fn generate_hashmap_read_with_length(
                         "i64" => "read_i64",
                         _ => panic!("Unsupported enum parent type: {}", parent_type),
                     };
-                    format!("{}::try_from({}(reader)?)?", typ, read_fn)
+                    // Use from_bits_retain for bitflags types, try_from for regular enums
+                    if ctx.mask_enums.contains(typ) {
+                        format!("{}::from_bits_retain({}(reader)?)", typ, read_fn)
+                    } else {
+                        format!("{}::try_from({}(reader)?)?", typ, read_fn)
+                    }
                 } else {
                     format!("{}::read(reader)?", typ)
                 }
@@ -3661,7 +3822,11 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
     enums_out.push_str("use crate::readers::ACReader;\n\n");
 
     for protocol_enum in &enums {
-        enums_out.push_str(&generate_enum(protocol_enum));
+        if protocol_enum.is_mask {
+            enums_out.push_str(&generate_bitflags(protocol_enum));
+        } else {
+            enums_out.push_str(&generate_enum(protocol_enum));
+        }
     }
 
     // Generate common types - will add readers after building reader context
@@ -3711,7 +3876,14 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
         }
     }
 
-    let reader_ctx = ReaderContext::new(enum_parent_map, enum_value_map);
+    // Build a set of mask enum names (bitflags types)
+    let mask_enums: std::collections::HashSet<String> = enums
+        .iter()
+        .filter(|e| e.is_mask)
+        .map(|e| e.name.clone())
+        .collect();
+
+    let reader_ctx = ReaderContext::new(enum_parent_map, enum_value_map, mask_enums);
 
     // Add reader implementations to common types
     for protocol_type in &rectified_common_types {

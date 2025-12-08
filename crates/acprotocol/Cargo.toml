@@ -9,6 +9,7 @@ path = "src/lib.rs"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 num_enum = "0.7"
+bitflags = { version = "2.6", features = ["serde"] }
 
 [build-dependencies]
 env_logger = "0.11"

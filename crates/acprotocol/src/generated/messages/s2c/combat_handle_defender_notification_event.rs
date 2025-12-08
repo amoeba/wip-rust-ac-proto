@@ -33,12 +33,12 @@ pub struct CombatHandleDefenderNotificationEvent {
 impl CombatHandleDefenderNotificationEvent {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let attacker_name = read_string(reader)?;
-        let type_ = DamageType::try_from(read_u32(reader)?)?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
         let damage_percent = read_f32(reader)?;
         let damage = read_u32(reader)?;
         let location = DamageLocation::try_from(read_u32(reader)?)?;
         let critical = read_bool(reader)?;
-        let attack_conditions = AttackConditionsMask::try_from(read_u32(reader)?)?;
+        let attack_conditions = Ok::<_, Box<dyn std::error::Error>>(AttackConditionsMask::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             attacker_name,

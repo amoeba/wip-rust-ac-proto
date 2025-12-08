@@ -20,7 +20,7 @@ pub struct CharacterSpellbookFilterEvent {
 
 impl CharacterSpellbookFilterEvent {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let options = SpellBookFilterOptions::try_from(read_u32(reader)?)?;
+        let options = Ok::<_, Box<dyn std::error::Error>>(SpellBookFilterOptions::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             options,

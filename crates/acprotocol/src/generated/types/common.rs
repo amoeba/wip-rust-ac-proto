@@ -3236,10 +3236,10 @@ impl crate::readers::ACDataType for EchoResponseHeader {
 
 impl ACBaseQualities {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = ACBaseQualitiesFlags::try_from(read_u32(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(ACBaseQualitiesFlags::from_bits_retain(read_u32(reader)?))?;
         let weenie_type = WeenieType::try_from(read_u32(reader)?)?;
         let mut int_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyInt as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INT.bits()) != 0 {
             int_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyInt::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3247,7 +3247,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut int64_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyInt64 as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INT64.bits()) != 0 {
             int64_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyInt64::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3255,7 +3255,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut bool_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyBool as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_BOOL.bits()) != 0 {
             bool_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyBool::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3263,7 +3263,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut float_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyFloat as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_FLOAT.bits()) != 0 {
             float_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyFloat::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3271,7 +3271,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut string_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyString as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_STRING.bits()) != 0 {
             string_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyString::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3279,7 +3279,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut data_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyDataId as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_DATA_ID.bits()) != 0 {
             data_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyDataId::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3287,7 +3287,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut instance_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyInstanceId as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INSTANCE_ID.bits()) != 0 {
             instance_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyInstanceId::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3295,7 +3295,7 @@ impl ACBaseQualities {
         })?);
         }
         let mut position_properties = None;
-        if (flags.clone() as u32 & ACBaseQualitiesFlags::PropertyPosition as u32) != 0 {
+        if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_POSITION.bits()) != 0 {
             position_properties = Some(read_packable_hash_table_with(reader, |r| {
             Ok(PropertyPosition::try_from(read_u32(r)?)?)
         }, |r| {
@@ -3326,14 +3326,14 @@ impl crate::readers::ACDataType for ACBaseQualities {
 
 impl ACQualities {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = ACQualitiesFlags::try_from(read_u32(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(ACQualitiesFlags::from_bits_retain(read_u32(reader)?))?;
         let has_health = read_bool(reader)?;
         let mut attributes = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::Attributes as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::ATTRIBUTES.bits()) != 0 {
             attributes = Some(AttributeCache::read(reader)?);
         }
         let mut skills = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::Skills as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::SKILLS.bits()) != 0 {
             skills = Some(read_packable_hash_table_with(reader, |r| {
             Ok(SkillId::try_from(read_i32(r)?)?)
         }, |r| {
@@ -3341,11 +3341,11 @@ impl ACQualities {
         })?);
         }
         let mut body = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::Body as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::BODY.bits()) != 0 {
             body = Some(Body::read(reader)?);
         }
         let mut spell_book = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::SpellBook as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::SPELL_BOOK.bits()) != 0 {
             spell_book = Some(read_packable_hash_table_with(reader, |r| {
             Ok(LayeredSpellId::read(r)?)
         }, |r| {
@@ -3353,35 +3353,35 @@ impl ACQualities {
         })?);
         }
         let mut enchantments = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::Enchantments as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::ENCHANTMENTS.bits()) != 0 {
             enchantments = Some(EnchantmentRegistry::read(reader)?);
         }
         let mut event_filter = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::EventFilter as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::EVENT_FILTER.bits()) != 0 {
             event_filter = Some(EventFilter::read(reader)?);
         }
         let mut emotes = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::Emotes as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::EMOTES.bits()) != 0 {
             emotes = Some(EmoteTable::read(reader)?);
         }
         let mut creation_profile = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::CreationProfile as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::CREATION_PROFILE.bits()) != 0 {
             creation_profile = Some(read_packable_list::<CreationProfile>(reader)?);
         }
         let mut page_data = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::PageData as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::PAGE_DATA.bits()) != 0 {
             page_data = Some(PageDataList::read(reader)?);
         }
         let mut generators = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::Generators as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::GENERATORS.bits()) != 0 {
             generators = Some(GeneratorTable::read(reader)?);
         }
         let mut generator_registry = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::GeneratorRegistry as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::GENERATOR_REGISTRY.bits()) != 0 {
             generator_registry = Some(GeneratorRegistry::read(reader)?);
         }
         let mut generator_queue = None;
-        if (flags.clone() as u32 & ACQualitiesFlags::GeneratorQueue as u32) != 0 {
+        if (flags.bits() & ACQualitiesFlags::GENERATOR_QUEUE.bits()) != 0 {
             generator_queue = Some(GeneratorQueue::read(reader)?);
         }
 
@@ -3560,7 +3560,7 @@ impl crate::readers::ACDataType for Body {
 impl BodyPart {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let has_bpsd = read_i32(reader)?;
-        let damage_type = DamageType::try_from(read_u32(reader)?)?;
+        let damage_type = Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
         let damage_val = read_i32(reader)?;
         let damage_var = read_i32(reader)?;
         let armor_cache = ArmorCache::read(reader)?;
@@ -3684,21 +3684,21 @@ impl crate::readers::ACDataType for SpellBookPage {
 
 impl EnchantmentRegistry {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = EnchantmentRegistryFlags::try_from(read_u32(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(EnchantmentRegistryFlags::from_bits_retain(read_u32(reader)?))?;
         let mut life_spells = None;
-        if (flags.clone() as u32 & EnchantmentRegistryFlags::LifeSpells as u32) != 0 {
+        if (flags.bits() & EnchantmentRegistryFlags::LIFE_SPELLS.bits()) != 0 {
             life_spells = Some(read_packable_list::<Enchantment>(reader)?);
         }
         let mut creature_spells = None;
-        if (flags.clone() as u32 & EnchantmentRegistryFlags::CreatureSpells as u32) != 0 {
+        if (flags.bits() & EnchantmentRegistryFlags::CREATURE_SPELLS.bits()) != 0 {
             creature_spells = Some(read_packable_list::<Enchantment>(reader)?);
         }
         let mut vitae = None;
-        if (flags.clone() as u32 & EnchantmentRegistryFlags::Vitae as u32) != 0 {
+        if (flags.bits() & EnchantmentRegistryFlags::VITAE.bits()) != 0 {
             vitae = Some(Enchantment::read(reader)?);
         }
         let mut cooldowns = None;
-        if (flags.clone() as u32 & EnchantmentRegistryFlags::Cooldowns as u32) != 0 {
+        if (flags.bits() & EnchantmentRegistryFlags::COOLDOWNS.bits()) != 0 {
             cooldowns = Some(read_packable_list::<Enchantment>(reader)?);
         }
 
@@ -3761,7 +3761,7 @@ impl crate::readers::ACDataType for Enchantment {
 
 impl StatMod {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let type_ = EnchantmentTypeFlags::try_from(read_u32(reader)?)?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(EnchantmentTypeFlags::from_bits_retain(read_u32(reader)?))?;
         let key = read_u32(reader)?;
         let value = read_f32(reader)?;
 
@@ -4942,7 +4942,7 @@ impl crate::readers::ACDataType for GameplayOptions {
 impl PlayerModule {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
-        let options = CharacterOptions1::try_from(read_u32(reader)?)?;
+        let options = Ok::<_, Box<dyn std::error::Error>>(CharacterOptions1::from_bits_retain(read_u32(reader)?))?;
         let mut shortcuts = None;
         if (flags & 0x00000001) != 0 {
             shortcuts = Some(read_packable_list::<ShortCutData>(reader)?);
@@ -5087,8 +5087,8 @@ impl crate::readers::ACDataType for ContentProfile {
 impl InventoryPlacement {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
-        let location = EquipMask::try_from(read_u32(reader)?)?;
-        let priority = CoverageMask::try_from(read_u32(reader)?)?;
+        let location = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
+        let priority = Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             object_id,
@@ -5328,11 +5328,11 @@ impl PublicWeenieDesc {
         let name = read_string(reader)?;
         let weenie_class_id = PackedDWORD::read(reader)?;
         let icon = PackedDWORD::read(reader)?;
-        let type_ = ItemType::try_from(read_u32(reader)?)?;
-        let behavior = ObjectDescriptionFlag::try_from(read_u32(reader)?)?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
+        let behavior = Ok::<_, Box<dyn std::error::Error>>(ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?))?;
         align_dword(reader)?;
         let mut header2 = None;
-        if (behavior.clone() as u32 & 0x04000000) != 0 {
+        if (behavior.bits() & 0x04000000) != 0 {
             header2 = Some(read_u32(reader)?);
         }
         let mut plural_name = None;
@@ -5349,7 +5349,7 @@ impl PublicWeenieDesc {
         }
         let mut ammunition_type = None;
         if (header & 0x00000100) != 0 {
-            ammunition_type = Some(AmmoType::try_from(read_u16(reader)?)?);
+            ammunition_type = Some(Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut value = None;
         if (header & 0x00000008) != 0 {
@@ -5357,7 +5357,7 @@ impl PublicWeenieDesc {
         }
         let mut useability = None;
         if (header & 0x00000010) != 0 {
-            useability = Some(Usable::try_from(read_u32(reader)?)?);
+            useability = Some(Ok::<_, Box<dyn std::error::Error>>(Usable::from_bits_retain(read_u32(reader)?))?);
         }
         let mut use_radius = None;
         if (header & 0x00000020) != 0 {
@@ -5365,11 +5365,11 @@ impl PublicWeenieDesc {
         }
         let mut target_type = None;
         if (header & 0x00080000) != 0 {
-            target_type = Some(ItemType::try_from(read_u32(reader)?)?);
+            target_type = Some(Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?);
         }
         let mut effects = None;
         if (header & 0x00000080) != 0 {
-            effects = Some(IconHighlight::try_from(read_u32(reader)?)?);
+            effects = Some(Ok::<_, Box<dyn std::error::Error>>(IconHighlight::from_bits_retain(read_u32(reader)?))?);
         }
         let mut combat_use = None;
         if (header & 0x00000200) != 0 {
@@ -5401,15 +5401,15 @@ impl PublicWeenieDesc {
         }
         let mut valid_slots = None;
         if (header & 0x00010000) != 0 {
-            valid_slots = Some(EquipMask::try_from(read_u32(reader)?)?);
+            valid_slots = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut slot = None;
         if (header & 0x00020000) != 0 {
-            slot = Some(EquipMask::try_from(read_u32(reader)?)?);
+            slot = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut priority = None;
         if (header & 0x00040000) != 0 {
-            priority = Some(CoverageMask::try_from(read_u32(reader)?)?);
+            priority = Some(Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut blip_color = None;
         if (header & 0x00100000) != 0 {
@@ -5445,7 +5445,7 @@ impl PublicWeenieDesc {
         }
         let mut hook_item_types = None;
         if (header & 0x20000000) != 0 {
-            hook_item_types = Some(HookType::try_from(read_u16(reader)?)?);
+            hook_item_types = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut monarch_id = None;
         if (header & 0x00000040) != 0 {
@@ -5453,7 +5453,7 @@ impl PublicWeenieDesc {
         }
         let mut hook_type = None;
         if (header & 0x10000000) != 0 {
-            hook_type = Some(HookType::try_from(read_u16(reader)?)?);
+            hook_type = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut icon_overlay = None;
         if (header & 0x40000000) != 0 {
@@ -5563,8 +5563,8 @@ impl OldPublicWeenieDesc {
         let name = read_string(reader)?;
         let weenie_class_id = PackedDWORD::read(reader)?;
         let icon = PackedDWORD::read(reader)?;
-        let type_ = ItemType::try_from(read_u32(reader)?)?;
-        let bitfield = ObjectDescriptionFlag::try_from(read_u32(reader)?)?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
+        let bitfield = Ok::<_, Box<dyn std::error::Error>>(ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?))?;
         let mut plural_name = None;
         if (header & 0x00000001) != 0 {
             plural_name = Some(read_string(reader)?);
@@ -5583,7 +5583,7 @@ impl OldPublicWeenieDesc {
         }
         let mut useability = None;
         if (header & 0x00000010) != 0 {
-            useability = Some(Usable::try_from(read_u32(reader)?)?);
+            useability = Some(Ok::<_, Box<dyn std::error::Error>>(Usable::from_bits_retain(read_u32(reader)?))?);
         }
         let mut use_radius = None;
         if (header & 0x00000020) != 0 {
@@ -5591,15 +5591,15 @@ impl OldPublicWeenieDesc {
         }
         let mut t_target_type = None;
         if (header & 0x00080000) != 0 {
-            t_target_type = Some(ItemType::try_from(read_u32(reader)?)?);
+            t_target_type = Some(Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?);
         }
         let mut effects = None;
         if (header & 0x00000080) != 0 {
-            effects = Some(IconHighlight::try_from(read_u32(reader)?)?);
+            effects = Some(Ok::<_, Box<dyn std::error::Error>>(IconHighlight::from_bits_retain(read_u32(reader)?))?);
         }
         let mut ammunition_type = None;
         if (header & 0x00000100) != 0 {
-            ammunition_type = Some(AmmoType::try_from(read_u16(reader)?)?);
+            ammunition_type = Some(Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut combat_use = None;
         if (header & 0x00000200) != 0 {
@@ -5631,15 +5631,15 @@ impl OldPublicWeenieDesc {
         }
         let mut valid_slots = None;
         if (header & 0x00010000) != 0 {
-            valid_slots = Some(EquipMask::try_from(read_u32(reader)?)?);
+            valid_slots = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut slots = None;
         if (header & 0x00020000) != 0 {
-            slots = Some(EquipMask::try_from(read_u32(reader)?)?);
+            slots = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut priority = None;
         if (header & 0x00040000) != 0 {
-            priority = Some(CoverageMask::try_from(read_u32(reader)?)?);
+            priority = Some(Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut blip_color = None;
         if (header & 0x00100000) != 0 {
@@ -5675,11 +5675,11 @@ impl OldPublicWeenieDesc {
         }
         let mut hook_type = None;
         if (header & 0x10000000) != 0 {
-            hook_type = Some(HookType::try_from(read_u16(reader)?)?);
+            hook_type = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut hook_item_types = None;
         if (header & 0x20000000) != 0 {
-            hook_item_types = Some(HookType::try_from(read_u16(reader)?)?);
+            hook_item_types = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut monarch_id = None;
         if (header & 0x00000040) != 0 {
@@ -5953,30 +5953,30 @@ impl crate::readers::ACDataType for AutonomousPositionPack {
 
 impl PositionPack {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = PositionFlags::try_from(read_u32(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(PositionFlags::from_bits_retain(read_u32(reader)?))?;
         let origin = Origin::read(reader)?;
         let mut w_quat = None;
-        if (flags.clone() as u32 & 0x00000008) != 0 {
+        if (flags.bits() & 0x00000008) != 0 {
             w_quat = Some(read_f32(reader)?);
         }
         let mut x_quat = None;
-        if (flags.clone() as u32 & 0x00000010) != 0 {
+        if (flags.bits() & 0x00000010) != 0 {
             x_quat = Some(read_f32(reader)?);
         }
         let mut y_quat = None;
-        if (flags.clone() as u32 & 0x00000020) != 0 {
+        if (flags.bits() & 0x00000020) != 0 {
             y_quat = Some(read_f32(reader)?);
         }
         let mut z_quat = None;
-        if (flags.clone() as u32 & 0x00000040) != 0 {
+        if (flags.bits() & 0x00000040) != 0 {
             z_quat = Some(read_f32(reader)?);
         }
         let mut velocity = None;
-        if (flags.clone() as u32 & 0x00000001) != 0 {
+        if (flags.bits() & 0x00000001) != 0 {
             velocity = Some(Vector3::read(reader)?);
         }
         let mut placement_id = None;
-        if (flags.clone() as u32 & 0x00000002) != 0 {
+        if (flags.bits() & 0x00000002) != 0 {
             placement_id = Some(read_u32(reader)?);
         }
         let object_instance_sequence = read_u16(reader)?;
@@ -6473,7 +6473,7 @@ impl crate::readers::ACDataType for CharacterIdentity {
 impl EquipLocation {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
-        let slot = EquipMask::try_from(read_u32(reader)?)?;
+        let slot = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             object_id,
@@ -6491,7 +6491,7 @@ impl crate::readers::ACDataType for EquipLocation {
 impl PhysicsDesc {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
-        let state = PhysicsState::try_from(read_u32(reader)?)?;
+        let state = Ok::<_, Box<dyn std::error::Error>>(PhysicsState::from_bits_retain(read_u32(reader)?))?;
         let mut movement_buffer = None;
         let mut autonomous = None;
         if (flags & 0x00010000) != 0 {
@@ -6659,7 +6659,7 @@ impl crate::readers::ACDataType for AdminPlayerData {
 
 impl VendorProfile {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let categories = ItemType::try_from(read_u32(reader)?)?;
+        let categories = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
         let min_value = read_u32(reader)?;
         let max_value = read_u32(reader)?;
         let deals_magic = read_bool(reader)?;
@@ -6749,8 +6749,8 @@ impl CreatureAppraisalProfile {
         let mut attr_highlight = None;
         let mut attr_color = None;
         if (flags & 0x00000001) != 0 {
-            attr_highlight = Some(AttributeMask::try_from(read_u16(reader)?)?);
-            attr_color = Some(AttributeMask::try_from(read_u16(reader)?)?);
+            attr_highlight = Some(Ok::<_, Box<dyn std::error::Error>>(AttributeMask::from_bits_retain(read_u16(reader)?))?);
+            attr_color = Some(Ok::<_, Box<dyn std::error::Error>>(AttributeMask::from_bits_retain(read_u16(reader)?))?);
         }
 
         Ok(Self {
@@ -6781,7 +6781,7 @@ impl crate::readers::ACDataType for CreatureAppraisalProfile {
 
 impl WeaponProfile {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let damage_type = DamageType::try_from(read_u32(reader)?)?;
+        let damage_type = Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
         let speed = read_u32(reader)?;
         let skill = SkillId::try_from(read_i32(reader)?)?;
         let damage = read_u32(reader)?;
@@ -6815,9 +6815,9 @@ impl crate::readers::ACDataType for WeaponProfile {
 
 impl HookAppraisalProfile {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = HookAppraisalFlags::try_from(read_u32(reader)?)?;
-        let valid_locations = EquipMask::try_from(read_u32(reader)?)?;
-        let ammo_type = AmmoType::try_from(read_u16(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(HookAppraisalFlags::from_bits_retain(read_u32(reader)?))?;
+        let valid_locations = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
+        let ammo_type = Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?;
 
         Ok(Self {
             flags,
@@ -7284,58 +7284,58 @@ impl crate::readers::ACDataType for ContractTrackerTable {
 impl C2SPacket {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u32(reader)?;
-        let flags = PacketHeaderFlags::try_from(read_u32(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(PacketHeaderFlags::from_bits_retain(read_u32(reader)?))?;
         let checksum = read_u32(reader)?;
         let recipient_id = read_u16(reader)?;
         let time_since_last_packet = read_u16(reader)?;
         let size = read_u16(reader)?;
         let iteration = read_u16(reader)?;
         let mut server_switch = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::ServerSwitch as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::SERVER_SWITCH.bits()) != 0 {
             server_switch = Some(ServerSwitchHeader::read(reader)?);
         }
         let mut retransmit_sequences = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::RequestRetransmit as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::REQUEST_RETRANSMIT.bits()) != 0 {
             retransmit_sequences = Some(read_packable_list::<u32>(reader)?);
         }
         let mut reject_sequences = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::RejectRetransmit as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::REJECT_RETRANSMIT.bits()) != 0 {
             reject_sequences = Some(read_packable_list::<u32>(reader)?);
         }
         let mut ack_sequence = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::AckSequence as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::ACK_SEQUENCE.bits()) != 0 {
             ack_sequence = Some(read_u32(reader)?);
         }
         let mut login_request = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::LoginRequest as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::LOGIN_REQUEST.bits()) != 0 {
             login_request = Some(LoginRequestHeader::read(reader)?);
         }
         let mut world_login_request = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::WorldLoginRequest as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::WORLD_LOGIN_REQUEST.bits()) != 0 {
             world_login_request = Some(read_u64(reader)?);
         }
         let mut connect_response = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::ConnectResponse as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::CONNECT_RESPONSE.bits()) != 0 {
             connect_response = Some(read_u64(reader)?);
         }
         let mut cicmd_command = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::CICMDCommand as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::CICMDCOMMAND.bits()) != 0 {
             cicmd_command = Some(CICMDCommandHeader::read(reader)?);
         }
         let mut time = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::TimeSync as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::TIME_SYNC.bits()) != 0 {
             time = Some(read_u64(reader)?);
         }
         let mut echo_time = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::EchoRequest as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::ECHO_REQUEST.bits()) != 0 {
             echo_time = Some(read_f32(reader)?);
         }
         let mut flow = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::Flow as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::FLOW.bits()) != 0 {
             flow = Some(FlowHeader::read(reader)?);
         }
         let mut fragments = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::BlobFragments as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::BLOB_FRAGMENTS.bits()) != 0 {
             fragments = Some(BlobFragments::read(reader)?);
         }
 
@@ -7372,42 +7372,42 @@ impl crate::readers::ACDataType for C2SPacket {
 impl S2CPacket {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u32(reader)?;
-        let flags = PacketHeaderFlags::try_from(read_u32(reader)?)?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(PacketHeaderFlags::from_bits_retain(read_u32(reader)?))?;
         let checksum = read_u32(reader)?;
         let recipient_id = read_u16(reader)?;
         let time_since_last_packet = read_u16(reader)?;
         let size = read_u16(reader)?;
         let iteration = read_u16(reader)?;
         let mut ack_sequence = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::AckSequence as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::ACK_SEQUENCE.bits()) != 0 {
             ack_sequence = Some(read_u32(reader)?);
         }
         let mut logon_server_addr = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::LogonServerAddr as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::LOGON_SERVER_ADDR.bits()) != 0 {
             logon_server_addr = Some(SocketAddress::read(reader)?);
         }
         let mut referral = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::Referral as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::REFERRAL.bits()) != 0 {
             referral = Some(ReferralHeader::read(reader)?);
         }
         let mut connect_request = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::ConnectRequest as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::CONNECT_REQUEST.bits()) != 0 {
             connect_request = Some(ConnectRequestHeader::read(reader)?);
         }
         let mut net_error = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::NetError as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::NET_ERROR.bits()) != 0 {
             net_error = Some(NetError::read(reader)?);
         }
         let mut net_error_disconnect = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::NetErrorDisconnect as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::NET_ERROR_DISCONNECT.bits()) != 0 {
             net_error_disconnect = Some(NetError::read(reader)?);
         }
         let mut echo_response = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::EchoResponse as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::ECHO_RESPONSE.bits()) != 0 {
             echo_response = Some(EchoResponseHeader::read(reader)?);
         }
         let mut fragments = None;
-        if (flags.clone() as u32 & PacketHeaderFlags::BlobFragments as u32) != 0 {
+        if (flags.bits() & PacketHeaderFlags::BLOB_FRAGMENTS.bits()) != 0 {
             fragments = Some(BlobFragments::read(reader)?);
         }
 

@@ -20,7 +20,7 @@ pub struct CombatChangeCombatMode {
 
 impl CombatChangeCombatMode {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let mode = CombatMode::try_from(read_u32(reader)?)?;
+        let mode = Ok::<_, Box<dyn std::error::Error>>(CombatMode::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             mode,

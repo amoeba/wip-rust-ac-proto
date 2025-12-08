@@ -150,20 +150,20 @@ impl ItemSetAppraiseInfo {
         let mut armor_highlight = None;
         let mut armor_color = None;
         if (flags & 0x00000200) != 0 {
-            armor_highlight = Some(ArmorHighlightMask::try_from(read_u16(reader)?)?);
-            armor_color = Some(ArmorHighlightMask::try_from(read_u16(reader)?)?);
+            armor_highlight = Some(Ok::<_, Box<dyn std::error::Error>>(ArmorHighlightMask::from_bits_retain(read_u16(reader)?))?);
+            armor_color = Some(Ok::<_, Box<dyn std::error::Error>>(ArmorHighlightMask::from_bits_retain(read_u16(reader)?))?);
         }
         let mut weapon_highlight = None;
         let mut weapon_color = None;
         if (flags & 0x00000800) != 0 {
-            weapon_highlight = Some(WeaponHighlightMask::try_from(read_u16(reader)?)?);
-            weapon_color = Some(WeaponHighlightMask::try_from(read_u16(reader)?)?);
+            weapon_highlight = Some(Ok::<_, Box<dyn std::error::Error>>(WeaponHighlightMask::from_bits_retain(read_u16(reader)?))?);
+            weapon_color = Some(Ok::<_, Box<dyn std::error::Error>>(WeaponHighlightMask::from_bits_retain(read_u16(reader)?))?);
         }
         let mut resist_highlight = None;
         let mut resist_color = None;
         if (flags & 0x00000400) != 0 {
-            resist_highlight = Some(ResistHighlightMask::try_from(read_u16(reader)?)?);
-            resist_color = Some(ResistHighlightMask::try_from(read_u16(reader)?)?);
+            resist_highlight = Some(Ok::<_, Box<dyn std::error::Error>>(ResistHighlightMask::from_bits_retain(read_u16(reader)?))?);
+            resist_color = Some(Ok::<_, Box<dyn std::error::Error>>(ResistHighlightMask::from_bits_retain(read_u16(reader)?))?);
         }
         let mut base_armor_head = None;
         let mut base_armor_chest = None;

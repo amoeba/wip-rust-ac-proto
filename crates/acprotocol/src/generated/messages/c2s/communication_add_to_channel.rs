@@ -20,7 +20,7 @@ pub struct CommunicationAddToChannel {
 
 impl CommunicationAddToChannel {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let channel = Channel::try_from(read_u32(reader)?)?;
+        let channel = Ok::<_, Box<dyn std::error::Error>>(Channel::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             channel,

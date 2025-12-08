@@ -27,7 +27,7 @@ pub struct ItemSetState {
 impl ItemSetState {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
-        let new_state = PhysicsState::try_from(read_u32(reader)?)?;
+        let new_state = Ok::<_, Box<dyn std::error::Error>>(PhysicsState::from_bits_retain(read_u32(reader)?))?;
         let object_instance_sequence = read_u16(reader)?;
         let object_state_sequence = read_u16(reader)?;
 
