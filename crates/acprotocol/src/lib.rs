@@ -3,8 +3,8 @@ mod generated {
 }
 
 pub use generated::enums;
-pub use generated::types;
 pub use generated::messages;
+pub use generated::types;
 
 pub mod readers;
 

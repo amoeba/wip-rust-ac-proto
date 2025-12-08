@@ -576,8 +576,7 @@ fn generate_variant_struct(
         // Skip the nested switch discriminator field - it will be represented by the enum
         // Also skip alignment marker fields - they're only for reading
         let skip_field = nested_switch_field_name
-            .as_ref()
-            .map_or(false, |nsf| nsf == &field.name);
+            .as_ref() == Some(&field.name);
         if !skip_field && !field.name.starts_with("__alignment_marker_") {
             out.push_str(&generate_field_line(field, false));
             out.push_str(",\n");
@@ -880,8 +879,8 @@ pub struct {type_name}{type_generics} {{}}\n\n"
                 .join(";");
 
             // Include nested switch structure in signature to avoid grouping cases with different nested switches
-            if let Some(ref nested_switches) = field_set.nested_switches {
-                if let Some(nested_switch) = nested_switches.get(case_value) {
+            if let Some(ref nested_switches) = field_set.nested_switches
+                && let Some(nested_switch) = nested_switches.get(case_value) {
                     // Add nested switch discriminator and case values to signature
                     let nested_sig = format!(
                         "__nested_{}_{:?}",
@@ -890,7 +889,6 @@ pub struct {type_name}{type_generics} {{}}\n\n"
                     );
                     field_sig.push_str(&nested_sig);
                 }
-            }
 
             field_groups
                 .entry(field_sig)
@@ -1762,8 +1760,8 @@ fn generate_variant_struct_readers(
             .join(";");
 
         // Include nested switch structure in signature to avoid grouping cases with different nested switches
-        if let Some(ref nested_switches) = field_set.nested_switches {
-            if let Some(nested_switch) = nested_switches.get(case_value) {
+        if let Some(ref nested_switches) = field_set.nested_switches
+            && let Some(nested_switch) = nested_switches.get(case_value) {
                 // Add nested switch discriminator and case values to signature
                 let nested_sig = format!(
                     "__nested_{}_{:?}",
@@ -1772,7 +1770,6 @@ fn generate_variant_struct_readers(
                 );
                 field_sig.push_str(&nested_sig);
             }
-        }
 
         field_groups
             .entry(field_sig)
@@ -1895,8 +1892,8 @@ fn generate_enum_reader_impl(
             .join(";");
 
         // Include nested switch structure in signature to avoid grouping cases with different nested switches
-        if let Some(ref nested_switches) = field_set.nested_switches {
-            if let Some(nested_switch) = nested_switches.get(case_value) {
+        if let Some(ref nested_switches) = field_set.nested_switches
+            && let Some(nested_switch) = nested_switches.get(case_value) {
                 // Add nested switch discriminator and case values to signature
                 let nested_sig = format!(
                     "__nested_{}_{:?}",
@@ -1905,7 +1902,6 @@ fn generate_enum_reader_impl(
                 );
                 field_sig.push_str(&nested_sig);
             }
-        }
 
         field_groups
             .entry(field_sig)
@@ -1976,9 +1972,8 @@ fn generate_enum_reader_impl(
         };
         for field in &field_set.common_fields {
             let skip_field = field.name == *switch_field
-                || nested_switch_field
-                    .as_ref()
-                    .map_or(false, |nsf| nsf == &field.name);
+                || (nested_switch_field
+                    .as_ref() == Some(&field.name));
             if !skip_field {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 common_field_args.push(field_name);
@@ -2083,9 +2078,8 @@ fn generate_variant_struct_reader_impl(
     for field in &field_set.common_fields {
         // Skip both the outer switch field and the nested switch field
         let skip_field = field.name == *switch_field
-            || nested_switch_field_name
-                .as_ref()
-                .map_or(false, |nsf| nsf == &field.name);
+            || (nested_switch_field_name
+                .as_ref() == Some(&field.name));
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let field_type = &field.field_type;
@@ -2105,8 +2099,7 @@ fn generate_variant_struct_reader_impl(
     for field in case_fields {
         // Skip the nested switch discriminator field
         let skip_field = nested_switch_field_name
-            .as_ref()
-            .map_or(false, |nsf| nsf == &field.name);
+            .as_ref() == Some(&field.name);
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let mut all_fields = field_set.common_fields.clone();
@@ -2168,9 +2161,8 @@ fn generate_variant_struct_reader_impl(
     for field in &field_set.common_fields {
         // Skip the outer switch field, nested switch field, and alignment marker fields
         let skip_field = field.name == *switch_field
-            || nested_switch_field_name
-                .as_ref()
-                .map_or(false, |nsf| nsf == &field.name)
+            || (nested_switch_field_name
+                .as_ref() == Some(&field.name))
             || field.name.starts_with("__alignment_marker_");
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
@@ -2180,9 +2172,8 @@ fn generate_variant_struct_reader_impl(
 
     for field in case_fields {
         // Skip nested switch field and alignment marker fields
-        let skip_field = nested_switch_field_name
-            .as_ref()
-            .map_or(false, |nsf| nsf == &field.name)
+        let skip_field = (nested_switch_field_name
+            .as_ref() == Some(&field.name))
             || field.name.starts_with("__alignment_marker_");
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
@@ -2707,8 +2698,7 @@ fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Fie
     let field_type = &field.field_type;
 
     // Handle alignment padding fields first
-    if field_type.starts_with("__align__") {
-        let align_type = &field_type[9..]; // Remove "__align__" prefix
+    if let Some(align_type) = field_type.strip_prefix("__align__") {
         let padding_code = match align_type {
             "DWORD" => "align_dword(reader)",
             "WORD" => "align_word(reader)",
@@ -2818,8 +2808,7 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
     let rust_type = get_rust_type(field_type);
 
     // Handle alignment padding fields
-    if field_type.starts_with("__align__") {
-        let align_type = &field_type[9..]; // Remove "__align__" prefix
+    if let Some(align_type) = field_type.strip_prefix("__align__") {
         let padding_code = match align_type {
             "DWORD" => "align_dword(reader)",
             "WORD" => "align_word(reader)",
