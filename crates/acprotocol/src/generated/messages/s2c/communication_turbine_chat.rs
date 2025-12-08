@@ -6,7 +6,7 @@ use crate::readers::ACReader;
 #[allow(unused_imports)]
 use crate::readers::*;
 #[allow(unused_imports)]
-use crate::types::*;
+use crate::types::common::*;
 #[allow(unused_imports)]
 use crate::enums::*;
 
@@ -297,6 +297,7 @@ impl CommunicationTurbineChat {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let message_size = read_u32(reader)?;
         let type_ = TurbineChatType::try_from(read_u32(reader)?)?;
+        #[allow(unused_variables)]
         let blob_dispatch_type = read_u32(reader)?;
         let target_type = read_i32(reader)?;
         let target_id = read_i32(reader)?;

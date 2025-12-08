@@ -23,6 +23,8 @@ const ALLOW_DEAD_CODE_VARIABLES: &[(&str, &str)] = &[
     ("PackedMotionCommand", "server_action_sequence"),
     ("PackedMotionCommand", "autonomous"),
     ("DataId", "dat_file_type"),
+    ("DDDRevision", "dat_file_type"),
+    ("CommunicationTurbineChat", "blob_dispatch_type"),
 ];
 
 /// Check if a variable should be allowed to be dead code (unused)
@@ -1619,7 +1621,7 @@ fn generate_type_and_reader_file(
     out.push_str("#[allow(unused_imports)]\n");
     out.push_str("use crate::readers::*;\n");
     out.push_str("#[allow(unused_imports)]\n");
-    out.push_str("use crate::types::*;\n");
+    out.push_str("use crate::types::common::*;\n");
     out.push_str("#[allow(unused_imports)]\n");
     out.push_str("use crate::enums::*;\n\n");
 
@@ -1796,6 +1798,7 @@ fn generate_variant_struct_readers(
         let variant_struct_name = generate_variant_struct_name(type_name, first_value);
         out.push_str(&generate_variant_struct_reader_impl(
             ctx,
+            type_name,
             &variant_struct_name,
             field_set,
             &case_fields,
@@ -1837,6 +1840,8 @@ fn generate_enum_reader_impl(
         if field.name.starts_with("__alignment_marker_") {
             out.push_str(&format!("        {}?;\n", read_call));
         } else {
+            let allow_directive = get_allow_unused_directive(type_name, &field_name);
+            out.push_str(allow_directive);
             out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
         }
 
@@ -2013,6 +2018,7 @@ fn generate_enum_reader_impl(
 /// Generate a reader for a single variant struct
 fn generate_variant_struct_reader_impl(
     ctx: &ReaderContext,
+    type_name: &str,
     struct_name: &str,
     field_set: &FieldSet,
     case_fields: &[Field],
@@ -2076,6 +2082,8 @@ fn generate_variant_struct_reader_impl(
             let mut all_fields = field_set.common_fields.clone();
             all_fields.extend(case_fields.iter().cloned());
             let read_call = generate_read_call(ctx, field, &all_fields);
+            let allow_directive = get_allow_unused_directive(type_name, &field_name);
+            out.push_str(allow_directive);
             out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
         }
     }
@@ -2095,6 +2103,8 @@ fn generate_variant_struct_reader_impl(
                 let mut all_fields = field_set.common_fields.clone();
                 all_fields.extend(case_fields.iter().cloned());
                 let read_call = generate_read_call(ctx, field, &all_fields);
+                let allow_directive = get_allow_unused_directive(type_name, &field_name);
+                out.push_str(allow_directive);
                 out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
             }
         }
@@ -2116,6 +2126,8 @@ fn generate_variant_struct_reader_impl(
             let mut all_fields = field_set.common_fields.clone();
             all_fields.extend(case_fields.iter().cloned());
             let read_call = generate_read_call(ctx, field, &all_fields);
+            let allow_directive = get_allow_unused_directive(type_name, &field_name);
+            out.push_str(allow_directive);
             out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
         }
 
@@ -2123,6 +2135,7 @@ fn generate_variant_struct_reader_impl(
         out.push('\n');
         out.push_str(&generate_nested_switch_enum_reader(
             ctx,
+            type_name,
             &nested_enum_name,
             nested_switch,
         ));
@@ -2195,6 +2208,7 @@ fn generate_variant_struct_reader_impl(
 /// Generate a reader for a nested switch enum
 fn generate_nested_switch_enum_reader(
     ctx: &ReaderContext,
+    type_name: &str,
     enum_name: &str,
     nested_switch: &NestedSwitch,
 ) -> String {
@@ -2258,6 +2272,8 @@ fn generate_nested_switch_enum_reader(
         for field in case_fields {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let read_call = generate_read_call(ctx, field, case_fields);
+            let allow_directive = get_allow_unused_directive(type_name, &field_name);
+            out.push_str(allow_directive);
             out.push_str(&format!(
                 "                let {} = {}?;\n",
                 field_name, read_call
@@ -2499,6 +2515,8 @@ fn generate_field_group_reads(
             for field in fields {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 let read_call = generate_base_read_call(ctx, field, all_fields);
+                let allow_directive = get_allow_unused_directive(type_name, &field_name);
+                out.push_str(allow_directive);
                 out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
 
                 // Generate subfield computations if any
@@ -3646,8 +3664,7 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
         .collect();
 
     // Build a map of (enum_name, value) -> variant_name for switch pattern matching
-    let mut enum_value_map: BTreeMap<(String, i64), String> =
-        BTreeMap::new();
+    let mut enum_value_map: BTreeMap<(String, i64), String> = BTreeMap::new();
     for protocol_enum in &enums {
         for enum_value in &protocol_enum.values {
             let safe_variant = safe_enum_variant_name(&enum_value.name);
@@ -3754,14 +3771,14 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
     });
 
     // Generate mod.rs for types
-    let types_mod = "use crate::enums::*;\n\npub mod common;\n\npub use common::*;\n";
+    let types_mod = "pub mod common;\n";
     files.push(GeneratedFile {
         path: "types/mod.rs".to_string(),
         content: types_mod.to_string(),
     });
 
     // Generate root mod.rs for generated
-    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\n\npub use enums::*;\npub use types::*;\npub use messages::*;\n";
+    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\n";
     files.push(GeneratedFile {
         path: "mod.rs".to_string(),
         content: generated_mod.to_string(),

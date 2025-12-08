@@ -6,7 +6,7 @@ use crate::readers::ACReader;
 #[allow(unused_imports)]
 use crate::readers::*;
 #[allow(unused_imports)]
-use crate::types::*;
+use crate::types::common::*;
 #[allow(unused_imports)]
 use crate::enums::*;
 

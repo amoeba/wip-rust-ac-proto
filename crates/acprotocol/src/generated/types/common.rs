@@ -6198,6 +6198,7 @@ impl crate::readers::ACDataType for InterpertedMotionState {
 impl DDDRevision {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let id_dat_file = read_u64(reader)?;
+        #[allow(unused_variables)]
         let dat_file_type = (id_dat_file >> 32) as u32;
         let iteration = read_u32(reader)?;
         let ids_to_download = read_packable_list::<DataId>(reader)?;
