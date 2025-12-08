@@ -2222,13 +2222,13 @@ fn generate_nested_switch_enum_reader(
         };
 
         out.push_str(&format!(
-            "                return Ok(Self::{variant_name} {{\n"
+            "                Ok(Self::{variant_name} {{\n"
         ));
         for field in case_fields {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             out.push_str(&format!("                    {},\n", field_name));
         }
-        out.push_str("                });\n");
+        out.push_str("                })\n");
         out.push_str("            },\n");
     }
 

@@ -4744,16 +4744,16 @@ impl WindowPropertyType1000008DTitleSourceVariant {
             0x00 => {
                 let string_id = read_u32(reader)?;
                 let file_id = read_u32(reader)?;
-                return Ok(Self::Type0 {
+                Ok(Self::Type0 {
                     string_id,
                     file_id,
-                });
+                })
             },
             0x01 => {
                 let value_a = read_wstring(reader).map(WString)?;
-                return Ok(Self::Type1 {
+                Ok(Self::Type1 {
                     value_a,
-                });
+                })
             },
             _ => Err("Unknown nested switch value".into()),
         }

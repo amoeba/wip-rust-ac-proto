@@ -162,7 +162,7 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
                 let speaker_id = ObjectId::read(reader)?;
                 let h_result = read_i32(reader)?;
                 let chat_type = ChatType::try_from(read_u32(reader)?)?;
-                return Ok(Self::Type1 {
+                Ok(Self::Type1 {
                     room_id,
                     display_name,
                     text,
@@ -170,7 +170,7 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
                     speaker_id,
                     h_result,
                     chat_type,
-                });
+                })
             },
             _ => Err("Unknown nested switch value".into()),
         }
@@ -211,7 +211,7 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
                 let speaker_id = ObjectId::read(reader)?;
                 let h_result = read_i32(reader)?;
                 let chat_type = ChatType::try_from(read_u32(reader)?)?;
-                return Ok(Self::Type2 {
+                Ok(Self::Type2 {
                     context_id,
                     response_id,
                     method_id,
@@ -221,7 +221,7 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
                     speaker_id,
                     h_result,
                     chat_type,
-                });
+                })
             },
             _ => Err("Unknown nested switch value".into()),
         }
@@ -257,12 +257,12 @@ impl CommunicationTurbineChatType5BlobDispatchTypeVariant {
                 let response_id = read_u32(reader)?;
                 let method_id = read_u32(reader)?;
                 let h_result = read_i32(reader)?;
-                return Ok(Self::Type1 {
+                Ok(Self::Type1 {
                     context_id,
                     response_id,
                     method_id,
                     h_result,
-                });
+                })
             },
             _ => Err("Unknown nested switch value".into()),
         }
