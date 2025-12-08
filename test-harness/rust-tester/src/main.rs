@@ -86,7 +86,6 @@ fn process_file(filename: &str) -> Result<()> {
     if buffer.len() % 16 != 0 {
         println!();
     }
-    println!();
 
     // WIP: I think we want to skip the 8 byte preamble
     let mut cursor = Cursor::new(&buffer);
@@ -96,7 +95,10 @@ fn process_file(filename: &str) -> Result<()> {
     // Try to parse message based on direction and name
     let result = match (&packet_info.direction, packet_info.name.as_str()) {
         (Direction::C2S, "Item_Appraise") => match ItemAppraise::read(&mut cursor) {
-            Ok(msg) => Some(serde_json::to_value(msg)?),
+            Ok(msg) => {
+                println!("Successfully parsed ItemAppraise:");
+                Some(serde_json::to_value(msg)?)
+            }
             Err(e) => {
                 eprintln!("Failed to parse ItemAppraise: {}", e);
                 None
@@ -104,7 +106,10 @@ fn process_file(filename: &str) -> Result<()> {
         },
         (Direction::C2S, "Inventory_PutItemInContainer") => {
             match InventoryPutItemInContainer::read(&mut cursor) {
-                Ok(msg) => Some(serde_json::to_value(msg)?),
+                Ok(msg) => {
+                    println!("Successfully parsed InventoryPutItemInContainer:");
+                    Some(serde_json::to_value(msg)?)
+                }
                 Err(e) => {
                     eprintln!("Failed to parse InventoryPutItemInContainer: {}", e);
                     None
@@ -113,7 +118,10 @@ fn process_file(filename: &str) -> Result<()> {
         }
         (Direction::C2S, "Inventory_GetAndWieldItem") => {
             match InventoryGetAndWieldItem::read(&mut cursor) {
-                Ok(msg) => Some(serde_json::to_value(msg)?),
+                Ok(msg) => {
+                    println!("Successfully parsed InventoryGetAndWieldItem:");
+                    Some(serde_json::to_value(msg)?)
+                }
                 Err(e) => {
                     eprintln!("Failed to parse InventoryGetAndWieldItem: {}", e);
                     None
@@ -122,7 +130,10 @@ fn process_file(filename: &str) -> Result<()> {
         }
         (Direction::S2C, "Qualities_PrivateUpdateAttribute2ndLevel") => {
             match QualitiesPrivateUpdateAttribute2ndLevel::read(&mut cursor) {
-                Ok(msg) => Some(serde_json::to_value(msg)?),
+                Ok(msg) => {
+                    println!("Successfully parsed QualitiesPrivateUpdateAttribute2ndLevel:");
+                    Some(serde_json::to_value(msg)?)
+                }
                 Err(e) => {
                     eprintln!(
                         "Failed to parse QualitiesPrivateUpdateAttribute2ndLevel: {}",
@@ -133,7 +144,10 @@ fn process_file(filename: &str) -> Result<()> {
             }
         }
         (Direction::S2C, "Item_ObjDescEvent") => match ItemObjDescEvent::read(&mut cursor) {
-            Ok(msg) => Some(serde_json::to_value(msg)?),
+            Ok(msg) => {
+                println!("Successfully parsed ItemObjDescEvent:");
+                Some(serde_json::to_value(msg)?)
+            }
             Err(e) => {
                 eprintln!("Failed to parse ItemObjDescEvent: {}", e);
                 None
@@ -141,7 +155,10 @@ fn process_file(filename: &str) -> Result<()> {
         },
         (Direction::S2C, "Communication_TextboxString") => {
             match CommunicationTextboxString::read(&mut cursor) {
-                Ok(msg) => Some(serde_json::to_value(msg)?),
+                Ok(msg) => {
+                    println!("Successfully parsed CommunicationTextboxString:");
+                    Some(serde_json::to_value(msg)?)
+                }
                 Err(e) => {
                     eprintln!("Failed to parse CommunicationTextboxString: {}", e);
                     None
@@ -150,7 +167,10 @@ fn process_file(filename: &str) -> Result<()> {
         }
         (Direction::S2C, "Magic_DispelEnchantment") => {
             match MagicDispelEnchantment::read(&mut cursor) {
-                Ok(msg) => Some(serde_json::to_value(msg)?),
+                Ok(msg) => {
+                    println!("Successfully parsed MagicDispelEnchantment:");
+                    Some(serde_json::to_value(msg)?)
+                }
                 Err(e) => {
                     eprintln!("Failed to parse MagicDispelEnchantment: {}", e);
                     None
@@ -184,7 +204,7 @@ fn process_file(filename: &str) -> Result<()> {
                 Ok(msg) => {
                     println!("Successfully parsed EffectsPlayScriptType:");
                     Some(serde_json::to_value(msg)?)
-                }
+                },
                 Err(e) => {
                     eprintln!("Failed to parse EffectsPlayScriptType: {}", e);
                     None
@@ -195,7 +215,7 @@ fn process_file(filename: &str) -> Result<()> {
             Ok(msg) => {
                 println!("Successfully parsed EffectsSoundEvent:");
                 Some(serde_json::to_value(msg)?)
-            }
+            },
             Err(e) => {
                 eprintln!("Failed to parse EffectsSoundEvent: {}", e);
                 None
@@ -206,7 +226,7 @@ fn process_file(filename: &str) -> Result<()> {
                 Ok(msg) => {
                     println!("Successfully parsed InventoryPickupEvent:");
                     Some(serde_json::to_value(msg)?)
-                }
+                },
                 Err(e) => {
                     eprintln!("Failed to parse InventoryPickupEvent: {}", e);
                     None
