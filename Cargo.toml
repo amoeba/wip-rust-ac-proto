@@ -3,6 +3,7 @@ resolver = "2"
 members = [
   "crates/acprotocol",
   "crates/genlib",
+  "test-harness/rust-tester",
 ]
 
 [workspace.package]

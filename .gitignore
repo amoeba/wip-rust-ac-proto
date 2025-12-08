@@ -1,1 +1,5 @@
 /target
+bin
+obj
+test-harness/data
+test-harness/pcaps
