@@ -73,6 +73,7 @@ fn process_file(filename: &str) -> Result<()> {
 
     // Print hex dump for reference
     println!("Hex dump:");
+    // skip first 8
     for (i, byte) in buffer.iter().enumerate() {
         if i % 16 == 0 {
             print!("{:04x}: ", i);
@@ -85,10 +86,11 @@ fn process_file(filename: &str) -> Result<()> {
     if buffer.len() % 16 != 0 {
         println!();
     }
+    println!();
 
     // WIP: I think we want to skip the 8 byte preamble
     let mut cursor = Cursor::new(&buffer);
-    cursor.set_position(8);
+    cursor.set_position(0);
 
     // These files contain just the message payload, no packet headers
     // Try to parse message based on direction and name
@@ -227,49 +229,56 @@ fn process_file(filename: &str) -> Result<()> {
             Err(e) => println!("Failed to serialize to JSON: {}", e),
         }
     }
-
-    println!("Successfully processed file: {}", filename);
     Ok(())
 }
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
-        eprintln!("Usage: {} <directory>", args[0]);
+        eprintln!("Usage: {} <directory-or-file>", args[0]);
         std::process::exit(1);
     }
 
-    let dir_path = &args[1];
-    let path = Path::new(dir_path);
+    let input_path = &args[1];
+    let path = Path::new(input_path);
 
-    if !path.exists() || !path.is_dir() {
-        eprintln!("Error: {} is not a valid directory", dir_path);
+    if !path.exists() {
+        eprintln!("Error: {} does not exist", input_path);
         std::process::exit(1);
     }
 
-    println!("Processing directory: {}", dir_path);
+    let bin_files = if path.is_dir() {
+        println!("Processing directory: {}", input_path);
 
-    // Get all .bin files in the directory
-    let entries = fs::read_dir(path)?;
-    let mut bin_files = Vec::new();
+        // Get all .bin files in the directory
+        let entries = fs::read_dir(path)?;
+        let mut files = Vec::new();
 
-    for entry in entries {
-        let entry = entry?;
-        let path = entry.path();
+        for entry in entries {
+            let entry = entry?;
+            let entry_path = entry.path();
 
-        if path.is_file() && path.extension().map_or(false, |ext| ext == "bin") {
-            if let Some(path_str) = path.to_str() {
-                bin_files.push(path_str.to_string());
+            if entry_path.is_file() && entry_path.extension().map_or(false, |ext| ext == "bin") {
+                if let Some(path_str) = entry_path.to_str() {
+                    files.push(path_str.to_string());
+                }
             }
         }
-    }
 
-    if bin_files.is_empty() {
-        println!("No .bin files found in directory: {}", dir_path);
-        return Ok(());
-    }
+        if files.is_empty() {
+            println!("No .bin files found in directory: {}", input_path);
+            return Ok(());
+        }
 
-    println!("Found {} .bin files", bin_files.len());
+        println!("Found {} .bin files", files.len());
+        files
+    } else if path.is_file() && path.extension().map_or(false, |ext| ext == "bin") {
+        println!("Processing single file: {}", input_path);
+        vec![input_path.to_string()]
+    } else {
+        eprintln!("Error: {} is not a directory or .bin file", input_path);
+        std::process::exit(1);
+    };
 
     // Process each file
     for filename in &bin_files {
