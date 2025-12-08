@@ -621,13 +621,6 @@ fn generate_variant_struct(
 fn generate_nested_switch_enum(enum_name: &str, nested_switch: &NestedSwitch) -> String {
     let mut out = String::new();
 
-    let derives = build_derive_string(&[]);
-    out.push_str(&format!("{derives}\n"));
-    out.push_str("#[serde(tag = \"");
-    out.push_str(&nested_switch.switch_field);
-    out.push_str("\")]\n");
-    out.push_str(&format!("pub enum {enum_name} {{\n"));
-
     // Group nested case values by field signature
     let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
 
@@ -649,6 +642,43 @@ fn generate_nested_switch_enum(enum_name: &str, nested_switch: &NestedSwitch) ->
     let mut sorted_groups: Vec<_> = field_groups.into_iter().collect();
     sorted_groups.sort_by(|a, b| a.1.0.cmp(&b.1.0));
 
+    // First, generate standalone variant structs
+    for (_field_sig, (_primary_value, all_values)) in &sorted_groups {
+        let mut sorted_values = all_values.clone();
+        sorted_values.sort();
+        let first_value = sorted_values[0];
+
+        let variant_name = if first_value < 0 {
+            format!("TypeNeg{}", first_value.abs())
+        } else {
+            let hex_str = format!("{:X}", first_value);
+            format!("Type{}", hex_str)
+        };
+
+        let struct_name = format!("{}{}", enum_name, variant_name);
+
+        let derives = build_derive_string(&[]);
+        out.push_str(&format!("{derives}\n"));
+        out.push_str(&format!("pub struct {struct_name} {{\n"));
+
+        if let Some(case_fields) = nested_switch.variant_fields.get(&first_value) {
+            for field in case_fields {
+                out.push_str(&generate_field_line(field, false)); // false = is struct field
+                out.push_str(",\n");
+            }
+        }
+
+        out.push_str("}\n\n");
+    }
+
+    // Now generate the enum that references the standalone structs
+    let derives = build_derive_string(&[]);
+    out.push_str(&format!("{derives}\n"));
+    out.push_str("#[serde(tag = \"");
+    out.push_str(&nested_switch.switch_field);
+    out.push_str("\")]\n");
+    out.push_str(&format!("pub enum {enum_name} {{\n"));
+
     for (_field_sig, (_primary_value, mut all_values)) in sorted_groups {
         all_values.sort();
 
@@ -662,6 +692,8 @@ fn generate_nested_switch_enum(enum_name: &str, nested_switch: &NestedSwitch) ->
             format!("Type{}", hex_str)
         };
 
+        let struct_name = format!("{}{}", enum_name, variant_name);
+
         out.push_str(&format!("    #[serde(rename = \"{first_value_str}\")]\n"));
 
         for alias_value in &all_values[1..] {
@@ -669,16 +701,7 @@ fn generate_nested_switch_enum(enum_name: &str, nested_switch: &NestedSwitch) ->
             out.push_str(&format!("    #[serde(alias = \"{alias_str}\")]\n"));
         }
 
-        out.push_str(&format!("    {variant_name} {{\n"));
-
-        if let Some(case_fields) = nested_switch.variant_fields.get(&first_value) {
-            for field in case_fields {
-                out.push_str(&generate_field_line(field, true)); // true = is enum variant
-                out.push_str(",\n");
-            }
-        }
-
-        out.push_str("    },\n");
+        out.push_str(&format!("    {variant_name}({struct_name}),\n"));
     }
 
     out.push_str("}\n\n");
@@ -2221,14 +2244,17 @@ fn generate_nested_switch_enum_reader(
             format!("Type{:X}", first_value)
         };
 
+        let struct_name = format!("{}{}", enum_name, variant_name);
+
         out.push_str(&format!(
-            "                Ok(Self::{variant_name} {{\n"
+            "                Ok(Self::{}({} {{\n",
+            variant_name, struct_name
         ));
         for field in case_fields {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             out.push_str(&format!("                    {},\n", field_name));
         }
-        out.push_str("                })\n");
+        out.push_str("                }))\n");
         out.push_str("            },\n");
     }
 

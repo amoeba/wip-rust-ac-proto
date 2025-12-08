@@ -1306,20 +1306,26 @@ pub struct WindowPropertyType1000008D {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct WindowPropertyType1000008DTitleSourceVariantType0 {
+    #[serde(rename = "StringId")]
+    pub string_id: u32,
+    #[serde(rename = "FileId")]
+    pub file_id: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct WindowPropertyType1000008DTitleSourceVariantType1 {
+    #[serde(rename = "Value_a")]
+    pub value_a: WString,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "TitleSource")]
 pub enum WindowPropertyType1000008DTitleSourceVariant {
     #[serde(rename = "0x00")]
-    Type0 {
-    #[serde(rename = "StringId")]
-    string_id: u32,
-    #[serde(rename = "FileId")]
-    file_id: u32,
-    },
+    Type0(WindowPropertyType1000008DTitleSourceVariantType0),
     #[serde(rename = "0x01")]
-    Type1 {
-    #[serde(rename = "Value_a")]
-    value_a: WString,
-    },
+    Type1(WindowPropertyType1000008DTitleSourceVariantType1),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -4744,16 +4750,16 @@ impl WindowPropertyType1000008DTitleSourceVariant {
             0x00 => {
                 let string_id = read_u32(reader)?;
                 let file_id = read_u32(reader)?;
-                Ok(Self::Type0 {
+                Ok(Self::Type0(WindowPropertyType1000008DTitleSourceVariantType0 {
                     string_id,
                     file_id,
-                })
+                }))
             },
             0x01 => {
                 let value_a = read_wstring(reader).map(WString)?;
-                Ok(Self::Type1 {
+                Ok(Self::Type1(WindowPropertyType1000008DTitleSourceVariantType1 {
                     value_a,
-                })
+                }))
             },
             _ => Err("Unknown nested switch value".into()),
         }

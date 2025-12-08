@@ -31,25 +31,28 @@ pub struct CommunicationTurbineChatType1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CommunicationTurbineChatType1BlobDispatchTypeVariantType1 {
+    #[serde(rename = "RoomId")]
+    pub room_id: u32,
+    #[serde(rename = "DisplayName")]
+    pub display_name: WString,
+    #[serde(rename = "Text")]
+    pub text: WString,
+    #[serde(rename = "ExtraDataSize")]
+    pub extra_data_size: u32,
+    #[serde(rename = "SpeakerId")]
+    pub speaker_id: ObjectId,
+    #[serde(rename = "HResult")]
+    pub h_result: i32,
+    #[serde(rename = "ChatType")]
+    pub chat_type: ChatType,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "BlobDispatchType")]
 pub enum CommunicationTurbineChatType1BlobDispatchTypeVariant {
     #[serde(rename = "0x01")]
-    Type1 {
-    #[serde(rename = "RoomId")]
-    room_id: u32,
-    #[serde(rename = "DisplayName")]
-    display_name: WString,
-    #[serde(rename = "Text")]
-    text: WString,
-    #[serde(rename = "ExtraDataSize")]
-    extra_data_size: u32,
-    #[serde(rename = "SpeakerId")]
-    speaker_id: ObjectId,
-    #[serde(rename = "HResult")]
-    h_result: i32,
-    #[serde(rename = "ChatType")]
-    chat_type: ChatType,
-    },
+    Type1(CommunicationTurbineChatType1BlobDispatchTypeVariantType1),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -72,29 +75,32 @@ pub struct CommunicationTurbineChatType3 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CommunicationTurbineChatType3BlobDispatchTypeVariantType2 {
+    #[serde(rename = "ContextId")]
+    pub context_id: u32,
+    #[serde(rename = "ResponseId")]
+    pub response_id: u32,
+    #[serde(rename = "MethodId")]
+    pub method_id: u32,
+    #[serde(rename = "RoomId")]
+    pub room_id: u32,
+    #[serde(rename = "Text")]
+    pub text: WString,
+    #[serde(rename = "ExtraDataSize")]
+    pub extra_data_size: u32,
+    #[serde(rename = "SpeakerId")]
+    pub speaker_id: ObjectId,
+    #[serde(rename = "HResult")]
+    pub h_result: i32,
+    #[serde(rename = "ChatType")]
+    pub chat_type: ChatType,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "BlobDispatchType")]
 pub enum CommunicationTurbineChatType3BlobDispatchTypeVariant {
     #[serde(rename = "0x02")]
-    Type2 {
-    #[serde(rename = "ContextId")]
-    context_id: u32,
-    #[serde(rename = "ResponseId")]
-    response_id: u32,
-    #[serde(rename = "MethodId")]
-    method_id: u32,
-    #[serde(rename = "RoomId")]
-    room_id: u32,
-    #[serde(rename = "Text")]
-    text: WString,
-    #[serde(rename = "ExtraDataSize")]
-    extra_data_size: u32,
-    #[serde(rename = "SpeakerId")]
-    speaker_id: ObjectId,
-    #[serde(rename = "HResult")]
-    h_result: i32,
-    #[serde(rename = "ChatType")]
-    chat_type: ChatType,
-    },
+    Type2(CommunicationTurbineChatType3BlobDispatchTypeVariantType2),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -117,20 +123,23 @@ pub struct CommunicationTurbineChatType5 {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CommunicationTurbineChatType5BlobDispatchTypeVariantType1 {
+    #[serde(rename = "ContextId")]
+    pub context_id: u32,
+    #[serde(rename = "ResponseId")]
+    pub response_id: u32,
+    #[serde(rename = "MethodId")]
+    pub method_id: u32,
+    #[serde(rename = "HResult")]
+    pub h_result: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "BlobDispatchType")]
 pub enum CommunicationTurbineChatType5BlobDispatchTypeVariant {
     #[serde(rename = "0x01")]
     #[serde(alias = "0x02")]
-    Type1 {
-    #[serde(rename = "ContextId")]
-    context_id: u32,
-    #[serde(rename = "ResponseId")]
-    response_id: u32,
-    #[serde(rename = "MethodId")]
-    method_id: u32,
-    #[serde(rename = "HResult")]
-    h_result: i32,
-    },
+    Type1(CommunicationTurbineChatType5BlobDispatchTypeVariantType1),
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -162,7 +171,7 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
                 let speaker_id = ObjectId::read(reader)?;
                 let h_result = read_i32(reader)?;
                 let chat_type = ChatType::try_from(read_u32(reader)?)?;
-                Ok(Self::Type1 {
+                Ok(Self::Type1(CommunicationTurbineChatType1BlobDispatchTypeVariantType1 {
                     room_id,
                     display_name,
                     text,
@@ -170,7 +179,7 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
                     speaker_id,
                     h_result,
                     chat_type,
-                })
+                }))
             },
             _ => Err("Unknown nested switch value".into()),
         }
@@ -211,7 +220,7 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
                 let speaker_id = ObjectId::read(reader)?;
                 let h_result = read_i32(reader)?;
                 let chat_type = ChatType::try_from(read_u32(reader)?)?;
-                Ok(Self::Type2 {
+                Ok(Self::Type2(CommunicationTurbineChatType3BlobDispatchTypeVariantType2 {
                     context_id,
                     response_id,
                     method_id,
@@ -221,7 +230,7 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
                     speaker_id,
                     h_result,
                     chat_type,
-                })
+                }))
             },
             _ => Err("Unknown nested switch value".into()),
         }
@@ -257,12 +266,12 @@ impl CommunicationTurbineChatType5BlobDispatchTypeVariant {
                 let response_id = read_u32(reader)?;
                 let method_id = read_u32(reader)?;
                 let h_result = read_i32(reader)?;
-                Ok(Self::Type1 {
+                Ok(Self::Type1(CommunicationTurbineChatType5BlobDispatchTypeVariantType1 {
                     context_id,
                     response_id,
                     method_id,
                     h_result,
-                })
+                }))
             },
             _ => Err("Unknown nested switch value".into()),
         }
