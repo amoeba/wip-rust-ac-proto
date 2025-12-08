@@ -17,3 +17,16 @@ TODOs
 - Split up lib.rs into modular components
 - Figure out how to handle the summary-exclude="true" attribute
 - Handle mask=true
+- Fix two things about our bitflags impl
+  1. Move the comment down to the struct
+  2. Don't use all-caps
+  /// The type of the friend change event.
+  bitflags::bitflags! {
+      #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+      pub struct FriendsUpdateType: u32 {
+          const FULL = 0x0;
+          const ADDED = 0x1;
+          const REMOVED = 0x2;
+          const LOGIN_CHANGE = 0x4;
+      }
+  }
