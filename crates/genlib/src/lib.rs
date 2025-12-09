@@ -6,6 +6,8 @@ pub mod util;
 mod field_gen;
 mod generation;
 mod type_utils;
+mod xml;
+mod xml_parser;
 
 pub use generation::{
     GenerateSource, GeneratedCode, GeneratedFile, GenerationContext, ReaderContext, generate,
