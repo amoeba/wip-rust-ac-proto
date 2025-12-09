@@ -7,6 +7,7 @@ pub use generated::messages;
 pub use generated::types;
 
 pub mod readers;
+pub mod network;
 
 // WIP: this is what I want to generate for a type that uses a switch like
 // GameMoveData. This code is just testing that out.
