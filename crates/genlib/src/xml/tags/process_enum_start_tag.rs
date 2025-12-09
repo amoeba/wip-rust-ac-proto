@@ -1,6 +1,4 @@
-use crate::{
-    types::{ProtocolCategory, ProtocolEnum},
-};
+use crate::types::{ProtocolCategory, ProtocolEnum};
 
 /// Process an enum tag start in the XML
 pub fn process_enum_start_tag(

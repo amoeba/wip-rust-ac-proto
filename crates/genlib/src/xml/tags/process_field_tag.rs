@@ -1,9 +1,6 @@
 use log::debug;
 
-use crate::{
-    field_gen::FieldContext,
-    types::{FieldSet},
-};
+use crate::{field_gen::FieldContext, types::FieldSet};
 
 #[allow(unused_imports)]
 use crate::types::Field;

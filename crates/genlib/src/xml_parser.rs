@@ -6,10 +6,7 @@ use quick_xml::{Reader, events::Event};
 use crate::{
     field_gen::{FieldContext, merge_if_fields},
     generation::GenerateSource,
-    types::{
-        FieldSet, NestedSwitch, ProtocolCategory, ProtocolEnum,
-        ProtocolType,
-    },
+    types::{FieldSet, NestedSwitch, ProtocolCategory, ProtocolEnum, ProtocolType},
     xml::{
         tags::{
             process_align_tag::process_align_tag, process_case_tag::process_case_tag,

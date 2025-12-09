@@ -5134,7 +5134,7 @@ impl AllegianceData {
             time_online = Some(read_u64(reader)?);
         } else {
             allegiance_age = Some(read_u32(reader)?);
-            time_online = Some((read_u32(reader))? as u64);
+            time_online = Some(read_u64(reader)?);
         }
         let name = read_string(reader)?;
 
