@@ -77,51 +77,27 @@ impl ItemSetAppraiseInfo {
         let success = read_bool(reader)?;
         let mut int_properties = None;
         if (flags & 0x00000001) != 0 {
-            int_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyInt::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_i32(r)?)
-        })?);
+            int_properties = Some(read_packable_hash_table::<PropertyInt, i32>(reader)?);
         }
         let mut int64_properties = None;
         if (flags & 0x00002000) != 0 {
-            int64_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyInt64::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_i64(r)?)
-        })?);
+            int64_properties = Some(read_packable_hash_table::<PropertyInt64, i64>(reader)?);
         }
         let mut bool_properties = None;
         if (flags & 0x00000002) != 0 {
-            bool_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyBool::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_bool(r)?)
-        })?);
+            bool_properties = Some(read_packable_hash_table::<PropertyBool, bool>(reader)?);
         }
         let mut float_properties = None;
         if (flags & 0x00000004) != 0 {
-            float_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyFloat::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_f64(r)?)
-        })?);
+            float_properties = Some(read_packable_hash_table::<PropertyFloat, f64>(reader)?);
         }
         let mut string_properties = None;
         if (flags & 0x00000008) != 0 {
-            string_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyString::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_string(r)?)
-        })?);
+            string_properties = Some(read_packable_hash_table::<PropertyString, String>(reader)?);
         }
         let mut data_id_properties = None;
         if (flags & 0x00001000) != 0 {
-            data_id_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyDataId::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(DataId::read(r)?)
-        })?);
+            data_id_properties = Some(read_packable_hash_table::<PropertyDataId, DataId>(reader)?);
         }
         let mut spell_book = None;
         if (flags & 0x00000010) != 0 {

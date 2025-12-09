@@ -4,138 +4,15 @@ use crate::{
     field_gen::get_allow_unused_directive,
     identifiers::{IdentifierType, safe_identifier, to_snake_case},
     type_utils::get_rust_type,
-    types::{Field, FieldSet, IfBranch, NestedSwitch, ProtocolType},
+    types::{Field, FieldSet, NestedSwitch, ProtocolType},
     util::format_hex_value,
 };
 
-/// Generate a single file containing both type definition and reader implementation
-pub fn generate_type_and_reader_file(
-    gen_ctx: &super::context::GenerationContext,
-    reader_ctx: &super::context::ReaderContext,
-    protocol_type: &ProtocolType,
-) -> String {
-    let mut out = String::new();
-
-    // Add imports
-    out.push_str("use serde::{Serialize, Deserialize};\n");
-    out.push_str("use std::io::Read;\n");
-    out.push_str("use crate::readers::ACReader;\n");
-    out.push_str("use crate::readers::*;\n");
-    out.push_str("use crate::types::*;\n");
-    out.push_str("use crate::enums::*;\n");
-    out.push_str("use super::*;\n\n");
-
-    // Generate type definition
-    if protocol_type.is_primitive {
-        let type_name = &protocol_type.name;
-        let rust_type = get_rust_type(type_name);
-        if rust_type != type_name {
-            if let Some(ref text) = protocol_type.text {
-                out.push_str(&format!("/// {text}\n"));
-            }
-            out.push_str(&format!(
-                "#[allow(non_camel_case_types)]\npub type {type_name} = {rust_type};\n\n"
-            ));
-        }
-    } else {
-        out.push_str(&super::type_generation::generate_type(protocol_type));
-    }
-
-    // Generate reader implementation if requested
-    if gen_ctx.should_generate_reader(&protocol_type.name) {
-        out.push_str(&generate_reader_impl(reader_ctx, protocol_type));
-    }
-
-    out
-}
-
-/// Generate a reader implementation for a single type (as an impl block on the type)
-pub fn generate_reader_impl(
-    ctx: &super::context::ReaderContext,
-    protocol_type: &ProtocolType,
-) -> String {
-    let type_name = &protocol_type.name;
-    let safe_type_name = safe_identifier(type_name, IdentifierType::Type);
-
-    // Primitive types (u32, bool, etc.) have read_* helper functions
-    if protocol_type.is_primitive {
-        return String::new();
-    }
-
-    // Templated/generic types (PackableList<T>, PackableHashTable<T,U>, etc.)
-    // use generic helper functions like read_packable_list() instead of impl blocks
-    if protocol_type.templated.is_some() {
-        return String::new();
-    }
-
-    // Handle newtype structs (parent type with no fields, but not C-style aliases)
-    // These are generated as newtype structs and need a read() method
-    if protocol_type.parent.is_some() && protocol_type.fields.is_none() {
-        if let Some(parent_type) = &protocol_type.parent {
-            let rust_type = get_rust_type(parent_type);
-
-            if crate::type_utils::should_be_newtype_struct(&safe_type_name.name, rust_type) {
-                // Generate read() for newtype struct
-                // Strategy: Try to use a read_* helper function
-                // - For numeric primitives: use read_u32(), read_i16(), etc.
-                // - For String/WString types: use read_{typename}() helper
-                let read_call = match rust_type {
-                    "u8" => "read_u8(reader)".to_string(),
-                    "i8" => "read_i8(reader)".to_string(),
-                    "u16" => "read_u16(reader)".to_string(),
-                    "i16" => "read_i16(reader)".to_string(),
-                    "u32" => "read_u32(reader)".to_string(),
-                    "i32" => "read_i32(reader)".to_string(),
-                    "u64" => "read_u64(reader)".to_string(),
-                    "i64" => "read_i64(reader)".to_string(),
-                    "f32" => "read_f32(reader)".to_string(),
-                    "f64" => "read_f64(reader)".to_string(),
-                    "bool" => "read_bool(reader)".to_string(),
-                    // String or custom parent: call read_{lowercase_typename}()
-                    _ => format!("read_{}(reader)", safe_type_name.name.to_lowercase()),
-                };
-
-                let impl_code = format!(
-                    "impl {} {{\n    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self({}?))\n    }}\n}}\n\n",
-                    safe_type_name.name, read_call
-                );
-                let acdatatype_code = format!(
-                    "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
-                    safe_type_name.name, safe_type_name.name
-                );
-                return format!("{}{}", impl_code, acdatatype_code);
-            }
-        }
-        // Type alias - doesn't need a reader
-        return String::new();
-    }
-
-    let Some(field_set) = &protocol_type.fields else {
-        // Empty struct - no fields to read
-        let impl_code = format!(
-            "impl {} {{\n    pub fn read(_reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self {{}})\n    }}\n}}\n\n",
-            safe_type_name.name
-        );
-        let acdatatype_code = format!(
-            "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
-            safe_type_name.name, safe_type_name.name
-        );
-        return format!("{}{}", impl_code, acdatatype_code);
-    };
-
-    // Check if this is a variant type (has switch)
-    if let Some(ref variant_fields) = field_set.variant_fields {
-        // For variant types with the new standalone struct approach,
-        // we generate readers for each variant struct instead of a monolithic reader.
-        generate_variant_struct_readers(ctx, &safe_type_name.name, field_set, variant_fields)
-    } else {
-        generate_struct_reader_impl(ctx, protocol_type, &safe_type_name.name, field_set)
-    }
-}
+use crate::{generation::context::ReaderContext, generation::enum_generation, generation::helpers};
 
 /// Generate readers for all variant structs of an enum type
-fn generate_variant_struct_readers(
-    ctx: &super::context::ReaderContext,
+pub fn generate_variant_struct_readers(
+    ctx: &ReaderContext,
     type_name: &str,
     field_set: &FieldSet,
     variant_fields: &BTreeMap<i64, Vec<Field>>,
@@ -199,7 +76,7 @@ fn generate_variant_struct_readers(
             .cloned()
             .unwrap_or_default();
         let variant_struct_name =
-            super::enum_generation::generate_variant_struct_name(type_name, first_value);
+            enum_generation::generate_variant_struct_name(type_name, first_value);
         out.push_str(&generate_variant_struct_reader_impl(
             ctx,
             type_name,
@@ -223,7 +100,7 @@ fn generate_variant_struct_readers(
 
 /// Generate a reader for the main enum that delegates to variant struct readers
 fn generate_enum_reader_impl(
-    ctx: &super::context::ReaderContext,
+    ctx: &ReaderContext,
     type_name: &str,
     field_set: &FieldSet,
     variant_fields: &BTreeMap<i64, Vec<Field>>,
@@ -238,7 +115,7 @@ fn generate_enum_reader_impl(
     // Read all common fields (these come before the switch)
     for field in &field_set.common_fields {
         let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-        let read_call = super::helpers::generate_read_call(ctx, field, &field_set.common_fields);
+        let read_call = helpers::generate_read_call(ctx, field, &field_set.common_fields);
 
         // Alignment fields don't need to be stored, just executed
         if field.name.starts_with("__alignment_marker_") {
@@ -253,7 +130,7 @@ fn generate_enum_reader_impl(
         for subfield in &field.subfields {
             let subfield_name = safe_identifier(&subfield.name, IdentifierType::Field).name;
             let allow_directive = get_allow_unused_directive(type_name, &subfield_name);
-            let subfield_expr = super::helpers::convert_condition_expression(
+            let subfield_expr = helpers::convert_condition_expression(
                 &subfield.value_expression,
                 &field_set.common_fields,
             );
@@ -359,7 +236,7 @@ fn generate_enum_reader_impl(
         ));
 
         let variant_struct_name =
-            super::enum_generation::generate_variant_struct_name(type_name, first_value);
+            enum_generation::generate_variant_struct_name(type_name, first_value);
 
         // Generate variant name
         let variant_name = if first_value < 0 {
@@ -452,7 +329,7 @@ fn generate_enum_reader_impl(
 
 /// Generate a reader for a single variant struct
 fn generate_variant_struct_reader_impl(
-    ctx: &super::context::ReaderContext,
+    ctx: &ReaderContext,
     type_name: &str,
     struct_name: &str,
     field_set: &FieldSet,
@@ -512,7 +389,7 @@ fn generate_variant_struct_reader_impl(
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let mut all_fields = field_set.common_fields.clone();
             all_fields.extend(case_fields.iter().cloned());
-            let read_call = super::helpers::generate_read_call(ctx, field, &all_fields);
+            let read_call = helpers::generate_read_call(ctx, field, &all_fields);
             let allow_directive = get_allow_unused_directive(type_name, &field_name);
             out.push_str(allow_directive);
             out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
@@ -533,7 +410,7 @@ fn generate_variant_struct_reader_impl(
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 let mut all_fields = field_set.common_fields.clone();
                 all_fields.extend(case_fields.iter().cloned());
-                let read_call = super::helpers::generate_read_call(ctx, field, &all_fields);
+                let read_call = helpers::generate_read_call(ctx, field, &all_fields);
                 let allow_directive = get_allow_unused_directive(type_name, &field_name);
                 out.push_str(allow_directive);
                 out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
@@ -556,7 +433,7 @@ fn generate_variant_struct_reader_impl(
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let mut all_fields = field_set.common_fields.clone();
             all_fields.extend(case_fields.iter().cloned());
-            let read_call = super::helpers::generate_read_call(ctx, field, &all_fields);
+            let read_call = helpers::generate_read_call(ctx, field, &all_fields);
             let allow_directive = get_allow_unused_directive(type_name, &field_name);
             out.push_str(allow_directive);
             out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
@@ -617,7 +494,7 @@ fn generate_variant_struct_reader_impl(
     out.push_str("}\n\n");
 
     // Don't generate ACDataType for variant structs since they require common field parameters
-    // They're only called directly from their parent enum reader
+    // They're only called directly from the parent enum reader
 
     // Generate nested enum reader if this variant has a nested switch
     if has_nested_switch {
@@ -645,7 +522,7 @@ fn generate_variant_struct_reader_impl(
 
 /// Generate a reader for a nested switch enum
 fn generate_nested_switch_enum_reader(
-    ctx: &super::context::ReaderContext,
+    ctx: &ReaderContext,
     type_name: &str,
     enum_name: &str,
     nested_switch: &NestedSwitch,
@@ -709,7 +586,7 @@ fn generate_nested_switch_enum_reader(
         // Read case fields
         for field in case_fields {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-            let read_call = super::helpers::generate_read_call(ctx, field, case_fields);
+            let read_call = helpers::generate_read_call(ctx, field, case_fields);
             let allow_directive = get_allow_unused_directive(type_name, &field_name);
             out.push_str(allow_directive);
             out.push_str(&format!(
@@ -743,58 +620,6 @@ fn generate_nested_switch_enum_reader(
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
-
-    out
-}
-
-/// Generate a reader for a simple struct (no variants)
-fn generate_struct_reader_impl(
-    ctx: &super::context::ReaderContext,
-    _protocol_type: &ProtocolType,
-    type_name: &str,
-    field_set: &FieldSet,
-) -> String {
-    let mut out = String::new();
-
-    out.push_str(&format!("impl {} {{\n", type_name));
-    out.push_str(
-        "    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {\n",
-    );
-
-    // Group consecutive fields with the same condition
-    let field_groups =
-        super::helpers::group_consecutive_fields_by_condition(&field_set.common_fields);
-
-    // Generate reads for each group
-    for group in &field_groups {
-        super::helpers::generate_field_group_reads(
-            ctx,
-            type_name,
-            &mut out,
-            &group.condition,
-            &group.fields,
-            &field_set.common_fields,
-        );
-    }
-
-    // Construct the struct
-    out.push_str("\n        Ok(Self {\n");
-    for field in &field_set.common_fields {
-        // Skip alignment marker fields - they're only read, not stored
-        if !field.name.starts_with("__alignment_marker_") {
-            let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-            out.push_str(&format!("            {},\n", field_name));
-        }
-    }
-    out.push_str("        })\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
-
-    // Add ACDataType implementation
-    out.push_str(&format!(
-        "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
-        type_name, type_name
-    ));
 
     out
 }

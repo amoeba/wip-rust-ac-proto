@@ -3158,67 +3158,35 @@ impl ACBaseQualities {
         let weenie_type = WeenieType::try_from(read_u32(reader)?)?;
         let mut int_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INT.bits()) != 0 {
-            int_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyInt::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_i32(r)?)
-        })?);
+            int_properties = Some(read_packable_hash_table::<PropertyInt, i32>(reader)?);
         }
         let mut int64_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INT64.bits()) != 0 {
-            int64_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyInt64::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_i64(r)?)
-        })?);
+            int64_properties = Some(read_packable_hash_table::<PropertyInt64, i64>(reader)?);
         }
         let mut bool_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_BOOL.bits()) != 0 {
-            bool_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyBool::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_bool(r)?)
-        })?);
+            bool_properties = Some(read_packable_hash_table::<PropertyBool, bool>(reader)?);
         }
         let mut float_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_FLOAT.bits()) != 0 {
-            float_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyFloat::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_f64(r)?)
-        })?);
+            float_properties = Some(read_packable_hash_table::<PropertyFloat, f64>(reader)?);
         }
         let mut string_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_STRING.bits()) != 0 {
-            string_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyString::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(read_string(r)?)
-        })?);
+            string_properties = Some(read_packable_hash_table::<PropertyString, String>(reader)?);
         }
         let mut data_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_DATA_ID.bits()) != 0 {
-            data_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyDataId::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(DataId::read(r)?)
-        })?);
+            data_properties = Some(read_packable_hash_table::<PropertyDataId, DataId>(reader)?);
         }
         let mut instance_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INSTANCE_ID.bits()) != 0 {
-            instance_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyInstanceId::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(ObjectId::read(r)?)
-        })?);
+            instance_properties = Some(read_packable_hash_table::<PropertyInstanceId, ObjectId>(reader)?);
         }
         let mut position_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_POSITION.bits()) != 0 {
-            position_properties = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(PropertyPosition::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(Position::read(r)?)
-        })?);
+            position_properties = Some(read_packable_hash_table::<PropertyPosition, Position>(reader)?);
         }
 
         Ok(Self {
@@ -3252,11 +3220,7 @@ impl ACQualities {
         }
         let mut skills = None;
         if (flags.bits() & ACQualitiesFlags::SKILLS.bits()) != 0 {
-            skills = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(SkillId::try_from(read_i32(r)?)?)
-        }, |r| {
-            Ok(Skill::read(r)?)
-        })?);
+            skills = Some(read_packable_hash_table::<SkillId, Skill>(reader)?);
         }
         let mut body = None;
         if (flags.bits() & ACQualitiesFlags::BODY.bits()) != 0 {
@@ -3264,11 +3228,7 @@ impl ACQualities {
         }
         let mut spell_book = None;
         if (flags.bits() & ACQualitiesFlags::SPELL_BOOK.bits()) != 0 {
-            spell_book = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(LayeredSpellId::read(r)?)
-        }, |r| {
-            Ok(SpellBookPage::read(r)?)
-        })?);
+            spell_book = Some(read_packable_hash_table::<LayeredSpellId, SpellBookPage>(reader)?);
         }
         let mut enchantments = None;
         if (flags.bits() & ACQualitiesFlags::ENCHANTMENTS.bits()) != 0 {
@@ -3457,11 +3417,7 @@ impl crate::readers::ACDataType for Skill {
 
 impl Body {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let body_parts = read_packable_hash_table_with(reader, |r| {
-            Ok(read_u32(r)?)
-        }, |r| {
-            Ok(BodyPart::read(r)?)
-        })?;
+        let body_parts = read_packable_hash_table::<u32, BodyPart>(reader)?;
 
         Ok(Self {
             body_parts,
@@ -3582,8 +3538,8 @@ impl SpellBookPage {
         let mut casting_likelihood2 = None;
         let mut unknown = None;
         if casting_likelihood < 2.0 {
-            casting_likelihood2 = Some(read_f32(reader)?);
-            unknown = Some(read_i32(reader)?);
+            casting_likelihood2 = Some(if casting_likelihood < 2.0 { read_f32(reader).map(Some) } else { Ok(None) }?);
+            unknown = Some(if casting_likelihood < 2.0 { read_i32(reader).map(Some) } else { Ok(None) }?);
         }
 
         Ok(Self {
@@ -3651,7 +3607,7 @@ impl Enchantment {
         let stat_mod = StatMod::read(reader)?;
         let mut equipment_set = None;
         if has_equipment_set > 0 {
-            equipment_set = Some(EquipmentSet::try_from(read_u32(reader)?)?);
+            equipment_set = Some(if has_equipment_set > 0 { EquipmentSet::try_from(read_u32(reader)?).map(Some) } else { Ok(None) }?);
         }
 
         Ok(Self {
@@ -3715,11 +3671,7 @@ impl crate::readers::ACDataType for EventFilter {
 
 impl EmoteTable {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let emotes = read_packable_hash_table_with(reader, |r| {
-            Ok(EmoteCategory::try_from(read_u32(r)?)?)
-        }, |r| {
-            Ok(EmoteSetList::read(r)?)
-        })?;
+        let emotes = read_packable_hash_table::<EmoteCategory, EmoteSetList>(reader)?;
 
         Ok(Self {
             emotes,
@@ -4397,7 +4349,7 @@ impl PageData {
         let ignore_author = read_bool(reader)?;
         let mut page_text = None;
         if text_included {
-            page_text = Some(read_string(reader)?);
+            page_text = Some(if text_included { read_string(reader).map(Some) } else { Ok(None) }?);
         }
 
         Ok(Self {
@@ -4503,11 +4455,7 @@ impl crate::readers::ACDataType for GeneratorProfile {
 
 impl GeneratorRegistry {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let registry = read_packable_hash_table_with(reader, |r| {
-            Ok(read_u32(r)?)
-        }, |r| {
-            Ok(GeneratorRegistryNode::read(r)?)
-        })?;
+        let registry = read_packable_hash_table::<u32, GeneratorRegistryNode>(reader)?;
 
         Ok(Self {
             registry,
@@ -4875,11 +4823,7 @@ impl PlayerModule {
         let tab8_spells = read_packable_list::<LayeredSpellId>(reader)?;
         let mut fill_comps = None;
         if (flags & 0x00000008) != 0 {
-            fill_comps = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(read_u32(r)?)
-        }, |r| {
-            Ok(read_u32(r)?)
-        })?);
+            fill_comps = Some(read_packable_hash_table::<u32, u32>(reader)?);
         }
         let mut spell_book_filters = None;
         if (flags & 0x00000020) != 0 {
@@ -4893,11 +4837,7 @@ impl PlayerModule {
         let mut option_strings = None;
         if (flags & 0x00000100) != 0 {
             unknown100_1 = Some(read_u32(reader)?);
-            option_strings = Some(read_packable_hash_table_with(reader, |r| {
-            Ok(read_u32(r)?)
-        }, |r| {
-            Ok(read_string(r)?)
-        })?);
+            option_strings = Some(read_packable_hash_table::<u32, String>(reader)?);
         }
         let mut gameplay_options = None;
         if (flags & 0x00000200) != 0 {
@@ -5080,7 +5020,7 @@ impl AllegianceHierarchy {
         let approved_vassal = read_i32(reader)?;
         let mut monarch_data = None;
         if record_count > 0 {
-            monarch_data = Some(AllegianceData::read(reader)?);
+            monarch_data = Some(if record_count > 0 { AllegianceData::read(reader).map(Some) } else { Ok(None) }?);
         }
         let records = read_vec::<AllegianceRecord>(reader, record_count as usize - 1)?;
 
@@ -5131,10 +5071,10 @@ impl AllegianceData {
         let mut allegiance_age = None;
         let time_online;
         if flags == 0x4 {
-            time_online = Some(read_u64(reader)?);
+            time_online = Some(if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?);
         } else {
-            allegiance_age = Some(read_u32(reader)?);
-            time_online = Some(read_u64(reader)?);
+            allegiance_age = Some(if flags == 0x4 { read_u32(reader).map(Some) } else { Ok(None) }?);
+            time_online = Some(if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?);
         }
         let name = read_string(reader)?;
 
@@ -6191,7 +6131,7 @@ impl ObjDesc {
         let model_count = read_u8(reader)?;
         let mut palette = None;
         if palette_count > 0 {
-            palette = Some(DataId::read(reader)?);
+            palette = Some(if palette_count > 0 { DataId::read(reader).map(Some) } else { Ok(None) }?);
         }
         let subpalettes = read_vec::<Subpalette>(reader, palette_count as usize)?;
         let tm_changes = read_vec::<TextureMapChange>(reader, texture_count as usize)?;
@@ -6753,16 +6693,8 @@ impl crate::readers::ACDataType for HookAppraisalProfile {
 
 impl SquelchDB {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let account_hash = read_packable_hash_table_with(reader, |r| {
-            Ok(read_string(r)?)
-        }, |r| {
-            Ok(read_u32(r)?)
-        })?;
-        let character_hash = read_packable_hash_table_with(reader, |r| {
-            Ok(ObjectId::read(r)?)
-        }, |r| {
-            Ok(SquelchInfo::read(r)?)
-        })?;
+        let account_hash = read_packable_hash_table::<String, u32>(reader)?;
+        let character_hash = read_packable_hash_table::<ObjectId, SquelchInfo>(reader)?;
         let global_info = SquelchInfo::read(reader)?;
 
         Ok(Self {
@@ -6894,11 +6826,7 @@ impl HAR {
         let version = read_u32(reader)?;
         let bitmask = read_u32(reader)?;
         let monarch_id = ObjectId::read(reader)?;
-        let guest_list = read_packable_hash_table_with(reader, |r| {
-            Ok(ObjectId::read(r)?)
-        }, |r| {
-            Ok(GuestInfo::read(r)?)
-        })?;
+        let guest_list = read_packable_hash_table::<ObjectId, GuestInfo>(reader)?;
         let roommate_list = read_packable_list::<ObjectId>(reader)?;
 
         Ok(Self {
@@ -7077,27 +7005,15 @@ impl crate::readers::ACDataType for FellowshipLockData {
 
 impl Fellowship {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let members = read_packable_hash_table_with(reader, |r| {
-            Ok(ObjectId::read(r)?)
-        }, |r| {
-            Ok(Fellow::read(r)?)
-        })?;
+        let members = read_packable_hash_table::<ObjectId, Fellow>(reader)?;
         let name = read_string(reader)?;
         let leader_id = ObjectId::read(reader)?;
         let share_xp = read_bool(reader)?;
         let even_xp_split = read_bool(reader)?;
         let open = read_bool(reader)?;
         let locked = read_bool(reader)?;
-        let recently_departed = read_packable_hash_table_with(reader, |r| {
-            Ok(ObjectId::read(r)?)
-        }, |r| {
-            Ok(read_i32(r)?)
-        })?;
-        let locks = read_packable_hash_table_with(reader, |r| {
-            Ok(read_string(r)?)
-        }, |r| {
-            Ok(FellowshipLockData::read(r)?)
-        })?;
+        let recently_departed = read_packable_hash_table::<ObjectId, i32>(reader)?;
+        let locks = read_packable_hash_table::<String, FellowshipLockData>(reader)?;
 
         Ok(Self {
             members,
@@ -7181,11 +7097,7 @@ impl crate::readers::ACDataType for ContractTracker {
 
 impl ContractTrackerTable {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let contact_trackers = read_packable_hash_table_with(reader, |r| {
-            Ok(read_u32(r)?)
-        }, |r| {
-            Ok(ContractTracker::read(r)?)
-        })?;
+        let contact_trackers = read_packable_hash_table::<u32, ContractTracker>(reader)?;
 
         Ok(Self {
             contact_trackers,
