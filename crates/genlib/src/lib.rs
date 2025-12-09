@@ -1169,7 +1169,7 @@ fn process_enum_start_tag(
             values: Vec::new(),
             extra_derives: Vec::new(),
             is_mask,
-            is_network: false,
+            category: ProtocolCategory::Enums, // Will be set properly during parsing
         };
         *current_enum = Some(new_enum);
     }
@@ -1652,7 +1652,7 @@ fn process_type_tag(
             templated,
             hash_bounds: Vec::new(),
             extra_derives: Vec::new(),
-            is_network: false,
+            category: ProtocolCategory::Types, // Will be set properly during parsing
         };
 
         // For self-closing tags, push immediately
@@ -1682,16 +1682,45 @@ pub struct GeneratedCode {
     pub files: Vec<GeneratedFile>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum MessageDirection {
-    None,
+/// Represents the top-level protocol section a type/enum comes from
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProtocolCategory {
+    None,        // Not yet categorized (during parsing)
     Enums,       // <enums> section - shared enums
     Types,       // <types> section - shared/common types
-    GameActions, // <gameactions> section (client-to-server game actions)
-    GameEvents,  // <gameevents> section (server-to-client game events)
+    GameActions, // <gameactions> section
+    GameEvents,  // <gameevents> section
     C2S,         // <messages><c2s> section
     S2C,         // <messages><s2c> section
-    Packets,     // <packets> section - packet-level types
+    Packets,     // <packets> section - network packet types
+}
+
+impl ProtocolCategory {
+    fn as_non_none(&self) -> Self {
+        match self {
+            ProtocolCategory::None => ProtocolCategory::Types, // Default to Types for non-categorized
+            other => *other,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ProtocolCategory::None => "None",
+            ProtocolCategory::Enums => "Enums",
+            ProtocolCategory::Types => "Types",
+            ProtocolCategory::GameActions => "GameActions",
+            ProtocolCategory::GameEvents => "GameEvents",
+            ProtocolCategory::C2S => "C2S",
+            ProtocolCategory::S2C => "S2C",
+            ProtocolCategory::Packets => "Packets",
+        }
+    }
+}
+
+impl std::fmt::Display for ProtocolCategory {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
 }
 
 /// Generate a single file containing both type definition and reader implementation
@@ -3417,7 +3446,7 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
     let mut current_type: Option<ProtocolType> = None;
     let mut current_enum: Option<ProtocolEnum> = None;
     let mut current_field_set: Option<FieldSet> = None;
-    let mut current_direction = MessageDirection::None;
+    let mut current_direction = ProtocolCategory::None;
 
     // Track <if> and <maskmap> state
     let mut _in_if = false;
@@ -3453,35 +3482,35 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                     std::str::from_utf8(e.name().0).expect("Failed to to decode tag name");
 
                 if tag_name == "enums" {
-                    current_direction = MessageDirection::Enums;
+                    current_direction = ProtocolCategory::Enums;
                     debug!("Entered enums section");
                 } else if tag_name == "types" {
-                    current_direction = MessageDirection::Types;
+                    current_direction = ProtocolCategory::Types;
                     debug!("Entered types section");
                 } else if tag_name == "gameactions" {
-                    current_direction = MessageDirection::GameActions;
+                    current_direction = ProtocolCategory::GameActions;
                     debug!("Entered gameactions section");
                 } else if tag_name == "gameevents" {
-                    current_direction = MessageDirection::GameEvents;
+                    current_direction = ProtocolCategory::GameEvents;
                     debug!("Entered gameevents section");
                 } else if tag_name == "c2s" {
-                    current_direction = MessageDirection::C2S;
+                    current_direction = ProtocolCategory::C2S;
                     debug!("Entered c2s section");
                 } else if tag_name == "s2c" {
-                    current_direction = MessageDirection::S2C;
+                    current_direction = ProtocolCategory::S2C;
                     debug!("Entered s2c section");
                 } else if tag_name == "packets" {
-                    current_direction = MessageDirection::Packets;
+                    current_direction = ProtocolCategory::Packets;
                     debug!("Entered packets section");
                 } else if tag_name == "type" {
                     let types_vec = match current_direction {
-                        MessageDirection::Types => &mut common_types,
-                        MessageDirection::GameActions => &mut game_action_types,
-                        MessageDirection::GameEvents => &mut game_event_types,
-                        MessageDirection::C2S => &mut c2s_types,
-                        MessageDirection::S2C => &mut s2c_types,
-                        MessageDirection::Packets => &mut packet_types,
-                        MessageDirection::Enums | MessageDirection::None => &mut common_types,
+                        ProtocolCategory::Types => &mut common_types,
+                        ProtocolCategory::GameActions => &mut game_action_types,
+                        ProtocolCategory::GameEvents => &mut game_event_types,
+                        ProtocolCategory::C2S => &mut c2s_types,
+                        ProtocolCategory::S2C => &mut s2c_types,
+                        ProtocolCategory::Packets => &mut packet_types,
+                        ProtocolCategory::Enums | ProtocolCategory::None => &mut common_types,
                     };
                     process_type_tag(
                         &e,
@@ -3606,13 +3635,13 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
 
                 if tag_name == "type" {
                     let types_vec = match current_direction {
-                        MessageDirection::Types => &mut common_types,
-                        MessageDirection::GameActions => &mut game_action_types,
-                        MessageDirection::GameEvents => &mut game_event_types,
-                        MessageDirection::C2S => &mut c2s_types,
-                        MessageDirection::S2C => &mut s2c_types,
-                        MessageDirection::Packets => &mut packet_types,
-                        MessageDirection::Enums | MessageDirection::None => &mut common_types,
+                        ProtocolCategory::Types => &mut common_types,
+                        ProtocolCategory::GameActions => &mut game_action_types,
+                        ProtocolCategory::GameEvents => &mut game_event_types,
+                        ProtocolCategory::C2S => &mut c2s_types,
+                        ProtocolCategory::S2C => &mut s2c_types,
+                        ProtocolCategory::Packets => &mut packet_types,
+                        ProtocolCategory::Enums | ProtocolCategory::None => &mut common_types,
                     };
                     process_type_tag(
                         &e,
@@ -3651,50 +3680,52 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
                 if e.name().as_ref() == b"type" {
                     // Close out type
                     if let Some(mut ty) = current_type.take() {
+                        ty.category = current_direction;
                         if !ty.is_primitive {
                             ty.fields = current_field_set.take();
                             // Extract hash bounds for HashMap key types
                             ty.extract_hash_bounds();
                         }
                         let types_vec = match current_direction {
-                            MessageDirection::Types => &mut common_types,
-                            MessageDirection::GameActions => &mut game_action_types,
-                            MessageDirection::GameEvents => &mut game_event_types,
-                            MessageDirection::C2S => &mut c2s_types,
-                            MessageDirection::S2C => &mut s2c_types,
-                            MessageDirection::Packets => &mut packet_types,
-                            MessageDirection::Enums | MessageDirection::None => &mut common_types,
+                            ProtocolCategory::Types => &mut common_types,
+                            ProtocolCategory::GameActions => &mut game_action_types,
+                            ProtocolCategory::GameEvents => &mut game_event_types,
+                            ProtocolCategory::C2S => &mut c2s_types,
+                            ProtocolCategory::S2C => &mut s2c_types,
+                            ProtocolCategory::Packets => &mut packet_types,
+                            ProtocolCategory::Enums | ProtocolCategory::None => &mut common_types,
                         };
                         types_vec.push(ty);
-                        debug!("DONE with type in {current_direction:?} section");
+                        debug!("DONE with type in {} section", current_direction);
                     }
                     field_ctx.in_switch = false;
                     field_ctx.current_case_values = None;
                 } else if e.name().as_ref() == b"enum" {
                     // Close out enum
-                    if let Some(en) = current_enum.take() {
+                    if let Some(mut en) = current_enum.take() {
+                        en.category = current_direction.as_non_none();
                         enum_types.push(en);
                     }
                 } else if e.name().as_ref() == b"enums" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited enums section");
                 } else if e.name().as_ref() == b"types" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited types section");
                 } else if e.name().as_ref() == b"gameactions" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited gameactions section");
                 } else if e.name().as_ref() == b"gameevents" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited gameevents section");
                 } else if e.name().as_ref() == b"c2s" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited c2s section");
                 } else if e.name().as_ref() == b"s2c" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited s2c section");
                 } else if e.name().as_ref() == b"packets" {
-                    current_direction = MessageDirection::None;
+                    current_direction = ProtocolCategory::None;
                     debug!("Exited packets section");
                 } else if e.name().as_ref() == b"field" {
                     // End of field tag - finalize and add the field
@@ -3839,11 +3870,6 @@ pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
             _ => {}
         }
         buf.clear();
-    }
-
-    // Mark packet types as network types
-    for ty in &mut packet_types {
-        ty.is_network = true;
     }
 
     // Rectify dependencies between types and enums
