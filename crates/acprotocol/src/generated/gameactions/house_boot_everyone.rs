@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Boot everyone from your house, /house boot -all
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Instructs the client to play a script. (Not seen so far, maybe prefered PlayScriptType)
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

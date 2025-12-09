@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Sets both the position and movement, such as when materializing at a lifestone
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

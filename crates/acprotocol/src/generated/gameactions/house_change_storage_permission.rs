@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Changes a specific players storage permission, /house storage add/remove
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

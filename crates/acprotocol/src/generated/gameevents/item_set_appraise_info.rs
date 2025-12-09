@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // The result of an attempt to assess an item or creature.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -21,15 +23,15 @@ pub struct ItemSetAppraiseInfo {
     #[serde(rename = "Success")]
     pub success: bool,
     #[serde(rename = "IntProperties")]
-    pub int_properties: Option<PackableHashTable<PropertyInt, int>>,
+    pub int_properties: Option<PackableHashTable<PropertyInt, i32>>,
     #[serde(rename = "Int64Properties")]
-    pub int64_properties: Option<PackableHashTable<PropertyInt64, long>>,
+    pub int64_properties: Option<PackableHashTable<PropertyInt64, i64>>,
     #[serde(rename = "BoolProperties")]
     pub bool_properties: Option<PackableHashTable<PropertyBool, bool>>,
     #[serde(rename = "FloatProperties")]
-    pub float_properties: Option<PackableHashTable<PropertyFloat, double>>,
+    pub float_properties: Option<PackableHashTable<PropertyFloat, f64>>,
     #[serde(rename = "StringProperties")]
-    pub string_properties: Option<PackableHashTable<PropertyString, string>>,
+    pub string_properties: Option<PackableHashTable<PropertyString, String>>,
     #[serde(rename = "DataIdProperties")]
     pub data_id_properties: Option<PackableHashTable<PropertyDataId, DataId>>,
     #[serde(rename = "SpellBook")]

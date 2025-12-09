@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Removes a specific player from your house guest list, /house guest remove
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

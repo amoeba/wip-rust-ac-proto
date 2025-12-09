@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Adds all to your storage permissions, /house storage add -all
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

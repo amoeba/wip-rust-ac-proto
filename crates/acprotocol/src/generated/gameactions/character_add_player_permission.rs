@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Grants a player corpse looting permission, /permit add
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

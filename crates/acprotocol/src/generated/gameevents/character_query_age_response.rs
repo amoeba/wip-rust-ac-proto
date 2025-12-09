@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // QueryAgeResponse: happens when you do /age in the game
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

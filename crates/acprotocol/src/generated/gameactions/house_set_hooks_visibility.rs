@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Modify whether house hooks are visibile or not, /house hooks on/off
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

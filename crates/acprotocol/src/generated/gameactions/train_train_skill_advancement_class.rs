@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Spend skill credits to train a skill.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

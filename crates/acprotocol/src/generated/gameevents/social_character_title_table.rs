@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Titles for the current character.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -17,7 +19,7 @@ pub struct SocialCharacterTitleTable {
     #[serde(rename = "DisplayTitle")]
     pub display_title: u32,
     #[serde(rename = "Titles")]
-    pub titles: PackableList<uint>,
+    pub titles: PackableList<u32>,
 }
 
 impl SocialCharacterTitleTable {

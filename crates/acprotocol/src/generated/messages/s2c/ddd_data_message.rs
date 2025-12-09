@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Add or update a dat file Resource.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -26,7 +28,7 @@ pub struct DDDDataMessageType0 {
     #[serde(rename = "DataSize")]
     pub data_size: u32,
     #[serde(rename = "Data")]
-    pub data: Vec<byte>,
+    pub data: Vec<u8>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -45,7 +47,7 @@ pub struct DDDDataMessageType1 {
     pub data_size: u32,
     #[serde(rename = "FileSize")]
     pub file_size: u32,
-    pub data: Vec<byte>,
+    pub data: Vec<u8>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Display the player's corpse looting consent list, /consent who 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

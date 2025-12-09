@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // HandleDefenderNotificationEvent: You have been hit by a creature's melee attack.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

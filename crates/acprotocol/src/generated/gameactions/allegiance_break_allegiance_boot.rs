@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Boots a player from the allegiance, optionally all characters on their account
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

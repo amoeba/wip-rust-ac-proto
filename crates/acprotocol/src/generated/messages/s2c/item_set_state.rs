@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Set's the current state of the object. Client appears to only process the following state changes post creation: NoDraw, LightingOn, Hidden
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

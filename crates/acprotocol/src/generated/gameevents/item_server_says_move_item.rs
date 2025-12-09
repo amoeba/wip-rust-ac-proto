@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // ServerSaysMoveItem: Removes an item from inventory (when you place it on the ground or give it away)
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

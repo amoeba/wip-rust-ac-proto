@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Query the motd, /allegiance motd
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

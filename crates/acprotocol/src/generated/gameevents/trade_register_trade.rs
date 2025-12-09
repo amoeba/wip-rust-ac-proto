@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // RegisterTrade: Send to begin a trade and display the trade window
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

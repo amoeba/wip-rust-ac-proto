@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Applies an effect with visual and sound by providing the type to be looked up in the Physics Script Table
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

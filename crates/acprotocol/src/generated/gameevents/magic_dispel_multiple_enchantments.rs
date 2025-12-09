@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Silently remove multiple enchantments from your character (no message in the chat window).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

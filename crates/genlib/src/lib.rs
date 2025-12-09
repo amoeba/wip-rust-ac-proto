@@ -208,6 +208,58 @@ pub fn get_rust_type(xml_type: &str) -> &str {
     }
 }
 
+/// Split a comma-separated list of types, handling nested generics
+/// For example: "string, PackableList<byte>" -> ["string", "PackableList<byte>"]
+fn split_generic_params(params: &str) -> Vec<&str> {
+    let mut result = Vec::new();
+    let mut current_start = 0;
+    let mut bracket_depth = 0;
+    
+    for (i, ch) in params.chars().enumerate() {
+        match ch {
+            '<' => bracket_depth += 1,
+            '>' => bracket_depth -= 1,
+            ',' if bracket_depth == 0 => {
+                result.push(&params[current_start..i]);
+                current_start = i + 1;
+            }
+            _ => {}
+        }
+    }
+    
+    // Add the last parameter
+    result.push(&params[current_start..]);
+    result
+}
+
+/// Convert an XML type string (including generics) to Rust type string
+/// Handles types like "Vec<byte>" -> "Vec<u8>"
+fn convert_xml_type_to_rust(xml_type: &str) -> String {
+    // Handle generic types recursively
+    if xml_type.contains('<') && xml_type.contains('>') {
+        // Extract the outer type and inner types
+        if let Some(start) = xml_type.find('<') {
+            let (outer, rest) = xml_type.split_at(start);
+            let inner_end = rest.rfind('>').unwrap_or(rest.len());
+            let inner = &rest[1..inner_end];
+            let trailer = &rest[inner_end + 1..];
+            
+            // Recursively convert inner types, handling nested generics
+            let converted_inner = split_generic_params(inner)
+                .iter()
+                .map(|t| convert_xml_type_to_rust(t.trim()))
+                .collect::<Vec<_>>()
+                .join(", ");
+            
+            // Preserve outer type as-is (Vec, PackableList, etc.)
+            return format!("{}<{}>{}", outer, converted_inner, trailer);
+        }
+    }
+    
+    // Base case: convert primitive type
+    get_rust_type(xml_type).to_string()
+}
+
 /// Get the size in bits of a primitive type
 fn get_type_size(xml_type: &str) -> usize {
     match xml_type {
@@ -295,7 +347,7 @@ fn merge_if_fields(mut true_fields: Vec<Field>, mut false_fields: Vec<Field>) ->
 fn generate_field_line(field: &Field, is_enum_variant: bool) -> String {
     let original_name = &field.name;
     let safe_id = safe_identifier(original_name, IdentifierType::Field);
-    let mut rust_type = get_rust_type(&field.field_type).to_string();
+    let mut rust_type = convert_xml_type_to_rust(&field.field_type);
 
     // Wrap in Option if the field is optional
     if field.is_optional {
@@ -1751,7 +1803,9 @@ fn generate_type_and_reader_file(
     out.push_str("#[allow(unused_imports)]\n");
     out.push_str("use crate::types::*;\n");
     out.push_str("#[allow(unused_imports)]\n");
-    out.push_str("use crate::enums::*;\n\n");
+    out.push_str("use crate::enums::*;\n");
+    out.push_str("#[allow(unused_imports)]\n");
+    out.push_str("use super::*;\n\n");
 
     // Generate type definition
     if protocol_type.is_primitive {
@@ -3229,6 +3283,11 @@ fn convert_length_expression(expr: &str, all_fields: &[Field]) -> String {
     // Simple expression parsing - handle basic arithmetic
     let expr = expr.trim();
 
+    // Special case: "*" means read remaining bytes - this will be handled specially in generation
+    if expr == "*" {
+        return "*".to_string();
+    }
+
     // Check if it's a simple field reference
     if let Some(field) = all_fields.iter().find(|f| f.name == expr) {
         let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
@@ -3295,6 +3354,23 @@ fn convert_length_expression(expr: &str, all_fields: &[Field]) -> String {
 fn generate_vec_read_with_length(element_type: &str, length_code: &str) -> String {
     // All types that can be read (primitives, enums, or custom structs) implement ACDataType
     let rust_type = get_rust_type(element_type);
+    
+    // Special case: "*" means read all remaining bytes
+    if length_code == "*" {
+        // For primitive types like u8, read directly as bytes
+        if rust_type == "u8" {
+            // Use read_to_end which requires special handling - wrap in Ok
+            return "(|| -> Result<Vec<u8>, Box<dyn std::error::Error>> {\n                let mut data = Vec::new();\n                let _ = reader.read_to_end(&mut data);\n                Ok(data)\n            })()"
+                .to_string();
+        } else {
+            // For other types, read items until EOF - wrap in Ok
+            return format!(
+                "(|| -> Result<Vec<{}>, Box<dyn std::error::Error>> {{\n                let mut vec = Vec::new();\n                loop {{\n                    match read_item::<{}>(reader) {{\n                        Ok(item) => vec.push(item),\n                        Err(_) => break,\n                    }}\n                }}\n                Ok(vec)\n            }})()",
+                rust_type, rust_type
+            );
+        }
+    }
+    
     format!("read_vec::<{}>(reader, {})", rust_type, length_code)
 }
 
@@ -4203,4 +4279,183 @@ pub fn generate_with_source(xml: &str, filter_types: &[String], source: Generate
     });
 
     GeneratedCode { files }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convert_simple_types() {
+        // Primitive types should be converted
+        assert_eq!(convert_xml_type_to_rust("byte"), "u8");
+        assert_eq!(convert_xml_type_to_rust("sbyte"), "i8");
+        assert_eq!(convert_xml_type_to_rust("short"), "i16");
+        assert_eq!(convert_xml_type_to_rust("ushort"), "u16");
+        assert_eq!(convert_xml_type_to_rust("int"), "i32");
+        assert_eq!(convert_xml_type_to_rust("uint"), "u32");
+        assert_eq!(convert_xml_type_to_rust("long"), "i64");
+        assert_eq!(convert_xml_type_to_rust("ulong"), "u64");
+        assert_eq!(convert_xml_type_to_rust("float"), "f32");
+        assert_eq!(convert_xml_type_to_rust("double"), "f64");
+        assert_eq!(convert_xml_type_to_rust("bool"), "bool");
+        assert_eq!(convert_xml_type_to_rust("string"), "String");
+    }
+
+    #[test]
+    fn test_convert_custom_types() {
+        // Custom types should remain unchanged
+        assert_eq!(convert_xml_type_to_rust("ObjectId"), "ObjectId");
+        assert_eq!(convert_xml_type_to_rust("Vector3"), "Vector3");
+        assert_eq!(convert_xml_type_to_rust("WString"), "WString");
+    }
+
+    #[test]
+    fn test_convert_vec_single_primitive() {
+        // Vec with primitive inner type
+        assert_eq!(convert_xml_type_to_rust("Vec<byte>"), "Vec<u8>");
+        assert_eq!(convert_xml_type_to_rust("Vec<int>"), "Vec<i32>");
+        assert_eq!(convert_xml_type_to_rust("Vec<string>"), "Vec<String>");
+    }
+
+    #[test]
+    fn test_convert_vec_custom_type() {
+        // Vec with custom inner type
+        assert_eq!(convert_xml_type_to_rust("Vec<ObjectId>"), "Vec<ObjectId>");
+        assert_eq!(convert_xml_type_to_rust("Vec<Vector3>"), "Vec<Vector3>");
+    }
+
+    #[test]
+    fn test_convert_packable_list_single_param() {
+        // PackableList with single type parameter
+        assert_eq!(convert_xml_type_to_rust("PackableList<byte>"), "PackableList<u8>");
+        assert_eq!(convert_xml_type_to_rust("PackableList<uint>"), "PackableList<u32>");
+        assert_eq!(convert_xml_type_to_rust("PackableList<string>"), "PackableList<String>");
+    }
+
+    #[test]
+    fn test_convert_multi_param_generics() {
+        // Types with multiple parameters
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<string, int>"),
+            "PackableHashTable<String, i32>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<uint, byte>"),
+            "PackableHashTable<u32, u8>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("PHashTable<int, string>"),
+            "PHashTable<i32, String>"
+        );
+    }
+
+    #[test]
+    fn test_convert_nested_generics() {
+        // Nested generic types
+        assert_eq!(
+            convert_xml_type_to_rust("Vec<PackableList<byte>>"),
+            "Vec<PackableList<u8>>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("Vec<PackableList<string>>"),
+            "Vec<PackableList<String>>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("PackableList<Vec<byte>>"),
+            "PackableList<Vec<u8>>"
+        );
+    }
+
+    #[test]
+    fn test_convert_deeply_nested_generics() {
+        // Deeply nested generic types
+        assert_eq!(
+            convert_xml_type_to_rust("Vec<PackableHashTable<string, PackableList<byte>>>"),
+            "Vec<PackableHashTable<String, PackableList<u8>>>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<uint, Vec<int>>"),
+            "PackableHashTable<u32, Vec<i32>>"
+        );
+    }
+
+    #[test]
+    fn test_convert_preserves_whitespace_in_outer() {
+        // Outer type name should be preserved as-is
+        assert_eq!(convert_xml_type_to_rust("Vec<byte>"), "Vec<u8>");
+        assert_eq!(convert_xml_type_to_rust("PackableList<int>"), "PackableList<i32>");
+    }
+
+    #[test]
+    fn test_convert_strips_and_preserves_spaces() {
+        // Spaces in parameters should be normalized
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<string, int>"),
+            "PackableHashTable<String, i32>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<string,int>"),
+            "PackableHashTable<String, i32>"
+        );
+    }
+
+    #[test]
+    fn test_convert_mixed_custom_and_primitive() {
+        // Mix of custom and primitive types
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<ObjectId, byte>"),
+            "PackableHashTable<ObjectId, u8>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("Vec<ObjectId>"),
+            "Vec<ObjectId>"
+        );
+        assert_eq!(
+            convert_xml_type_to_rust("PackableList<Vector3>"),
+            "PackableList<Vector3>"
+        );
+    }
+
+    #[test]
+    fn test_convert_complex_real_world_example() {
+        // Example from network.xml: Fragment data field
+        assert_eq!(
+            convert_xml_type_to_rust("Vec<byte>"),
+            "Vec<u8>"
+        );
+        
+        // Example from protocol.xml: typical message structure
+        assert_eq!(
+            convert_xml_type_to_rust("PackableList<string>"),
+            "PackableList<String>"
+        );
+    }
+
+    #[test]
+    fn test_convert_already_correct_types() {
+        // Types that don't need conversion
+        assert_eq!(convert_xml_type_to_rust("Vec<u8>"), "Vec<u8>");
+        assert_eq!(convert_xml_type_to_rust("Vec<i32>"), "Vec<i32>");
+        assert_eq!(convert_xml_type_to_rust("Vec<String>"), "Vec<String>");
+        assert_eq!(
+            convert_xml_type_to_rust("PackableHashTable<String, i32>"),
+            "PackableHashTable<String, i32>"
+        );
+    }
+
+    #[test]
+    fn test_convert_single_letter_custom_types() {
+        // Edge case: single letter custom type names
+        assert_eq!(convert_xml_type_to_rust("Vec<T>"), "Vec<T>");
+        assert_eq!(convert_xml_type_to_rust("PackableList<K>"), "PackableList<K>");
+    }
+
+    #[test]
+    fn test_convert_numeric_in_type_name() {
+        // Type names with numbers
+        assert_eq!(convert_xml_type_to_rust("Vector3"), "Vector3");
+        assert_eq!(convert_xml_type_to_rust("Vec<Vector3>"), "Vec<Vector3>");
+        assert_eq!(convert_xml_type_to_rust("PackableList<Uint32>"), "PackableList<Uint32>");
+    }
 }

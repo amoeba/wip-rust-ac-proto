@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Client to Server AC packet.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -30,9 +32,9 @@ pub struct C2SPacket {
     #[serde(rename = "ServerSwitch")]
     pub server_switch: Option<ServerSwitchHeader>,
     #[serde(rename = "RetransmitSequences")]
-    pub retransmit_sequences: Option<PackableList<uint>>,
+    pub retransmit_sequences: Option<PackableList<u32>>,
     #[serde(rename = "RejectSequences")]
-    pub reject_sequences: Option<PackableList<uint>>,
+    pub reject_sequences: Option<PackableList<u32>>,
     #[serde(rename = "AckSequence")]
     pub ack_sequence: Option<u32>,
     #[serde(rename = "LoginRequest")]

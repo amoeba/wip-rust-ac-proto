@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Dismiss a player from the fellowship
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

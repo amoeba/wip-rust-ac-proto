@@ -9,13 +9,15 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // ChannelList: Provides list of characters listening to a channel, I assume in response to a command
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Communication_ChannelList")]
 pub struct CommunicationChannelList {
     #[serde(rename = "Characters")]
-    pub characters: PackableList<string>,
+    pub characters: PackableList<String>,
 }
 
 impl CommunicationChannelList {

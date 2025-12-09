@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // TODO
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -17,7 +19,7 @@ pub struct DDDInterrogationResponseMessage {
     #[serde(rename = "Language")]
     pub language: u32,
     #[serde(rename = "Files")]
-    pub files: PackableList<long>,
+    pub files: PackableList<i64>,
 }
 
 impl DDDInterrogationResponseMessage {

@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Removes an item from the trade window, not sure if this is used still?
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

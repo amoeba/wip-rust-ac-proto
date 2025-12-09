@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Set or update a Character Attribute value
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

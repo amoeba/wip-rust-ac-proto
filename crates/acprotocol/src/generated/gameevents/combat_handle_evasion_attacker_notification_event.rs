@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // HandleEvasionAttackerNotificationEvent: Your target has evaded your melee attack.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

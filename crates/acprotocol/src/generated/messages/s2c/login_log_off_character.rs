@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Instructs the client to return to 2D mode - the character list.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

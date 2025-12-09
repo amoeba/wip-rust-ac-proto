@@ -9,13 +9,15 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // ChannelIndex: Provides list of channels available to the player, I assume in response to a command
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Communication_ChannelIndex")]
 pub struct CommunicationChannelIndex {
     #[serde(rename = "Channels")]
-    pub channels: PackableList<string>,
+    pub channels: PackableList<String>,
 }
 
 impl CommunicationChannelIndex {

@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Display a list of available dwellings in the chat window.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -17,7 +19,7 @@ pub struct HouseAvailableHouses {
     #[serde(rename = "Type")]
     pub type_: HouseType,
     #[serde(rename = "Houses")]
-    pub houses: PackableList<uint>,
+    pub houses: PackableList<u32>,
     #[serde(rename = "NumHouses")]
     pub num_houses: i32,
 }

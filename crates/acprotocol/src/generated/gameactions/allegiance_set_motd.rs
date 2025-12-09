@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Sets the allegiance message of the day, /allegiance motd set
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Set a title for the current character.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

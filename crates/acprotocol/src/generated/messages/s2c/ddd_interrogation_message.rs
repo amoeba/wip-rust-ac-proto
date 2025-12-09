@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Add or update a dat file Resource.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -21,7 +23,7 @@ pub struct DDDInterrogationMessage {
     #[serde(rename = "ProductId")]
     pub product_id: u32,
     #[serde(rename = "SupportedLanguages")]
-    pub supported_languages: PackableList<uint>,
+    pub supported_languages: PackableList<u32>,
 }
 
 impl DDDInterrogationMessage {

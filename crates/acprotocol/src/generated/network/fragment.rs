@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // A single fragment containing header and payload data
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -16,13 +18,17 @@ pub struct Fragment {
     #[serde(rename = "Header")]
     pub header: FragmentHeader,
     #[serde(rename = "Data")]
-    pub data: Vec<byte>,
+    pub data: Vec<u8>,
 }
 
 impl Fragment {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let header = FragmentHeader::read(reader)?;
-        let data = read_vec::<u8>(reader, *)?;
+        let data = (|| -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+                let mut data = Vec::new();
+                let _ = reader.read_to_end(&mut data);
+                Ok(data)
+            })()?;
 
         Ok(Self {
             header,

@@ -9,6 +9,8 @@ use crate::readers::*;
 use crate::types::*;
 #[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
+use super::*;
 
 // Sent if player is an PSR, I assume it displays the server version number
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

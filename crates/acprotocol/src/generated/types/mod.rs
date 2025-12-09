@@ -300,15 +300,15 @@ pub struct ACBaseQualities {
     #[serde(rename = "WeenieType")]
     pub weenie_type: WeenieType,
     #[serde(rename = "IntProperties")]
-    pub int_properties: Option<PackableHashTable<PropertyInt, int>>,
+    pub int_properties: Option<PackableHashTable<PropertyInt, i32>>,
     #[serde(rename = "Int64Properties")]
-    pub int64_properties: Option<PackableHashTable<PropertyInt64, long>>,
+    pub int64_properties: Option<PackableHashTable<PropertyInt64, i64>>,
     #[serde(rename = "BoolProperties")]
     pub bool_properties: Option<PackableHashTable<PropertyBool, bool>>,
     #[serde(rename = "FloatProperties")]
-    pub float_properties: Option<PackableHashTable<PropertyFloat, double>>,
+    pub float_properties: Option<PackableHashTable<PropertyFloat, f64>>,
     #[serde(rename = "StringProperties")]
-    pub string_properties: Option<PackableHashTable<PropertyString, string>>,
+    pub string_properties: Option<PackableHashTable<PropertyString, String>>,
     #[serde(rename = "DataProperties")]
     pub data_properties: Option<PackableHashTable<PropertyDataId, DataId>>,
     #[serde(rename = "InstanceProperties")]
@@ -418,7 +418,7 @@ pub struct Skill {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Body {
     #[serde(rename = "BodyParts")]
-    pub body_parts: PackableHashTable<uint, BodyPart>,
+    pub body_parts: PackableHashTable<u32, BodyPart>,
 }
 
 // Information on individual body parts. (Needs to be confirmed if this was used in prod)
@@ -561,7 +561,7 @@ pub struct StatMod {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EventFilter {
     #[serde(rename = "Events")]
-    pub events: PackableList<uint>,
+    pub events: PackableList<u32>,
 }
 
 // Contains a list of emotes for NPCs? Unknown what this does currently.
@@ -1174,7 +1174,7 @@ pub struct BlobFragments {
     #[serde(rename = "Group")]
     pub group: FragmentGroup,
     #[serde(rename = "Data")]
-    pub data: Vec<byte>,
+    pub data: Vec<u8>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1214,7 +1214,7 @@ pub struct GeneratorProfile {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GeneratorRegistry {
     #[serde(rename = "Registry")]
-    pub registry: PackableHashTable<uint, GeneratorRegistryNode>,
+    pub registry: PackableHashTable<u32, GeneratorRegistryNode>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -1435,7 +1435,7 @@ pub struct PlayerModule {
     #[serde(rename = "Tab8Spells")]
     pub tab8_spells: PackableList<LayeredSpellId>,
     #[serde(rename = "FillComps")]
-    pub fill_comps: Option<PackableHashTable<uint, uint>>,
+    pub fill_comps: Option<PackableHashTable<u32, u32>>,
     #[serde(rename = "SpellBookFilters")]
     pub spell_book_filters: Option<u32>,
     #[serde(rename = "OptionFlags")]
@@ -1443,7 +1443,7 @@ pub struct PlayerModule {
     #[serde(rename = "Unknown100_1")]
     pub unknown100_1: Option<u32>,
     #[serde(rename = "OptionStrings")]
-    pub option_strings: Option<PackableHashTable<uint, string>>,
+    pub option_strings: Option<PackableHashTable<u32, String>>,
     #[serde(rename = "GameplayOptions")]
     pub gameplay_options: Option<GameplayOptions>,
 }
@@ -1523,7 +1523,7 @@ pub struct AllegianceHierarchy {
     #[serde(rename = "Officers")]
     pub officers: PHashTable<ObjectId, AllegianceOfficerLevel>,
     #[serde(rename = "OfficerTitles")]
-    pub officer_titles: PackableList<string>,
+    pub officer_titles: PackableList<String>,
     #[serde(rename = "MonarchBroadcastTime")]
     pub monarch_broadcast_time: u32,
     #[serde(rename = "MonarchBroadcastsToday")]
@@ -1732,7 +1732,7 @@ pub struct RestrictionDB {
     #[serde(rename = "MonarchId")]
     pub monarch_id: ObjectId,
     #[serde(rename = "Permissions")]
-    pub permissions: PHashTable<ObjectId, uint>,
+    pub permissions: PHashTable<ObjectId, u32>,
 }
 
 // The OldPublicWeenieDesc structure defines an object's game behavior.
@@ -2295,7 +2295,7 @@ pub struct PhysicsDesc {
     #[serde(rename = "State")]
     pub state: PhysicsState,
     #[serde(rename = "MovementBuffer")]
-    pub movement_buffer: Option<PackableList<byte>>,
+    pub movement_buffer: Option<PackableList<u8>>,
     #[serde(rename = "Autonomous")]
     pub autonomous: Option<bool>,
     #[serde(rename = "AnimationFrame")]
@@ -2482,7 +2482,7 @@ pub struct HookAppraisalProfile {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SquelchDB {
     #[serde(rename = "AccountHash")]
-    pub account_hash: PackableHashTable<string, uint>,
+    pub account_hash: PackableHashTable<String, u32>,
     #[serde(rename = "CharacterHash")]
     pub character_hash: PackableHashTable<ObjectId, SquelchInfo>,
     #[serde(rename = "GlobalInfo")]
@@ -2693,7 +2693,7 @@ pub struct Fellowship {
     #[serde(rename = "Locked")]
     pub locked: bool,
     #[serde(rename = "RecentlyDeparted")]
-    pub recently_departed: PackableHashTable<ObjectId, int>,
+    pub recently_departed: PackableHashTable<ObjectId, i32>,
     #[serde(rename = "Locks")]
     pub locks: PackableHashTable<String, FellowshipLockData>,
 }
@@ -2744,7 +2744,7 @@ pub struct ContractTracker {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ContractTrackerTable {
     #[serde(rename = "ContactTrackers")]
-    pub contact_trackers: PackableHashTable<uint, ContractTracker>,
+    pub contact_trackers: PackableHashTable<u32, ContractTracker>,
 }
 
 impl WString {
