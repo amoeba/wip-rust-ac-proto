@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::io;
 
 use super::fragment::{Fragment, FragmentHeader};
+use super::message::ParsedMessage;
 use super::packet::{PacketHeader, PacketHeaderFlags};
 use super::reader::BinaryReader;
 
@@ -16,21 +17,23 @@ pub struct ExtractedFragment {
     pub is_complete: bool,
 }
 
-/// Parses packets and assembles fragments
+/// Parses packets and assembles fragments into complete messages
 pub struct FragmentAssembler {
     pending_fragments: HashMap<u32, Fragment>,
+    next_message_id: u32,
 }
 
 impl FragmentAssembler {
     pub fn new() -> Self {
         Self {
             pending_fragments: HashMap::new(),
+            next_message_id: 0,
         }
     }
 
-    /// Parse a network packet's payload and extract fragments
-    pub fn parse_packet_payload(&mut self, payload: &[u8]) -> io::Result<Vec<ExtractedFragment>> {
-        let mut extracted = Vec::new();
+    /// Parse a network packet's payload and extract fragments, returning any completed messages
+    pub fn parse_packet_payload(&mut self, payload: &[u8]) -> io::Result<Vec<ParsedMessage>> {
+        let mut completed_messages = Vec::new();
         let mut reader = BinaryReader::new(payload);
 
         while reader.remaining() > 0 {
@@ -58,8 +61,11 @@ impl FragmentAssembler {
             if header.flags.contains(PacketHeaderFlags::BLOB_FRAGMENTS) {
                 while reader.position() < packet_end && reader.remaining() > 0 {
                     match self.parse_fragment(&mut reader) {
-                        Ok(frag) => {
-                            extracted.push(frag);
+                        Ok(Some(msg)) => {
+                            completed_messages.push(msg);
+                        }
+                        Ok(None) => {
+                            // Fragment received but not complete yet
                         }
                         Err(_) => break,
                     }
@@ -72,11 +78,12 @@ impl FragmentAssembler {
             }
         }
 
-        Ok(extracted)
+        Ok(completed_messages)
     }
 
     /// Parse a single fragment from the reader
-    fn parse_fragment(&mut self, reader: &mut BinaryReader) -> io::Result<ExtractedFragment> {
+    /// Returns Some(ParsedMessage) if the fragment completes a message, None otherwise
+    fn parse_fragment(&mut self, reader: &mut BinaryReader) -> io::Result<Option<ParsedMessage>> {
         let sequence = reader.read_u32()?;
         let id = reader.read_u32()?;
         let count = reader.read_u16()?;
@@ -118,28 +125,20 @@ impl FragmentAssembler {
             group,
         };
 
-        let is_complete = fragment.is_complete();
-        let frag_data = if is_complete {
-            fragment.get_data().to_vec()
-        } else {
-            Vec::new()
-        };
-
-        let extracted = ExtractedFragment {
-            sequence,
-            id,
-            index,
-            count,
-            data: frag_data,
-            is_complete,
-        };
-
-        // Remove from pending if complete
-        if is_complete {
+        // Check if this completes the fragment assembly
+        if fragment.is_complete() {
+            let assembled_data = fragment.get_data().to_vec();
             self.pending_fragments.remove(&sequence);
-        }
 
-        Ok(extracted)
+            // Try to parse as a message
+            let msg_id = self.next_message_id;
+            self.next_message_id += 1;
+
+            let parsed_msg = ParsedMessage::from_fragment(assembled_data, sequence, msg_id)?;
+            Ok(Some(parsed_msg))
+        } else {
+            Ok(None)
+        }
     }
 }
 
