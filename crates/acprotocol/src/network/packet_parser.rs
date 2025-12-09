@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::io;
 
-use super::fragment::{Fragment, FragmentHeader};
+use crate::generated::network::{Fragment, FragmentHeader};
+
 use super::message::ParsedMessage;
 use super::packet::{PacketHeader, PacketHeaderFlags};
 use super::reader::BinaryReader;

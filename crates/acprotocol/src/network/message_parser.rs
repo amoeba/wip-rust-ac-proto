@@ -2,7 +2,6 @@ use serde_json::json;
 use std::io::Cursor;
 
 use crate::generated::enums::{C2SMessage, S2CMessage};
-use crate::readers::ACDataType;
 
 /// Try to parse message data based on opcode and return as JSON
 pub fn parse_message_to_json(
