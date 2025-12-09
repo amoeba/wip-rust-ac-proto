@@ -1,14 +1,15 @@
 use std::collections::BTreeMap;
 
 use crate::{
+    field_gen::{
+        DEFAULT_ENUM_DERIVES, build_derive_string, generate_field_line, get_allow_unused_directive,
+    },
     identifiers::{IdentifierType, safe_enum_variant_name, safe_identifier, to_snake_case},
+    type_utils::{get_rust_type, should_be_newtype_struct},
     types::{
-        Field, FieldSet, IfBranch, NestedSwitch, ProtocolEnum, ProtocolType, ProtocolCategory,
+        Field, FieldSet, IfBranch, NestedSwitch, ProtocolCategory, ProtocolEnum, ProtocolType,
     },
     util::format_hex_value,
-    type_utils::{get_rust_type, should_be_newtype_struct},
-    field_gen::{generate_field_line, build_derive_string, DEFAULT_ENUM_DERIVES,
-                get_allow_unused_directive},
 };
 
 /// Context for code generation, controlling what gets generated
@@ -112,7 +113,10 @@ fn generate_bitflags(protocol_enum: &ProtocolEnum) -> String {
             format!("0x{:X}", enum_value.value)
         };
 
-        out.push_str(&format!("        const {} = {};\n", const_name, value_literal));
+        out.push_str(&format!(
+            "        const {} = {};\n",
+            const_name, value_literal
+        ));
     }
 
     out.push_str("    }\n");
@@ -399,8 +403,7 @@ fn generate_variant_struct(
     for field in case_fields {
         // Skip the nested switch discriminator field - it will be represented by the enum
         // Also skip alignment marker fields - they're only for reading
-        let skip_field = nested_switch_field_name
-            .as_ref() == Some(&field.name);
+        let skip_field = nested_switch_field_name.as_ref() == Some(&field.name);
         if !skip_field && !field.name.starts_with("__alignment_marker_") {
             out.push_str(&generate_field_line(field, false));
             out.push_str(",\n");
@@ -704,15 +707,16 @@ pub struct {type_name}{type_generics} {{}}\n\n"
 
             // Include nested switch structure in signature to avoid grouping cases with different nested switches
             if let Some(ref nested_switches) = field_set.nested_switches
-                && let Some(nested_switch) = nested_switches.get(case_value) {
-                    // Add nested switch discriminator and case values to signature
-                    let nested_sig = format!(
-                        "__nested_{}_{:?}",
-                        nested_switch.switch_field,
-                        nested_switch.variant_fields.keys().collect::<Vec<_>>()
-                    );
-                    field_sig.push_str(&nested_sig);
-                }
+                && let Some(nested_switch) = nested_switches.get(case_value)
+            {
+                // Add nested switch discriminator and case values to signature
+                let nested_sig = format!(
+                    "__nested_{}_{:?}",
+                    nested_switch.switch_field,
+                    nested_switch.variant_fields.keys().collect::<Vec<_>>()
+                );
+                field_sig.push_str(&nested_sig);
+            }
 
             field_groups
                 .entry(field_sig)
@@ -821,7 +825,6 @@ pub struct {type_name}{type_generics} {{
 
     out
 }
-
 
 pub struct GeneratedFile {
     pub path: String,
@@ -997,15 +1000,16 @@ fn generate_variant_struct_readers(
 
         // Include nested switch structure in signature to avoid grouping cases with different nested switches
         if let Some(ref nested_switches) = field_set.nested_switches
-            && let Some(nested_switch) = nested_switches.get(case_value) {
-                // Add nested switch discriminator and case values to signature
-                let nested_sig = format!(
-                    "__nested_{}_{:?}",
-                    nested_switch.switch_field,
-                    nested_switch.variant_fields.keys().collect::<Vec<_>>()
-                );
-                field_sig.push_str(&nested_sig);
-            }
+            && let Some(nested_switch) = nested_switches.get(case_value)
+        {
+            // Add nested switch discriminator and case values to signature
+            let nested_sig = format!(
+                "__nested_{}_{:?}",
+                nested_switch.switch_field,
+                nested_switch.variant_fields.keys().collect::<Vec<_>>()
+            );
+            field_sig.push_str(&nested_sig);
+        }
 
         field_groups
             .entry(field_sig)
@@ -1129,15 +1133,16 @@ fn generate_enum_reader_impl(
 
         // Include nested switch structure in signature to avoid grouping cases with different nested switches
         if let Some(ref nested_switches) = field_set.nested_switches
-            && let Some(nested_switch) = nested_switches.get(case_value) {
-                // Add nested switch discriminator and case values to signature
-                let nested_sig = format!(
-                    "__nested_{}_{:?}",
-                    nested_switch.switch_field,
-                    nested_switch.variant_fields.keys().collect::<Vec<_>>()
-                );
-                field_sig.push_str(&nested_sig);
-            }
+            && let Some(nested_switch) = nested_switches.get(case_value)
+        {
+            // Add nested switch discriminator and case values to signature
+            let nested_sig = format!(
+                "__nested_{}_{:?}",
+                nested_switch.switch_field,
+                nested_switch.variant_fields.keys().collect::<Vec<_>>()
+            );
+            field_sig.push_str(&nested_sig);
+        }
 
         field_groups
             .entry(field_sig)
@@ -1207,9 +1212,8 @@ fn generate_enum_reader_impl(
             None
         };
         for field in &field_set.common_fields {
-            let skip_field = field.name == *switch_field
-                || (nested_switch_field
-                    .as_ref() == Some(&field.name));
+            let skip_field =
+                field.name == *switch_field || (nested_switch_field.as_ref() == Some(&field.name));
             if !skip_field {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
                 common_field_args.push(field_name);
@@ -1313,9 +1317,8 @@ fn generate_variant_struct_reader_impl(
     let switch_field = field_set.switch_field.as_ref().unwrap();
     for field in &field_set.common_fields {
         // Skip both the outer switch field and the nested switch field
-        let skip_field = field.name == *switch_field
-            || (nested_switch_field_name
-                .as_ref() == Some(&field.name));
+        let skip_field =
+            field.name == *switch_field || (nested_switch_field_name.as_ref() == Some(&field.name));
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let field_type = &field.field_type;
@@ -1334,8 +1337,7 @@ fn generate_variant_struct_reader_impl(
     // Read variant-specific fields
     for field in case_fields {
         // Skip the nested switch discriminator field
-        let skip_field = nested_switch_field_name
-            .as_ref() == Some(&field.name);
+        let skip_field = nested_switch_field_name.as_ref() == Some(&field.name);
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
             let mut all_fields = field_set.common_fields.clone();
@@ -1397,8 +1399,7 @@ fn generate_variant_struct_reader_impl(
     for field in &field_set.common_fields {
         // Skip the outer switch field, nested switch field, and alignment marker fields
         let skip_field = field.name == *switch_field
-            || (nested_switch_field_name
-                .as_ref() == Some(&field.name))
+            || (nested_switch_field_name.as_ref() == Some(&field.name))
             || field.name.starts_with("__alignment_marker_");
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
@@ -1408,8 +1409,7 @@ fn generate_variant_struct_reader_impl(
 
     for field in case_fields {
         // Skip nested switch field and alignment marker fields
-        let skip_field = (nested_switch_field_name
-            .as_ref() == Some(&field.name))
+        let skip_field = (nested_switch_field_name.as_ref() == Some(&field.name))
             || field.name.starts_with("__alignment_marker_");
         if !skip_field {
             let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
@@ -1720,7 +1720,7 @@ fn generate_both_branch_field_read_no_let(
             // Types differ - read the smaller type from false branch and cast to merged type
             let mut false_field_temp = (*field).clone();
             false_field_temp.field_type = false_type_str.clone();
-            let false_read_call = generate_base_read_call(ctx, &false_field_temp, all_fields);
+            let false_read_call = generate_read_base_logic(ctx, &false_field_temp, all_fields);
             out.push_str(&format!(
                 "            {} = Some(({})? as {});\n",
                 field_name, false_read_call, rust_type_merged
@@ -1730,7 +1730,7 @@ fn generate_both_branch_field_read_no_let(
             out.push_str(&format!(
                 "            {} = Some({}?);\n",
                 field_name,
-                generate_base_read_call(ctx, field, all_fields)
+                generate_read_base_logic(ctx, field, all_fields)
             ));
         }
     } else {
@@ -1738,7 +1738,7 @@ fn generate_both_branch_field_read_no_let(
         out.push_str(&format!(
             "            {} = Some({}?);\n",
             field_name,
-            generate_base_read_call(ctx, field, all_fields)
+            generate_read_base_logic(ctx, field, all_fields)
         ));
     }
 }
@@ -1788,10 +1788,10 @@ fn generate_field_group_reads(
             // No condition - just read each field directly
             for field in fields {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                let read_call = generate_base_read_call(ctx, field, all_fields);
+                let read_call = generate_read_base_logic(ctx, field, all_fields);
                 let allow_directive = get_allow_unused_directive(type_name, &field_name);
                 out.push_str(allow_directive);
-                
+
                 // Alignment fields don't need to be stored, just executed
                 if field.name.starts_with("__alignment_marker_") {
                     out.push_str(&format!("        {}?;\n", read_call));
@@ -1853,7 +1853,7 @@ fn generate_field_group_reads(
                 out.push_str(&format!(
                     "            {} = Some({}?);\n",
                     field_name,
-                    generate_base_read_call(ctx, field, all_fields)
+                    generate_read_base_logic(ctx, field, all_fields)
                 ));
             }
             for field in &both {
@@ -1861,7 +1861,7 @@ fn generate_field_group_reads(
                 out.push_str(&format!(
                     "            {} = Some({}?);\n",
                     field_name,
-                    generate_base_read_call(ctx, field, all_fields)
+                    generate_read_base_logic(ctx, field, all_fields)
                 ));
             }
 
@@ -1875,7 +1875,7 @@ fn generate_field_group_reads(
                     out.push_str(&format!(
                         "            {} = Some({}?);\n",
                         field_name,
-                        generate_base_read_call(ctx, field, all_fields)
+                        generate_read_base_logic(ctx, field, all_fields)
                     ));
                 }
 
@@ -1954,7 +1954,7 @@ fn generate_field_group_reads(
             ));
             for field in fields {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                let read_call = generate_base_read_call(ctx, field, all_fields);
+                let read_call = generate_read_base_logic(ctx, field, all_fields);
                 out.push_str(&format!(
                     "            {} = Some({}?);\n",
                     field_name, read_call
@@ -1966,7 +1966,8 @@ fn generate_field_group_reads(
 }
 
 /// Generate the base read call without the conditional wrapper
-fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
+/// Helper function that generates base read call without optional field handling
+fn generate_read_base_logic(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
     let field_type = &field.field_type;
 
     // Handle alignment padding fields first
@@ -1983,119 +1984,6 @@ fn generate_base_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Fie
     let rust_type = get_rust_type(field_type);
 
     match rust_type {
-        "u8" => "read_u8(reader)".to_string(),
-        "i8" => "read_i8(reader)".to_string(),
-        "u16" => "read_u16(reader)".to_string(),
-        "i16" => "read_i16(reader)".to_string(),
-        "u32" => "read_u32(reader)".to_string(),
-        "i32" => "read_i32(reader)".to_string(),
-        "u64" => "read_u64(reader)".to_string(),
-        "i64" => "read_i64(reader)".to_string(),
-        "f32" => "read_f32(reader)".to_string(),
-        "f64" => "read_f64(reader)".to_string(),
-        "bool" => "read_bool(reader)".to_string(),
-        "String" => "read_string(reader)".to_string(),
-        _ => {
-            // Check if it's an enum
-            if let Some(parent_type) = ctx.enum_parent_map.get(field_type) {
-                let parent_rust_type = get_rust_type(parent_type);
-                let read_fn = match parent_rust_type {
-                    "u8" => "read_u8",
-                    "i8" => "read_i8",
-                    "u16" => "read_u16",
-                    "i16" => "read_i16",
-                    "u32" => "read_u32",
-                    "i32" => "read_i32",
-                    "u64" => "read_u64",
-                    "i64" => "read_i64",
-                    _ => panic!("Unsupported enum parent type: {}", parent_type),
-                };
-                // Use from_bits_retain for bitflags types, try_from for regular enums
-                if ctx.mask_enums.contains(field_type) {
-                    format!("Ok::<_, Box<dyn std::error::Error>>({}::from_bits_retain({}(reader)?))", field_type, read_fn)
-                } else {
-                    format!("{}::try_from({}(reader)?)", field_type, read_fn)
-                }
-            } else if field_type.starts_with("Vec<") {
-                let element_type = &field_type[4..field_type.len() - 1];
-                if let Some(length_expr) = &field.length_expression {
-                    let length_code = convert_length_expression(length_expr, all_fields);
-                    generate_vec_read_with_length(element_type, &length_code)
-                } else {
-                    "unimplemented!(\"Vec reading without length not yet implemented\")".to_string()
-                }
-            } else if field_type.starts_with("PackableList<") {
-                let element_type = &field_type[13..field_type.len() - 1];
-                generate_packable_list_read(element_type)
-            } else if field_type.starts_with("std::collections::HashMap<") {
-                let inner = &field_type["std::collections::HashMap<".len()..field_type.len() - 1];
-                if let Some(comma_pos) = inner.find(',') {
-                    let key_type = inner[..comma_pos].trim();
-                    let value_type = inner[comma_pos + 1..].trim();
-                    if let Some(length_expr) = &field.length_expression {
-                        let length_code = convert_length_expression(length_expr, all_fields);
-                        generate_hashmap_read_with_length(key_type, value_type, &length_code, ctx)
-                    } else {
-                        "unimplemented!(\"HashMap reading without length not yet implemented\")"
-                            .to_string()
-                    }
-                } else {
-                    "unimplemented!(\"HashMap reading with invalid type not yet implemented\")"
-                        .to_string()
-                }
-            } else if field_type.starts_with("PackableHashTable<") {
-                let inner = &field_type["PackableHashTable<".len()..field_type.len() - 1];
-                if let Some(comma_pos) = inner.find(',') {
-                    let key_type = inner[..comma_pos].trim();
-                    let value_type = inner[comma_pos + 1..].trim();
-                    generate_packable_hash_table_read(key_type, value_type, ctx)
-                } else {
-                    "unimplemented!(\"PackableHashTable with invalid type not yet implemented\")"
-                        .to_string()
-                }
-            } else if field_type.starts_with("PHashTable<") {
-                let inner = &field_type["PHashTable<".len()..field_type.len() - 1];
-                if let Some(comma_pos) = inner.find(',') {
-                    let key_type = inner[..comma_pos].trim();
-                    let value_type = inner[comma_pos + 1..].trim();
-                    generate_phash_table_read(key_type, value_type)
-                } else {
-                    "unimplemented!(\"PHashTable with invalid type not yet implemented\")"
-                        .to_string()
-                }
-            } else if let Some(pos) = field_type.find('<') {
-                let (type_name, generics) = field_type.split_at(pos);
-                format!("{type_name}::{generics}::read(reader)")
-            } else {
-                format!("{field_type}::read(reader)")
-            }
-        }
-    }
-}
-
-/// Generate the appropriate read call for a given field
-///
-/// # Arguments
-/// * `ctx` - Reader context with enum information
-/// * `field` - The field to generate a read call for
-/// * `all_fields` - All fields available in the current scope (used to resolve length expressions)
-fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
-    let field_type = &field.field_type;
-    let is_optional = field.is_optional;
-    let rust_type = get_rust_type(field_type);
-
-    // Handle alignment padding fields
-    if let Some(align_type) = field_type.strip_prefix("__align__") {
-        let padding_code = match align_type {
-            "DWORD" => "align_dword(reader)",
-            "WORD" => "align_word(reader)",
-            "QWORD" => "align_qword(reader)",
-            _ => "read_u32(reader)",
-        };
-        return padding_code.to_string();
-    }
-
-    let base_read = match rust_type {
         "u8" => "read_u8(reader)".to_string(),
         "i8" => "read_i8(reader)".to_string(),
         "u16" => "read_u16(reader)".to_string(),
@@ -2127,7 +2015,10 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                 };
                 // Use from_bits_retain for bitflags types, try_from for regular enums
                 if ctx.mask_enums.contains(field_type) {
-                    format!("Ok::<_, Box<dyn std::error::Error>>({}::from_bits_retain({}(reader)?))", field_type, read_fn)
+                    format!(
+                        "Ok::<_, Box<dyn std::error::Error>>({}::from_bits_retain({}(reader)?))",
+                        field_type, read_fn
+                    )
                 } else {
                     format!("{}::try_from({}(reader)?)", field_type, read_fn)
                 }
@@ -2195,9 +2086,19 @@ fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) 
                 }
             }
         }
-    };
+    }
+}
 
-    if is_optional {
+/// Generate the appropriate read call for a given field
+///
+/// # Arguments
+/// * `ctx` - Reader context with enum information
+/// * `field` - The field to generate a read call for
+/// * `all_fields` - All fields available in the current scope (used to resolve length expressions)
+fn generate_read_call(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
+    let base_read = generate_read_base_logic(ctx, field, all_fields);
+
+    if field.is_optional {
         // Generate conditional read based on the test condition or mask
         if let Some(condition) = &field.optional_condition {
             // <if test="..."> condition
@@ -2406,7 +2307,7 @@ fn convert_length_expression(expr: &str, all_fields: &[Field]) -> String {
 fn generate_vec_read_with_length(element_type: &str, length_code: &str) -> String {
     // All types that can be read (primitives, enums, or custom structs) implement ACDataType
     let rust_type = get_rust_type(element_type);
-    
+
     // Special case: "*" means read all remaining bytes
     if length_code == "*" {
         // For primitive types like u8, read directly as bytes
@@ -2422,7 +2323,7 @@ fn generate_vec_read_with_length(element_type: &str, length_code: &str) -> Strin
             );
         }
     }
-    
+
     format!("read_vec::<{}>(reader, {})", rust_type, length_code)
 }
 
@@ -2578,31 +2479,37 @@ pub fn generate_and_merge(
     filter_types: &[String],
 ) -> GeneratedCode {
     // Generate from protocol.xml
-    let mut generated_code = generate_with_source(protocol_xml, filter_types, GenerateSource::Protocol);
+    let mut generated_code =
+        generate_with_source(protocol_xml, filter_types, GenerateSource::Protocol);
 
     // Generate from network.xml if provided and merge results
     if let Some(network_xml) = network_xml {
         let network_code = generate_with_source(network_xml, filter_types, GenerateSource::Network);
-        
+
         // Merge files from network.xml into generated_code
         for network_file in network_code.files {
             if network_file.path.ends_with("mod.rs") {
                 // For mod.rs files, merge the pub mod and pub use declarations
-                if let Some(existing) = generated_code.files.iter_mut().find(|f| f.path == network_file.path) {
+                if let Some(existing) = generated_code
+                    .files
+                    .iter_mut()
+                    .find(|f| f.path == network_file.path)
+                {
                     // Merge module declarations from network.xml into existing mod.rs
                     let mut merged_content = existing.content.clone();
-                    
+
                     // Extract pub mod and pub use lines from network file
                     for line in network_file.content.lines() {
                         let trimmed = line.trim();
-                        if (trimmed.starts_with("pub mod ") || trimmed.starts_with("pub use ")) 
-                            && !merged_content.contains(trimmed) {
+                        if (trimmed.starts_with("pub mod ") || trimmed.starts_with("pub use "))
+                            && !merged_content.contains(trimmed)
+                        {
                             // Add this line if it's not already present
                             merged_content.push('\n');
                             merged_content.push_str(line);
                         }
                     }
-                    
+
                     existing.content = merged_content;
                 } else {
                     // No existing mod.rs, add network's mod.rs
@@ -2610,7 +2517,11 @@ pub fn generate_and_merge(
                 }
             } else {
                 // For non-mod.rs files, just add/replace them
-                if let Some(pos) = generated_code.files.iter().position(|f| f.path == network_file.path) {
+                if let Some(pos) = generated_code
+                    .files
+                    .iter()
+                    .position(|f| f.path == network_file.path)
+                {
                     generated_code.files[pos] = network_file;
                 } else {
                     generated_code.files.push(network_file);
@@ -2623,12 +2534,23 @@ pub fn generate_and_merge(
 }
 
 /// Generate code from protocol XML, with source indication for packets section
-pub fn generate_with_source(xml: &str, filter_types: &[String], source: GenerateSource) -> GeneratedCode {
+pub fn generate_with_source(
+    xml: &str,
+    filter_types: &[String],
+    source: GenerateSource,
+) -> GeneratedCode {
     let ctx = GenerationContext::new(filter_types.to_vec());
 
     // Parse XML content using the xml_parser module
-    let (mut enum_types, common_types, game_action_types, game_event_types, c2s_types, s2c_types, packet_types) =
-        crate::xml_parser::parse_xml_content(xml, source);
+    let (
+        mut enum_types,
+        common_types,
+        game_action_types,
+        game_event_types,
+        c2s_types,
+        s2c_types,
+        packet_types,
+    ) = crate::xml_parser::parse_xml_content(xml, source);
 
     // Rectify dependencies between types and enums
     let mut rectified_common_types = Vec::new();
@@ -2643,7 +2565,7 @@ pub fn generate_with_source(xml: &str, filter_types: &[String], source: Generate
         &mut rectified_c2s_types,
         &mut rectified_s2c_types,
     );
-    
+
     // Other type collections (no rectification needed for now, just clone)
     let rectified_game_action_types = game_action_types.clone();
     let rectified_game_event_types = game_event_types.clone();
@@ -2941,4 +2863,3 @@ pub fn generate_with_source(xml: &str, filter_types: &[String], source: Generate
 
     GeneratedCode { files }
 }
-
