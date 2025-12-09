@@ -4,6 +4,7 @@ members = [
   "crates/acprotocol",
   "crates/genlib",
   "test-harness/rust-tester",
+  "xtask",
 ]
 
 [workspace.package]

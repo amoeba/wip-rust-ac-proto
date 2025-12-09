@@ -1,0 +1,10 @@
+[package]
+name = "xtask"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+env_logger = "0.11"
+log = "0.4"
+genlib = { path = "../crates/genlib" }

@@ -3,20 +3,29 @@ use std::{env, fs, path::PathBuf};
 fn main() {
     env_logger::init();
 
-    // Get the workspace root (two levels up from the gen crate)
-    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-    let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
-    let protocol_path = workspace_root.join("ACProtocol/protocol.xml");
+    let args: Vec<String> = env::args().collect();
+    match args.get(1).map(|s| s.as_str()) {
+        Some("generate") => generate(),
+        Some(cmd) => eprintln!("Unknown command: {}", cmd),
+        None => eprintln!("Usage: cargo xtask generate"),
+    }
+}
 
-    let generated_dir = manifest_dir.join("src/generated");
+fn generate() {
+    // Get the workspace root
+    let xtask_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let workspace_root = xtask_dir.parent().unwrap();
+    let protocol_path = workspace_root.join("ACProtocol/protocol.xml");
+    let acprotocol_dir = workspace_root.join("crates/acprotocol");
+    let generated_dir = acprotocol_dir.join("src/generated");
+
+    println!("Generating from: {}", protocol_path.display());
 
     // Clean the generated directory to remove old structure
     if generated_dir.exists() {
         fs::remove_dir_all(&generated_dir).unwrap();
+        println!("Cleaned {}", generated_dir.display());
     }
-
-    // Commented out for testing
-    // println!("cargo:rerun-if-changed={}", protocol_path.display());
 
     // Read FILTER_TYPES env var - comma-separated list of types to generate readers for
     let filter_types = env::var("FILTER_TYPES")
@@ -27,10 +36,7 @@ fn main() {
         .collect::<Vec<_>>();
 
     if !filter_types.is_empty() {
-        println!(
-            "cargo:warning=Generating readers for types: {:?}",
-            filter_types
-        );
+        println!("Generating readers for types: {:?}", filter_types);
     }
 
     let xml = fs::read_to_string(&protocol_path).unwrap();
@@ -46,5 +52,8 @@ fn main() {
         }
 
         fs::write(&file_path, file.content).unwrap();
+        println!("Generated: {}", file_path.display());
     }
+
+    println!("Code generation complete!");
 }
