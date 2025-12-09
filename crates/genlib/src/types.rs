@@ -1,5 +1,44 @@
 use std::collections::BTreeMap;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProtocolCategory {
+    None,
+    Enums,
+    Types,
+    GameActions,
+    GameEvents,
+    C2S,
+    S2C,
+    Packets,
+    Network,
+}
+
+impl ProtocolCategory {
+    pub fn as_non_none(self) -> Self {
+        if self == ProtocolCategory::None {
+            ProtocolCategory::Types
+        } else {
+            self
+        }
+    }
+}
+
+impl std::fmt::Display for ProtocolCategory {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ProtocolCategory::None => write!(f, "None"),
+            ProtocolCategory::Enums => write!(f, "Enums"),
+            ProtocolCategory::Types => write!(f, "Types"),
+            ProtocolCategory::GameActions => write!(f, "GameActions"),
+            ProtocolCategory::GameEvents => write!(f, "GameEvents"),
+            ProtocolCategory::C2S => write!(f, "C2S"),
+            ProtocolCategory::S2C => write!(f, "S2C"),
+            ProtocolCategory::Packets => write!(f, "Packets"),
+            ProtocolCategory::Network => write!(f, "Network"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Subfield {
     pub(crate) name: String,
@@ -83,7 +122,7 @@ pub struct ProtocolEnum {
     pub(crate) extra_derives: Vec<String>,
     pub(crate) is_mask: bool,
     /// The protocol section this enum comes from (Enums, C2S, S2C, etc.)
-    pub(crate) category: crate::ProtocolCategory,
+    pub(crate) category: ProtocolCategory,
 }
 
 #[derive(Debug, Clone)]
@@ -102,7 +141,7 @@ pub struct ProtocolType {
     /// Additional derives that this type needs (e.g., "Hash", "Eq", "PartialOrd")
     pub(crate) extra_derives: Vec<String>,
     /// The protocol section this type comes from (Types, C2S, S2C, Packets, etc.)
-    pub(crate) category: crate::ProtocolCategory,
+    pub(crate) category: ProtocolCategory,
 }
 
 impl ProtocolType {

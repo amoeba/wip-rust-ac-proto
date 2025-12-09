@@ -1,4 +1,3 @@
-/// Shared code generation workflow for both build.rs and xtask
 use std::{fs, path::Path};
 
 /// Execute the full code generation workflow: read files, generate, and write output
@@ -24,11 +23,8 @@ pub fn generate_and_write(
     };
 
     // Generate code
-    let generated_code = crate::generate_and_merge(
-        &protocol_xml,
-        network_xml.as_deref(),
-        filter_types,
-    );
+    let generated_code =
+        crate::generate_and_merge(&protocol_xml, network_xml.as_deref(), filter_types);
 
     // Write all generated files
     for file in generated_code.files {
