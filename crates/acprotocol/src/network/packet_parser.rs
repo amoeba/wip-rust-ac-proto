@@ -117,18 +117,14 @@ impl FragmentAssembler {
             .or_insert_with(|| Fragment::new(sequence, count));
 
         fragment.add_chunk(&data, index as usize);
-        fragment.header = FragmentHeader {
-            sequence,
-            id,
-            count,
-            size,
-            index,
-            group,
-        };
+        fragment.header.id = id;
+        fragment.header.index = index;
+        fragment.set_fragment_info(size, group);
 
         // Check if this completes the fragment assembly
         if fragment.is_complete() {
             let assembled_data = fragment.get_data().to_vec();
+            fragment.cleanup();
             self.pending_fragments.remove(&sequence);
 
             // Try to parse as a message

@@ -1,3 +1,4 @@
+pub mod fragment_impl;
 pub mod message;
 pub mod message_parser;
 pub mod packet;
@@ -8,3 +9,4 @@ pub mod reader;
 pub use message::ParsedMessage;
 pub use message_parser::parse_message_to_json;
 pub use packet_parser::FragmentAssembler;
+pub use fragment_impl::FRAGMENT_CHUNK_SIZE;
