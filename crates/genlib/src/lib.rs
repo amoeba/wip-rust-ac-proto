@@ -15,6 +15,7 @@ use crate::{
 mod identifiers;
 mod types;
 mod util;
+pub mod codegen;
 
 /// Static configuration for fields that should be allowed to be dead code
 /// Format: (type_name, variable_name)
@@ -3510,6 +3511,58 @@ fn generate_hashmap_read_with_length(
 
 pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
     generate_with_source(xml, filter_types, GenerateSource::Protocol)
+}
+
+/// Helper function to perform code generation with files merging from multiple sources
+/// This is used by both build.rs and xtask generate to ensure consistent code generation
+pub fn generate_and_merge(
+    protocol_xml: &str,
+    network_xml: Option<&str>,
+    filter_types: &[String],
+) -> GeneratedCode {
+    // Generate from protocol.xml
+    let mut generated_code = generate_with_source(protocol_xml, filter_types, GenerateSource::Protocol);
+
+    // Generate from network.xml if provided and merge results
+    if let Some(network_xml) = network_xml {
+        let network_code = generate_with_source(network_xml, filter_types, GenerateSource::Network);
+        
+        // Merge files from network.xml into generated_code
+        for network_file in network_code.files {
+            if network_file.path.ends_with("mod.rs") {
+                // For mod.rs files, merge the pub mod and pub use declarations
+                if let Some(existing) = generated_code.files.iter_mut().find(|f| f.path == network_file.path) {
+                    // Merge module declarations from network.xml into existing mod.rs
+                    let mut merged_content = existing.content.clone();
+                    
+                    // Extract pub mod and pub use lines from network file
+                    for line in network_file.content.lines() {
+                        let trimmed = line.trim();
+                        if (trimmed.starts_with("pub mod ") || trimmed.starts_with("pub use ")) 
+                            && !merged_content.contains(trimmed) {
+                            // Add this line if it's not already present
+                            merged_content.push('\n');
+                            merged_content.push_str(line);
+                        }
+                    }
+                    
+                    existing.content = merged_content;
+                } else {
+                    // No existing mod.rs, add network's mod.rs
+                    generated_code.files.push(network_file);
+                }
+            } else {
+                // For non-mod.rs files, just add/replace them
+                if let Some(pos) = generated_code.files.iter().position(|f| f.path == network_file.path) {
+                    generated_code.files[pos] = network_file;
+                } else {
+                    generated_code.files.push(network_file);
+                }
+            }
+        }
+    }
+
+    generated_code
 }
 
 /// Generate code from protocol XML, with source indication for packets section

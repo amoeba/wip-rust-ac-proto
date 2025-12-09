@@ -305,7 +305,7 @@ pub fn read_u16_be(reader: &mut dyn ACReader) -> Result<u16, Box<dyn Error>> {
     Ok(u16::from_be_bytes(buf))
 }
 
-/// Read a List<T> with a custom element reader function
+/// Read a `List<T>` with a custom element reader function
 /// Format: u32 count followed by count items read by the provided function
 pub fn read_list_with<T>(
     reader: &mut dyn ACReader,
@@ -319,7 +319,7 @@ pub fn read_list_with<T>(
     Ok(list)
 }
 
-/// Read a List<T> where T implements ACDataType
+/// Read a `List<T>` where T implements ACDataType
 /// Format: u32 count followed by count items
 pub fn read_list<T: ACDataType>(reader: &mut dyn ACReader) -> Result<Vec<T>, Box<dyn Error>> {
     let count = read_u32(reader)? as usize;
@@ -356,7 +356,7 @@ pub fn read_vec<T: ACDataType>(
     Ok(vec)
 }
 
-/// Read a PackableList<T> with a custom element reader function
+/// Read a `PackableList<T>` with a custom element reader function
 /// Format: u32 count followed by count items read by the provided function
 pub fn read_packable_list_with<T>(
     reader: &mut dyn ACReader,
@@ -375,7 +375,7 @@ pub fn read_packable_list_with<T>(
     })
 }
 
-/// Read a PackableList<T> where T implements ACDataType
+/// Read a `PackableList<T>` where T implements ACDataType
 /// Format: u32 count followed by count items
 pub fn read_packable_list<T: ACDataType>(
     reader: &mut dyn ACReader,

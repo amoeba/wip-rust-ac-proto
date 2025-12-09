@@ -9,6 +9,8 @@ dependencies = [
  "anyhow",
  "bitflags",
  "clap",
+ "env_logger",
+ "genlib",
  "num_enum",
  "serde",
  "serde_json",
