@@ -10,6 +10,7 @@ pub use collection_readers::{
 pub use expression_readers::convert_length_expression;
 pub use primitive_readers::{
     convert_condition_expression, generate_conditional_read_call, generate_read_call,
+    generate_read_base_logic,
 };
 
 use crate::{
@@ -170,16 +171,20 @@ pub fn generate_field_group_reads(
             // TRUE branch: read all true-only and both-branch fields
             for field in &true_only {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                // For conditional fields, generate_read_call already handles optionality
+                // by returning an expression that evaluates to Option<T> based on the condition
                 out.push_str(&format!(
-                    "            {} = Some({}?);\n",
+                    "            {} = {}?;\n",
                     field_name,
                     primitive_readers::generate_read_call(ctx, field, all_fields)
                 ));
             }
             for field in &both {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                // For fields that exist in both branches, read directly without wrapping in Some
+                // since the struct field is not Option<T> for these (they're always present)
                 out.push_str(&format!(
-                    "            {} = Some({}?);\n",
+                    "            {} = {}?;\n",
                     field_name,
                     primitive_readers::generate_read_call(ctx, field, all_fields)
                 ));
@@ -192,8 +197,10 @@ pub fn generate_field_group_reads(
                 // Read false-only fields
                 for field in &false_only {
                     let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    // For conditional fields, generate_read_call already handles optionality
+                    // by returning an expression that evaluates to Option<T> based on the condition
                     out.push_str(&format!(
-                        "            {} = Some({}?);\n",
+                        "            {} = {}?;\n",
                         field_name,
                         primitive_readers::generate_read_call(ctx, field, all_fields)
                     ));
@@ -202,10 +209,11 @@ pub fn generate_field_group_reads(
                 // Read both-branch fields, with type casting if needed
                 for field in &both {
                     let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                    // Generate a read call for the false branch (this should be handled properly by the specific function)
+                    // For fields that exist in both branches, read directly without wrapping in Some
+                    // since the struct field is not Option<T> for these (they're always present)
                     let read_call = primitive_readers::generate_read_call(ctx, field, all_fields);
                     out.push_str(&format!(
-                        "            {} = Some({}?);\n",
+                        "            {} = {}?;\n",
                         field_name, read_call
                     ));
                 }
@@ -272,9 +280,10 @@ pub fn generate_field_group_reads(
             ));
             for field in fields {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                let read_call =
-                    primitive_readers::generate_conditional_read_call(ctx, field, all_fields);
-                out.push_str(&format!("            {} = {};\n", field_name, read_call));
+                // For maskmap fields: we read the raw value and wrap it in Some(),
+                // since the variable was initialized as None (making it Option<T>)
+                let read_call = primitive_readers::generate_read_base_logic(ctx, field, all_fields);
+                out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
             }
             out.push_str("        }\n");
         }

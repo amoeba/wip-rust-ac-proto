@@ -422,6 +422,32 @@ where
     })
 }
 
+/// Read a PackableHashTable<K, V> where K and V implement ACDataType
+/// Format: u16 count, u16 max_size, followed by count key-value pairs
+pub fn read_packable_hash_table<K: ACDataType + Eq + Hash, V: ACDataType>(
+    reader: &mut dyn ACReader,
+) -> Result<PackableHashTable<K, V>, Box<dyn Error>> {
+    let mut count_buf = [0u8; 2];
+    reader.read_exact(&mut count_buf)?;
+    let count = u16::from_le_bytes(count_buf) as usize;
+
+    let mut max_size_buf = [0u8; 2];
+    reader.read_exact(&mut max_size_buf)?;
+    let max_size = u16::from_le_bytes(max_size_buf);
+
+    let mut table = HashMap::with_capacity(count);
+    for _ in 0..count {
+        let key = read_item::<K>(reader)?;
+        let value = read_item::<V>(reader)?;
+        table.insert(key, value);
+    }
+    Ok(PackableHashTable {
+        count: count as u16,
+        max_size,
+        table,
+    })
+}
+
 /// Read a PHashTable<K, V> with custom key and value reader functions
 /// Format: u32 packed_size (with count in lower 24 bits), followed by count key-value pairs
 pub fn read_phash_table_with<K, V>(

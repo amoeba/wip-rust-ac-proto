@@ -69,9 +69,10 @@ pub fn merge_if_fields(mut true_fields: Vec<Field>, mut false_fields: Vec<Field>
                     true_field.if_false_branch_type = Some(false_field.field_type.clone());
                     true_field.field_type = larger_type;
                 }
-                // Mark as existing in both branches and make optional
+                // Mark as existing in both branches - but don't make optional since it exists in both
+                // The conditional reading will handle which value to use, but the field itself is not optional
                 true_field.if_branch = Some(IfBranch::Both);
-                true_field.is_optional = true;
+                // Don't set is_optional = true for IfBranch::Both fields, since they are always present
                 result.push(true_field);
             }
             (Some(field), None) => {

@@ -3538,8 +3538,8 @@ impl SpellBookPage {
         let mut casting_likelihood2 = None;
         let mut unknown = None;
         if casting_likelihood < 2.0 {
-            casting_likelihood2 = Some(if casting_likelihood < 2.0 { read_f32(reader).map(Some) } else { Ok(None) }?);
-            unknown = Some(if casting_likelihood < 2.0 { read_i32(reader).map(Some) } else { Ok(None) }?);
+            casting_likelihood2 = if casting_likelihood < 2.0 { read_f32(reader).map(Some) } else { Ok(None) }?;
+            unknown = if casting_likelihood < 2.0 { read_i32(reader).map(Some) } else { Ok(None) }?;
         }
 
         Ok(Self {
@@ -3607,7 +3607,7 @@ impl Enchantment {
         let stat_mod = StatMod::read(reader)?;
         let mut equipment_set = None;
         if has_equipment_set > 0 {
-            equipment_set = Some(if has_equipment_set > 0 { EquipmentSet::try_from(read_u32(reader)?).map(Some) } else { Ok(None) }?);
+            equipment_set = if has_equipment_set > 0 { EquipmentSet::try_from(read_u32(reader)?).map(Some) } else { Ok(None) }?;
         }
 
         Ok(Self {
@@ -4349,7 +4349,7 @@ impl PageData {
         let ignore_author = read_bool(reader)?;
         let mut page_text = None;
         if text_included {
-            page_text = Some(if text_included { read_string(reader).map(Some) } else { Ok(None) }?);
+            page_text = if text_included { read_string(reader).map(Some) } else { Ok(None) }?;
         }
 
         Ok(Self {
@@ -5020,7 +5020,7 @@ impl AllegianceHierarchy {
         let approved_vassal = read_i32(reader)?;
         let mut monarch_data = None;
         if record_count > 0 {
-            monarch_data = Some(if record_count > 0 { AllegianceData::read(reader).map(Some) } else { Ok(None) }?);
+            monarch_data = if record_count > 0 { AllegianceData::read(reader).map(Some) } else { Ok(None) }?;
         }
         let records = read_vec::<AllegianceRecord>(reader, record_count as usize - 1)?;
 
@@ -5071,10 +5071,10 @@ impl AllegianceData {
         let mut allegiance_age = None;
         let time_online;
         if flags == 0x4 {
-            time_online = Some(if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?);
+            time_online = if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?;
         } else {
-            allegiance_age = Some(if flags == 0x4 { read_u32(reader).map(Some) } else { Ok(None) }?);
-            time_online = Some(if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?);
+            allegiance_age = if flags == 0x4 { read_u32(reader).map(Some) } else { Ok(None) }?;
+            time_online = if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?;
         }
         let name = read_string(reader)?;
 
@@ -6131,7 +6131,7 @@ impl ObjDesc {
         let model_count = read_u8(reader)?;
         let mut palette = None;
         if palette_count > 0 {
-            palette = Some(if palette_count > 0 { DataId::read(reader).map(Some) } else { Ok(None) }?);
+            palette = if palette_count > 0 { DataId::read(reader).map(Some) } else { Ok(None) }?;
         }
         let subpalettes = read_vec::<Subpalette>(reader, palette_count as usize)?;
         let tm_changes = read_vec::<TextureMapChange>(reader, texture_count as usize)?;
