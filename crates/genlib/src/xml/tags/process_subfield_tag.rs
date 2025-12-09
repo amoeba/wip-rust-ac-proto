@@ -1,5 +1,3 @@
-use quick_xml::events::BytesStart;
-
 use crate::types::Subfield;
 
 /// Process a subfield tag in the XML

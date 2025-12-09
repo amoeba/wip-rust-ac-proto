@@ -7,10 +7,9 @@ use crate::{
     field_gen::{FieldContext, merge_if_fields},
     generation::GenerateSource,
     types::{
-        EnumValue, Field, FieldSet, IfBranch, NestedSwitch, ProtocolCategory, ProtocolEnum,
-        ProtocolType, Subfield,
+        FieldSet, NestedSwitch, ProtocolCategory, ProtocolEnum,
+        ProtocolType,
     },
-    util::parse_enum_value,
     xml::{
         tags::{
             process_align_tag::process_align_tag, process_case_tag::process_case_tag,

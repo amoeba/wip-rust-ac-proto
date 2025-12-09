@@ -1,10 +1,12 @@
 use log::debug;
-use quick_xml::events::BytesStart;
 
 use crate::{
     field_gen::FieldContext,
-    types::{Field, FieldSet},
+    types::{FieldSet},
 };
+
+#[allow(unused_imports)]
+use crate::types::Field;
 
 /// Process a field tag in the XML
 pub fn process_field_tag(

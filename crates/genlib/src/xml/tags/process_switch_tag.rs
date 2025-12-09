@@ -1,5 +1,4 @@
 use log::debug;
-use quick_xml::events::BytesStart;
 
 use crate::types::FieldSet;
 

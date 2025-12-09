@@ -96,6 +96,7 @@ impl Fragment {
     }
 
     /// Get size for this fragment
+    #[allow(dead_code)]
     pub fn get_size(&self) -> u16 {
         let store = get_metadata_store().lock().unwrap();
         store
@@ -105,6 +106,7 @@ impl Fragment {
     }
 
     /// Get group for this fragment
+    #[allow(dead_code)]
     pub fn get_group(&self) -> u16 {
         let store = get_metadata_store().lock().unwrap();
         store

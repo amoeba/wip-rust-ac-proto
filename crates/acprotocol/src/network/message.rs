@@ -69,7 +69,7 @@ impl ParsedMessage {
     }
 
     /// Get a binary reader for reading message fields
-    pub fn reader(&self) -> BinaryReader {
+    pub fn reader(&self) -> BinaryReader<'_> {
         BinaryReader::new(&self.data)
     }
 

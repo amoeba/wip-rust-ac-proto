@@ -120,6 +120,7 @@ pub fn convert_xml_type_to_rust(xml_type: &str) -> String {
 ///
 /// Returns the unqualified function name (e.g., "read_u8") that reads this type from a reader.
 /// Returns None for non-primitive types (enums, collections, custom types).
+#[allow(dead_code)]
 pub fn get_primitive_read_call(rust_type: &str) -> Option<&'static str> {
     match rust_type {
         "u8" => Some("read_u8"),

@@ -1,5 +1,3 @@
-use quick_xml::events::BytesStart;
-
 use crate::types::Field;
 
 /// Process an align tag in the XML

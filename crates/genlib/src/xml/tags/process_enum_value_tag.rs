@@ -1,5 +1,3 @@
-use quick_xml::events::BytesStart;
-
 use crate::{
     types::{EnumValue, ProtocolEnum},
     util::parse_enum_value,

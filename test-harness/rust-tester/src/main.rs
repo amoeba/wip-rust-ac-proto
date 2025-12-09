@@ -32,7 +32,9 @@ struct PacketInfo {
     direction: Direction,
     frame_opcode: u32,
     message_opcode: u32,
+    #[allow(dead_code)]
     message_id: Option<u32>,
+    #[allow(dead_code)]
     name: String,
     c2s_message: Option<C2SMessage>,
     s2c_message: Option<S2CMessage>,
@@ -184,6 +186,7 @@ fn process_file(filename: &str) -> Result<()> {
 
     // These files contain just the message payload, no packet headers
     // Try to parse message based on enum type
+    let wire_buffer = buffer.clone();
     let result = match packet_info.direction {
         Direction::C2S => match packet_info.c2s_message {
             Some(C2SMessage::OrderedGameAction) => {

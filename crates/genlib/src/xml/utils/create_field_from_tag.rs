@@ -1,9 +1,8 @@
 use log::debug;
-use quick_xml::events::BytesStart;
 
 use crate::{
     field_gen::FieldContext,
-    types::{Field, FieldSet, IfBranch},
+    types::{Field, IfBranch},
 };
 
 /// Create a field from a tag in the XML
