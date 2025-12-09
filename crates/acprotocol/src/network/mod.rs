@@ -6,7 +6,7 @@ pub mod packet_parser;
 pub mod pcap;
 pub mod reader;
 
+pub use fragment_impl::FRAGMENT_CHUNK_SIZE;
 pub use message::ParsedMessage;
 pub use message_parser::parse_message_to_json;
 pub use packet_parser::FragmentAssembler;
-pub use fragment_impl::FRAGMENT_CHUNK_SIZE;

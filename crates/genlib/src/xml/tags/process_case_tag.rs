@@ -1,9 +1,7 @@
 use log::debug;
 use quick_xml::events::BytesStart;
 
-use crate::{
-    util::parse_enum_value,
-};
+use crate::util::parse_enum_value;
 
 /// Process a case tag in the XML
 pub fn process_case_tag(e: &quick_xml::events::BytesStart) -> Option<Vec<i64>> {

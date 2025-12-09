@@ -116,6 +116,29 @@ pub fn convert_xml_type_to_rust(xml_type: &str) -> String {
     get_rust_type(xml_type).to_string()
 }
 
+/// Get the reader function name for a primitive Rust type
+///
+/// Returns the unqualified function name (e.g., "read_u8") that reads this type from a reader.
+/// Returns None for non-primitive types (enums, collections, custom types).
+pub fn get_primitive_read_call(rust_type: &str) -> Option<&'static str> {
+    match rust_type {
+        "u8" => Some("read_u8"),
+        "i8" => Some("read_i8"),
+        "u16" => Some("read_u16"),
+        "i16" => Some("read_i16"),
+        "u32" => Some("read_u32"),
+        "i32" => Some("read_i32"),
+        "u64" => Some("read_u64"),
+        "i64" => Some("read_i64"),
+        "f32" => Some("read_f32"),
+        "f64" => Some("read_f64"),
+        "bool" => Some("read_bool"),
+        "String" => Some("read_string"),
+        "WString" => Some("read_wstring"),
+        _ => None,
+    }
+}
+
 /// Get the size in bits of a primitive type
 pub fn get_type_size(xml_type: &str) -> usize {
     match xml_type {

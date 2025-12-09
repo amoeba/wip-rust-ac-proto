@@ -1,9 +1,7 @@
 use log::debug;
 use quick_xml::events::BytesStart;
 
-use crate::{
-    types::{FieldSet, ProtocolType},
-};
+use crate::types::{FieldSet, ProtocolType};
 
 /// Process a type tag in the XML
 pub fn process_type_tag(

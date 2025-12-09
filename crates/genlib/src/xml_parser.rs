@@ -4,35 +4,39 @@ use log::debug;
 use quick_xml::{Reader, events::Event};
 
 use crate::{
+    field_gen::{FieldContext, merge_if_fields},
+    generation::GenerateSource,
     types::{
-        EnumValue, Field, FieldSet, IfBranch, NestedSwitch, ProtocolEnum, ProtocolType, Subfield, ProtocolCategory,
+        EnumValue, Field, FieldSet, IfBranch, NestedSwitch, ProtocolCategory, ProtocolEnum,
+        ProtocolType, Subfield,
     },
     util::parse_enum_value,
-    field_gen::{merge_if_fields, FieldContext},
-    generation::GenerateSource,
     xml::{
         tags::{
-            process_type_tag::process_type_tag,
+            process_align_tag::process_align_tag, process_case_tag::process_case_tag,
             process_enum_start_tag::process_enum_start_tag,
-            process_enum_value_tag::process_enum_value_tag,
-            process_field_tag::process_field_tag,
+            process_enum_value_tag::process_enum_value_tag, process_field_tag::process_field_tag,
+            process_subfield_tag::process_subfield_tag, process_switch_tag::process_switch_tag,
+            process_table_tag::process_table_tag, process_type_tag::process_type_tag,
             process_vector_tag::process_vector_tag,
-            process_table_tag::process_table_tag,
-            process_switch_tag::process_switch_tag,
-            process_case_tag::process_case_tag,
-            process_subfield_tag::process_subfield_tag,
-            process_align_tag::process_align_tag,
         },
-        utils::{
-            create_field_from_tag::create_field_from_tag,
-            add_field_to_set::add_field_to_set,
-        },
+        utils::{add_field_to_set::add_field_to_set, create_field_from_tag::create_field_from_tag},
     },
 };
 
 /// Parse XML content and extract protocol types and enums
-pub fn parse_xml_content(xml: &str, source: GenerateSource) -> (Vec<ProtocolEnum>, Vec<ProtocolType>, Vec<ProtocolType>, 
-    Vec<ProtocolType>, Vec<ProtocolType>, Vec<ProtocolType>, Vec<ProtocolType>) {
+pub fn parse_xml_content(
+    xml: &str,
+    source: GenerateSource,
+) -> (
+    Vec<ProtocolEnum>,
+    Vec<ProtocolType>,
+    Vec<ProtocolType>,
+    Vec<ProtocolType>,
+    Vec<ProtocolType>,
+    Vec<ProtocolType>,
+    Vec<ProtocolType>,
+) {
     let mut reader = Reader::from_str(xml);
     let mut buf = Vec::new();
 
@@ -297,7 +301,9 @@ pub fn parse_xml_content(xml: &str, source: GenerateSource) -> (Vec<ProtocolEnum
                             ProtocolCategory::GameEvents => &mut game_event_types,
                             ProtocolCategory::C2S => &mut c2s_types,
                             ProtocolCategory::S2C => &mut s2c_types,
-                            ProtocolCategory::Packets | ProtocolCategory::Network => &mut packet_types,
+                            ProtocolCategory::Packets | ProtocolCategory::Network => {
+                                &mut packet_types
+                            }
                             ProtocolCategory::Enums | ProtocolCategory::None => &mut common_types,
                         };
                         types_vec.push(ty);
@@ -477,5 +483,13 @@ pub fn parse_xml_content(xml: &str, source: GenerateSource) -> (Vec<ProtocolEnum
         buf.clear();
     }
 
-    (enum_types, common_types, game_action_types, game_event_types, c2s_types, s2c_types, packet_types)
+    (
+        enum_types,
+        common_types,
+        game_action_types,
+        game_event_types,
+        c2s_types,
+        s2c_types,
+        packet_types,
+    )
 }

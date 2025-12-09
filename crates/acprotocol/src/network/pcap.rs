@@ -39,7 +39,10 @@ impl<R: Read> PcapIterator<R> {
             ));
         };
 
-        Ok(PcapIterator { reader, is_big_endian })
+        Ok(PcapIterator {
+            reader,
+            is_big_endian,
+        })
     }
 
     fn read_u32(&self, bytes: &[u8]) -> u32 {

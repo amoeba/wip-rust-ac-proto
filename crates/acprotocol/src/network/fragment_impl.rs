@@ -40,7 +40,7 @@ impl Fragment {
     pub fn new(sequence: u32, count: u16) -> Self {
         let mut store = get_metadata_store().lock().unwrap();
         store.insert(sequence, FragmentMetadata::new(count));
-        
+
         Self {
             header: FragmentHeader {
                 sequence,
@@ -59,7 +59,7 @@ impl Fragment {
         let end = start + data.len();
         if end <= self.data.len() {
             self.data[start..end].copy_from_slice(data);
-            
+
             // Track received chunks
             let mut store = get_metadata_store().lock().unwrap();
             if let Some(metadata) = store.get_mut(&self.header.sequence) {
@@ -98,7 +98,8 @@ impl Fragment {
     /// Get size for this fragment
     pub fn get_size(&self) -> u16 {
         let store = get_metadata_store().lock().unwrap();
-        store.get(&self.header.sequence)
+        store
+            .get(&self.header.sequence)
             .map(|m| m.size)
             .unwrap_or(0)
     }
@@ -106,7 +107,8 @@ impl Fragment {
     /// Get group for this fragment
     pub fn get_group(&self) -> u16 {
         let store = get_metadata_store().lock().unwrap();
-        store.get(&self.header.sequence)
+        store
+            .get(&self.header.sequence)
             .map(|m| m.group)
             .unwrap_or(0)
     }

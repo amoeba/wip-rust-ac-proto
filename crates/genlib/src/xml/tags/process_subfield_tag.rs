@@ -1,8 +1,6 @@
 use quick_xml::events::BytesStart;
 
-use crate::{
-    types::Subfield,
-};
+use crate::types::Subfield;
 
 /// Process a subfield tag in the XML
 pub fn process_subfield_tag(e: &quick_xml::events::BytesStart) -> Option<Subfield> {

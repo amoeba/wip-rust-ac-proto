@@ -1,8 +1,6 @@
 use quick_xml::events::BytesStart;
 
-use crate::{
-    types::Field,
-};
+use crate::types::Field;
 
 /// Process an align tag in the XML
 pub fn process_align_tag(e: &quick_xml::events::BytesStart) -> Option<Field> {

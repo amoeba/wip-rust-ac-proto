@@ -1,7 +1,7 @@
-use super::reader::BinaryReader;
 use super::message_parser::parse_message_to_json;
-use std::io;
+use super::reader::BinaryReader;
 use serde::Serialize;
+use std::io;
 
 /// A parsed message extracted from assembled fragments
 #[derive(Debug, Clone, Serialize)]

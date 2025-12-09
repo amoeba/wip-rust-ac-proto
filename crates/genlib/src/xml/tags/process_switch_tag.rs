@@ -1,9 +1,7 @@
 use log::debug;
 use quick_xml::events::BytesStart;
 
-use crate::{
-    types::{FieldSet},
-};
+use crate::types::FieldSet;
 
 /// Process a switch tag in the XML
 pub fn process_switch_tag(

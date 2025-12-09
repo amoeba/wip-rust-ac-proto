@@ -12,7 +12,8 @@ pub fn process_field_tag(
     current_field_set: &mut Option<FieldSet>,
     ctx: &mut FieldContext,
 ) {
-    if let Some(new_field) = crate::xml::utils::create_field_from_tag::create_field_from_tag(e, ctx) {
+    if let Some(new_field) = crate::xml::utils::create_field_from_tag::create_field_from_tag(e, ctx)
+    {
         // If we're in an <if> block, collect fields separately
         if ctx.in_if_true {
             ctx.if_true_fields.push(new_field);

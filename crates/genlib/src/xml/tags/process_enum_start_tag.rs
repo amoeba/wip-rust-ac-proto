@@ -2,7 +2,7 @@ use log::debug;
 use quick_xml::events::BytesStart;
 
 use crate::{
-    types::{ProtocolEnum, EnumValue, ProtocolCategory},
+    types::{EnumValue, ProtocolCategory, ProtocolEnum},
     util::parse_enum_value,
 };
 

@@ -7,7 +7,10 @@ use crate::{
 };
 
 /// Create a field from a tag in the XML
-pub fn create_field_from_tag(e: &quick_xml::events::BytesStart, ctx: &FieldContext) -> Option<Field> {
+pub fn create_field_from_tag(
+    e: &quick_xml::events::BytesStart,
+    ctx: &FieldContext,
+) -> Option<Field> {
     let mut field_type = None;
     let mut field_name = None;
     let mut generic_key = None;
