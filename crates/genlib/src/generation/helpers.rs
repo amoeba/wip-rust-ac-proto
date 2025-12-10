@@ -39,3 +39,53 @@ pub fn generate_module_file(modules: &[String], path: &str) -> GeneratedFile {
         content,
     }
 }
+
+/// Get the reader function name for a given Rust type
+pub fn get_reader_function_name(rust_type: &str) -> Option<&'static str> {
+    match rust_type {
+        "u8" => Some("read_u8"),
+        "i8" => Some("read_i8"),
+        "u16" => Some("read_u16"),
+        "i16" => Some("read_i16"),
+        "u32" => Some("read_u32"),
+        "i32" => Some("read_i32"),
+        "u64" => Some("read_u64"),
+        "i64" => Some("read_i64"),
+        "f32" => Some("read_f32"),
+        "f64" => Some("read_f64"),
+        _ => None,
+    }
+}
+
+/// Generate a variant name from a case value
+/// Negative values become TypeNeg{abs}, positive become Type{HEX}
+pub fn generate_variant_name(value: i64) -> String {
+    if value < 0 {
+        format!("TypeNeg{}", value.abs())
+    } else {
+        format!("Type{:X}", value)
+    }
+}
+
+/// Generate ACDataType implementation for enum/bitflag types
+pub fn generate_acdata_type_impl(
+    type_name: &str,
+    parent_type: &str,
+    conversion: &str,  // Either "from_bits_retain" or "try_from"
+) -> String {
+    let rust_type = get_rust_type(parent_type);
+
+    if let Some(read_fn) = get_reader_function_name(rust_type) {
+        let conversion_expr = if conversion == "try_from" {
+            format!("{type_name}::try_from(value)?")
+        } else {
+            format!("{type_name}::{conversion}(value)")
+        };
+
+        format!(
+            "impl crate::readers::ACDataType for {type_name} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        let value = crate::readers::{read_fn}(reader)?;\n        Ok({conversion_expr})\n    }}\n}}\n\n"
+        )
+    } else {
+        String::new()
+    }
+}

@@ -239,12 +239,7 @@ fn generate_enum_reader_impl(
             enum_generation::generate_variant_struct_name(type_name, first_value);
 
         // Generate variant name
-        let variant_name = if first_value < 0 {
-            format!("TypeNeg{}", first_value.abs())
-        } else {
-            let hex_str = format!("{:X}", first_value);
-            format!("Type{}", hex_str)
-        };
+        let variant_name = super::super::helpers::generate_variant_name(first_value);
 
         // Build the common fields argument list for the variant struct reader
         // Exclude the switch field since it's already been read and matched
@@ -596,11 +591,7 @@ fn generate_nested_switch_enum_reader(
         }
 
         // Generate variant name
-        let variant_name = if first_value < 0 {
-            format!("TypeNeg{}", first_value.abs())
-        } else {
-            format!("Type{:X}", first_value)
-        };
+        let variant_name = super::super::helpers::generate_variant_name(first_value);
 
         let struct_name = format!("{}{}", enum_name, variant_name);
 

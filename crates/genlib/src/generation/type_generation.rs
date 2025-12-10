@@ -216,12 +216,7 @@ pub enum {type_name}{type_generics} {{\n"
             let first_value = all_values[0];
             let first_value_str = format_hex_value(first_value);
 
-            let variant_name = if first_value < 0 {
-                format!("TypeNeg{}", first_value.abs())
-            } else {
-                let hex_str = format!("{:X}", first_value);
-                format!("Type{}", hex_str)
-            };
+            let variant_name = super::helpers::generate_variant_name(first_value);
 
             let variant_struct_name =
                 super::enum_generation::generate_variant_struct_name(type_name, first_value);

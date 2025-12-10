@@ -142,17 +142,8 @@ pub fn generate_read_base_logic(ctx: &ReaderContext, field: &Field, all_fields: 
             if let Some(parent_type) = ctx.enum_parent_map.get(field_type) {
                 // It's an enum - read the parent type and cast
                 let parent_rust_type = get_rust_type(parent_type);
-                let read_fn = match parent_rust_type {
-                    "u8" => "read_u8",
-                    "i8" => "read_i8",
-                    "u16" => "read_u16",
-                    "i16" => "read_i16",
-                    "u32" => "read_u32",
-                    "i32" => "read_i32",
-                    "u64" => "read_u64",
-                    "i64" => "read_i64",
-                    _ => panic!("Unsupported enum parent type: {}", parent_type),
-                };
+                let read_fn = super::super::helpers::get_reader_function_name(parent_rust_type)
+                    .unwrap_or_else(|| panic!("Unsupported enum parent type: {}", parent_type));
                 // Use from_bits_retain for bitflags types, try_from for regular enums
                 if ctx.mask_enums.contains(field_type) {
                     format!(

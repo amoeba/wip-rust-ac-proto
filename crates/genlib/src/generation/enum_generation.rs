@@ -66,23 +66,11 @@ pub fn generate_bitflags(protocol_enum: &ProtocolEnum) -> String {
 
     // Add ACDataType implementation for bitflags
     if !protocol_enum.parent.is_empty() {
-        let read_fn = match repr_type {
-            "u8" => "read_u8",
-            "i8" => "read_i8",
-            "u16" => "read_u16",
-            "i16" => "read_i16",
-            "u32" => "read_u32",
-            "i32" => "read_i32",
-            "u64" => "read_u64",
-            "i64" => "read_i64",
-            _ => "",
-        };
-        if !read_fn.is_empty() {
-            out.push_str(&format!(
-                "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        let value = crate::readers::{read_fn}(reader)?;\n        Ok({}::from_bits_retain(value))\n    }}\n}}\n\n",
-                enum_name, enum_name
-            ));
-        }
+        out.push_str(&super::helpers::generate_acdata_type_impl(
+            enum_name,
+            &protocol_enum.parent,
+            "from_bits_retain",
+        ));
     }
 
     out
@@ -153,24 +141,11 @@ pub fn generate_enum(protocol_enum: &ProtocolEnum) -> String {
 
     // Add ACDataType implementation for enums
     if !protocol_enum.parent.is_empty() {
-        let parent_rust = get_rust_type(&protocol_enum.parent);
-        let read_fn = match parent_rust {
-            "u8" => "read_u8",
-            "i8" => "read_i8",
-            "u16" => "read_u16",
-            "i16" => "read_i16",
-            "u32" => "read_u32",
-            "i32" => "read_i32",
-            "u64" => "read_u64",
-            "i64" => "read_i64",
-            _ => "",
-        };
-        if !read_fn.is_empty() {
-            out.push_str(&format!(
-                "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        let value = crate::readers::{read_fn}(reader)?;\n        Ok({}::try_from(value)?)\n    }}\n}}\n\n",
-                enum_name, enum_name
-            ));
-        }
+        out.push_str(&super::helpers::generate_acdata_type_impl(
+            enum_name,
+            &protocol_enum.parent,
+            "try_from",
+        ));
     }
 
     out
@@ -354,12 +329,7 @@ pub fn generate_nested_switch_enum(
         sorted_values.sort();
         let first_value = sorted_values[0];
 
-        let variant_name = if first_value < 0 {
-            format!("TypeNeg{}", first_value.abs())
-        } else {
-            let hex_str = format!("{:X}", first_value);
-            format!("Type{}", hex_str)
-        };
+        let variant_name = super::helpers::generate_variant_name(first_value);
 
         let struct_name = format!("{}{}", enum_name, variant_name);
 
@@ -391,12 +361,7 @@ pub fn generate_nested_switch_enum(
         let first_value = all_values[0];
         let first_value_str = format_hex_value(first_value);
 
-        let variant_name = if first_value < 0 {
-            format!("TypeNeg{}", first_value.abs())
-        } else {
-            let hex_str = format!("{:X}", first_value);
-            format!("Type{}", hex_str)
-        };
+        let variant_name = super::helpers::generate_variant_name(first_value);
 
         let struct_name = format!("{}{}", enum_name, variant_name);
 
