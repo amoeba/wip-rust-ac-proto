@@ -1,6 +1,7 @@
 pub mod context;
 pub mod enum_generation;
 pub mod helpers;
+pub mod message_parser_generation;
 pub mod read_generation;
 pub mod reader_generation;
 pub mod type_generation;
@@ -346,8 +347,18 @@ pub fn generate_with_source(
     files.push(helpers::generate_module_file(&packet_modules, "packets/mod.rs"));
     files.push(helpers::generate_module_file(&network_modules, "network/mod.rs"));
 
+    // Generate message parser (only for protocol.xml, not network.xml)
+    if source == GenerateSource::Protocol {
+        let message_parser_content =
+            message_parser_generation::generate_message_parser(&rectified_c2s_types, &rectified_s2c_types, &enum_types);
+        files.push(GeneratedFile {
+            path: "message_parser.rs".to_string(),
+            content: message_parser_content,
+        });
+    }
+
     // Generate root mod.rs for generated
-    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\n";
+    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\npub mod message_parser;\n";
     files.push(GeneratedFile {
         path: "mod.rs".to_string(),
         content: generated_mod.to_string(),

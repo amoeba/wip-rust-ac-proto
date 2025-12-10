@@ -236,9 +236,7 @@ pub struct LoginRequestHeaderType40000002 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "AuthType")]
 pub enum LoginRequestHeader {
-    #[serde(rename = "0x02")]
     Type2(LoginRequestHeaderType2),
-    #[serde(rename = "0x40000002")]
     Type40000002(LoginRequestHeaderType40000002),
 }
 
@@ -630,31 +628,10 @@ pub struct EmoteSetTypeF {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Category")]
 pub enum EmoteSet {
-    #[serde(rename = "0x01")]
-    #[serde(alias = "0x06")]
     Type1(EmoteSetType1),
-    #[serde(rename = "0x02")]
     Type2(EmoteSetType2),
-    #[serde(rename = "0x05")]
     Type5(EmoteSetType5),
-    #[serde(rename = "0x0C")]
-    #[serde(alias = "0x0D")]
-    #[serde(alias = "0x16")]
-    #[serde(alias = "0x17")]
-    #[serde(alias = "0x1B")]
-    #[serde(alias = "0x1C")]
-    #[serde(alias = "0x1D")]
-    #[serde(alias = "0x1E")]
-    #[serde(alias = "0x1F")]
-    #[serde(alias = "0x20")]
-    #[serde(alias = "0x21")]
-    #[serde(alias = "0x22")]
-    #[serde(alias = "0x23")]
-    #[serde(alias = "0x24")]
-    #[serde(alias = "0x25")]
-    #[serde(alias = "0x26")]
     TypeC(EmoteSetTypeC),
-    #[serde(rename = "0x0F")]
     TypeF(EmoteSetTypeF),
 }
 
@@ -976,134 +953,31 @@ pub struct EmoteType76 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type")]
 pub enum Emote {
-    #[serde(rename = "0x01")]
-    #[serde(alias = "0x08")]
-    #[serde(alias = "0x0A")]
-    #[serde(alias = "0x0D")]
-    #[serde(alias = "0x10")]
-    #[serde(alias = "0x11")]
-    #[serde(alias = "0x12")]
-    #[serde(alias = "0x14")]
-    #[serde(alias = "0x15")]
-    #[serde(alias = "0x16")]
-    #[serde(alias = "0x17")]
-    #[serde(alias = "0x18")]
-    #[serde(alias = "0x19")]
-    #[serde(alias = "0x1A")]
-    #[serde(alias = "0x1F")]
-    #[serde(alias = "0x33")]
-    #[serde(alias = "0x3A")]
-    #[serde(alias = "0x3C")]
-    #[serde(alias = "0x3D")]
-    #[serde(alias = "0x40")]
-    #[serde(alias = "0x41")]
-    #[serde(alias = "0x43")]
-    #[serde(alias = "0x44")]
-    #[serde(alias = "0x4F")]
-    #[serde(alias = "0x50")]
-    #[serde(alias = "0x51")]
-    #[serde(alias = "0x53")]
-    #[serde(alias = "0x58")]
-    #[serde(alias = "0x79")]
     Type1(EmoteType1),
-    #[serde(rename = "0x02")]
-    #[serde(alias = "0x3E")]
     Type2(EmoteType2),
-    #[serde(rename = "0x03")]
-    #[serde(alias = "0x4A")]
     Type3(EmoteType3),
-    #[serde(rename = "0x04")]
-    #[serde(alias = "0x06")]
-    #[serde(alias = "0x0B")]
-    #[serde(alias = "0x57")]
     Type4(EmoteType4),
-    #[serde(rename = "0x05")]
-    #[serde(alias = "0x34")]
     Type5(EmoteType5),
-    #[serde(rename = "0x07")]
     Type7(EmoteType7),
-    #[serde(rename = "0x09")]
     Type9(EmoteType9),
-    #[serde(rename = "0x0E")]
-    #[serde(alias = "0x13")]
-    #[serde(alias = "0x1B")]
-    #[serde(alias = "0x49")]
     TypeE(EmoteTypeE),
-    #[serde(rename = "0x1C")]
-    #[serde(alias = "0x1D")]
     Type1C(EmoteType1C),
-    #[serde(rename = "0x1E")]
-    #[serde(alias = "0x3B")]
-    #[serde(alias = "0x47")]
-    #[serde(alias = "0x52")]
     Type1E(EmoteType1E),
-    #[serde(rename = "0x20")]
-    #[serde(alias = "0x21")]
-    #[serde(alias = "0x46")]
-    #[serde(alias = "0x54")]
-    #[serde(alias = "0x55")]
-    #[serde(alias = "0x56")]
-    #[serde(alias = "0x59")]
-    #[serde(alias = "0x66")]
-    #[serde(alias = "0x67")]
-    #[serde(alias = "0x68")]
-    #[serde(alias = "0x69")]
-    #[serde(alias = "0x6A")]
-    #[serde(alias = "0x6B")]
-    #[serde(alias = "0x6C")]
-    #[serde(alias = "0x6D")]
     Type20(EmoteType20),
-    #[serde(rename = "0x22")]
-    #[serde(alias = "0x2F")]
-    #[serde(alias = "0x30")]
-    #[serde(alias = "0x5A")]
-    #[serde(alias = "0x6F")]
-    #[serde(alias = "0x77")]
-    #[serde(alias = "0x78")]
     Type22(EmoteType22),
-    #[serde(rename = "0x23")]
-    #[serde(alias = "0x2D")]
-    #[serde(alias = "0x2E")]
     Type23(EmoteType23),
-    #[serde(rename = "0x24")]
-    #[serde(alias = "0x27")]
-    #[serde(alias = "0x28")]
-    #[serde(alias = "0x29")]
-    #[serde(alias = "0x2A")]
-    #[serde(alias = "0x2B")]
-    #[serde(alias = "0x2C")]
     Type24(EmoteType24),
-    #[serde(rename = "0x25")]
     Type25(EmoteType25),
-    #[serde(rename = "0x26")]
-    #[serde(alias = "0x4B")]
     Type26(EmoteType26),
-    #[serde(rename = "0x31")]
     Type31(EmoteType31),
-    #[serde(rename = "0x32")]
     Type32(EmoteType32),
-    #[serde(rename = "0x35")]
-    #[serde(alias = "0x36")]
-    #[serde(alias = "0x37")]
-    #[serde(alias = "0x45")]
     Type35(EmoteType35),
-    #[serde(rename = "0x38")]
     Type38(EmoteType38),
-    #[serde(rename = "0x3F")]
-    #[serde(alias = "0x63")]
-    #[serde(alias = "0x64")]
     Type3F(EmoteType3F),
-    #[serde(rename = "0x4C")]
     Type4C(EmoteType4C),
-    #[serde(rename = "0x6E")]
-    #[serde(alias = "0x73")]
     Type6E(EmoteType6E),
-    #[serde(rename = "0x70")]
-    #[serde(alias = "0x71")]
     Type70(EmoteType70),
-    #[serde(rename = "0x72")]
     Type72(EmoteType72),
-    #[serde(rename = "0x76")]
     Type76(EmoteType76),
 }
 
@@ -1327,19 +1201,12 @@ pub enum WindowPropertyType1000008DTitleSourceVariant {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Key_a")]
 pub enum WindowProperty {
-    #[serde(rename = "0x1000007F")]
     Type1000007F(WindowPropertyType1000007F),
-    #[serde(rename = "0x10000086")]
     Type10000086(WindowPropertyType10000086),
-    #[serde(rename = "0x10000087")]
     Type10000087(WindowPropertyType10000087),
-    #[serde(rename = "0x10000088")]
     Type10000088(WindowPropertyType10000088),
-    #[serde(rename = "0x10000089")]
     Type10000089(WindowPropertyType10000089),
-    #[serde(rename = "0x1000008A")]
     Type1000008A(WindowPropertyType1000008A),
-    #[serde(rename = "0x1000008D")]
     Type1000008D(WindowPropertyType1000008D),
 }
 
@@ -1356,7 +1223,6 @@ pub struct WindowOptionType1000008B {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type_a")]
 pub enum WindowOption {
-    #[serde(rename = "0x1000008B")]
     Type1000008B(WindowOptionType1000008B),
 }
 
@@ -1385,11 +1251,8 @@ pub struct OptionPropertyType1000008C {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type")]
 pub enum OptionProperty {
-    #[serde(rename = "0x10000080")]
     Type10000080(OptionPropertyType10000080),
-    #[serde(rename = "0x10000081")]
     Type10000081(OptionPropertyType10000081),
-    #[serde(rename = "0x1000008C")]
     Type1000008C(OptionPropertyType1000008C),
 }
 
@@ -1621,9 +1484,7 @@ pub struct ItemProfileType1 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "PwdType")]
 pub enum ItemProfile {
-    #[serde(rename = "-1")]
     TypeNeg1(ItemProfileTypeNeg1),
-    #[serde(rename = "0x01")]
     Type1(ItemProfileType1),
 }
 
@@ -1885,19 +1746,19 @@ pub struct RawMotionState {
     #[serde(rename = "CurrentStyle")]
     pub current_style: Option<StanceMode>,
     #[serde(rename = "ForwardCommand")]
-    pub forward_command: Option<MovementCommand>,
+    pub forward_command: Option<Command>,
     #[serde(rename = "ForwardHoldkey")]
     pub forward_holdkey: Option<HoldKey>,
     #[serde(rename = "ForwardSpeed")]
     pub forward_speed: Option<f32>,
     #[serde(rename = "SidestepCommand")]
-    pub sidestep_command: Option<MovementCommand>,
+    pub sidestep_command: Option<Command>,
     #[serde(rename = "SidestepHoldkey")]
     pub sidestep_holdkey: Option<HoldKey>,
     #[serde(rename = "SidestepSpeed")]
     pub sidestep_speed: Option<f32>,
     #[serde(rename = "TurnCommand")]
-    pub turn_command: Option<MovementCommand>,
+    pub turn_command: Option<Command>,
     #[serde(rename = "TurnHoldkey")]
     pub turn_holdkey: Option<u32>,
     #[serde(rename = "TurnSpeed")]
@@ -2052,15 +1913,10 @@ pub struct MovementDataType9 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "MovementType")]
 pub enum MovementData {
-    #[serde(rename = "0x00")]
     Type0(MovementDataType0),
-    #[serde(rename = "0x06")]
     Type6(MovementDataType6),
-    #[serde(rename = "0x07")]
     Type7(MovementDataType7),
-    #[serde(rename = "0x08")]
     Type8(MovementDataType8),
-    #[serde(rename = "0x09")]
     Type9(MovementDataType9),
 }
 
@@ -2072,11 +1928,11 @@ pub struct InterpertedMotionState {
     #[serde(rename = "CurrentStyle")]
     pub current_style: Option<StanceMode>,
     #[serde(rename = "ForwardCommand")]
-    pub forward_command: Option<MovementCommand>,
+    pub forward_command: Option<Command>,
     #[serde(rename = "SidestepCommand")]
-    pub sidestep_command: Option<MovementCommand>,
+    pub sidestep_command: Option<Command>,
     #[serde(rename = "TurnCommand")]
-    pub turn_command: Option<MovementCommand>,
+    pub turn_command: Option<Command>,
     #[serde(rename = "ForwardSpeed")]
     pub forward_speed: Option<f32>,
     #[serde(rename = "SidestepSpeed")]
@@ -2625,11 +2481,8 @@ pub struct GameMoveDataType6 {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "Type")]
 pub enum GameMoveData {
-    #[serde(rename = "0x04")]
     Type4(GameMoveDataType4),
-    #[serde(rename = "0x05")]
     Type5(GameMoveDataType5),
-    #[serde(rename = "0x06")]
     Type6(GameMoveDataType6),
 }
 

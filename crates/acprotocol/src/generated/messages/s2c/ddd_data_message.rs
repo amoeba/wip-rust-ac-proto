@@ -48,9 +48,7 @@ pub struct DDDDataMessageType1 {
 #[serde(rename = "DDD_DataMessage")]
 #[serde(tag = "Compression")]
 pub enum DDDDataMessage {
-    #[serde(rename = "0x00")]
     Type0(DDDDataMessageType0),
-    #[serde(rename = "0x01")]
     Type1(DDDDataMessageType1),
 }
 

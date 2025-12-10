@@ -186,21 +186,14 @@ pub enum {type_name}{type_generics} {{\n"
             all_values.sort();
 
             let first_value = all_values[0];
-            let first_value_str = format_hex_value(first_value);
 
             let variant_name = super::helpers::generate_variant_name(first_value);
 
             let variant_struct_name =
                 super::enum_generation::generate_variant_struct_name(type_name, first_value);
 
-            // Primary serde rename
-            out.push_str(&format!("    #[serde(rename = \"{first_value_str}\")]\n"));
-
-            // Add aliases for additional values (if multi-value case)
-            for alias_value in &all_values[1..] {
-                let alias_str = format_hex_value(*alias_value);
-                out.push_str(&format!("    #[serde(alias = \"{alias_str}\")]\n"));
-            }
+            // For tagged enums, don't use serde rename/alias since it breaks serialization
+            // The variant name itself is sufficient for the tag
 
             // Use tuple variant that wraps the standalone struct
             out.push_str(&format!("    {variant_name}({variant_struct_name}),\n"));

@@ -142,11 +142,8 @@ pub enum CommunicationTurbineChatType5BlobDispatchTypeVariant {
 #[serde(rename = "Communication_TurbineChat")]
 #[serde(tag = "Type")]
 pub enum CommunicationTurbineChat {
-    #[serde(rename = "0x01")]
     Type1(CommunicationTurbineChatType1),
-    #[serde(rename = "0x03")]
     Type3(CommunicationTurbineChatType3),
-    #[serde(rename = "0x05")]
     Type5(CommunicationTurbineChatType5),
 }
 

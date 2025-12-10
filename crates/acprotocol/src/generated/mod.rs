@@ -5,3 +5,4 @@ pub mod gameactions;
 pub mod gameevents;
 pub mod packets;
 pub mod network;
+pub mod message_parser;

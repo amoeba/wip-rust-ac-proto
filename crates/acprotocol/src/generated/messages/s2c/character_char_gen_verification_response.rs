@@ -21,7 +21,6 @@ pub struct CharacterCharGenVerificationResponseType1 {
 #[serde(rename = "Character_CharGenVerificationResponse")]
 #[serde(tag = "ResponseType")]
 pub enum CharacterCharGenVerificationResponse {
-    #[serde(rename = "0x01")]
     Type1(CharacterCharGenVerificationResponseType1),
 }
 
