@@ -101,9 +101,10 @@ impl ParsedMessage {
         // Try C2S
         if let Ok(msg_type) = C2SMessage::try_from(self.opcode) {
             // For ordered messages, get the inner type from the payload
-            if msg_type == C2SMessage::OrderedGameAction && self.data.len() >= 8 {
-                // Read sequence (4 bytes) and action type (4 bytes)
-                let action_type_val = u32::from_le_bytes([self.data[4], self.data[5], self.data[6], self.data[7]]);
+            if msg_type == C2SMessage::OrderedGameAction && self.data.len() >= 12 {
+                // Skip the 4-byte outer opcode, then read sequence (4 bytes) and action type (4 bytes)
+                // So the structure is: [outer_opcode][sequence][action_type][payload...]
+                let action_type_val = u32::from_le_bytes([self.data[8], self.data[9], self.data[10], self.data[11]]);
                 if let Ok(game_action) = GameAction::try_from(action_type_val) {
                     return format!("{:?}", game_action);
                 }
@@ -116,9 +117,10 @@ impl ParsedMessage {
         // Try S2C
         if let Ok(msg_type) = S2CMessage::try_from(self.opcode) {
             // For ordered messages, get the inner type from the payload
-            if msg_type == S2CMessage::OrderedGameEvent && self.data.len() >= 12 {
-                // Read object ID (4 bytes), sequence (4 bytes), and event type (4 bytes)
-                let event_type_val = u32::from_le_bytes([self.data[8], self.data[9], self.data[10], self.data[11]]);
+            if msg_type == S2CMessage::OrderedGameEvent && self.data.len() >= 16 {
+                // Skip the 4-byte outer opcode, then read: object_id (4), sequence (4), event_type (4)
+                // So the structure is: [outer_opcode][object_id][sequence][event_type][payload...]
+                let event_type_val = u32::from_le_bytes([self.data[12], self.data[13], self.data[14], self.data[15]]);
                 if let Ok(game_event) = GameEvent::try_from(event_type_val) {
                     return format!("{:?}", game_event);
                 }
