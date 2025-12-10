@@ -65,3 +65,85 @@ impl PacketHeader {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_packet_header_flags() {
+        assert_eq!(PacketHeaderFlags::NONE.bits(), 0x00000000);
+        assert_eq!(PacketHeaderFlags::RETRANSMISSION.bits(), 0x00000001);
+        assert_eq!(PacketHeaderFlags::BLOB_FRAGMENTS.bits(), 0x00000004);
+        assert_eq!(PacketHeaderFlags::ACK_SEQUENCE.bits(), 0x00004000);
+        assert_eq!(PacketHeaderFlags::TIME_SYNC.bits(), 0x01000000);
+
+        // Test flag combinations
+        let combined = PacketHeaderFlags::RETRANSMISSION | PacketHeaderFlags::ACK_SEQUENCE;
+        assert!(combined.contains(PacketHeaderFlags::RETRANSMISSION));
+        assert!(combined.contains(PacketHeaderFlags::ACK_SEQUENCE));
+        assert!(!combined.contains(PacketHeaderFlags::TIME_SYNC));
+    }
+
+    #[test]
+    fn test_packet_header_parse() {
+        // Construct a minimal packet header (20 bytes)
+        let data = vec![
+            0x01, 0x00, 0x00, 0x00, // sequence: 1
+            0x04, 0x00, 0x00, 0x00, // flags: BLOB_FRAGMENTS (0x04)
+            0xAA, 0xBB, 0xCC, 0xDD, // checksum: 0xDDCCBBAA
+            0x34, 0x12, // id: 0x1234
+            0x78, 0x56, // time: 0x5678
+            0x00, 0x02, // size: 512
+            0x01, 0x00, // iteration: 1
+        ];
+
+        let mut reader = BinaryReader::new(&data);
+        let header = PacketHeader::parse(&mut reader).unwrap();
+
+        assert_eq!(header.sequence, 1);
+        assert_eq!(header.flags, PacketHeaderFlags::BLOB_FRAGMENTS);
+        assert_eq!(header.checksum, 0xDDCCBBAA);
+        assert_eq!(header.id, 0x1234);
+        assert_eq!(header.time, 0x5678);
+        assert_eq!(header.size, 512);
+        assert_eq!(header.iteration, 1);
+    }
+
+    #[test]
+    fn test_packet_header_parse_with_multiple_flags() {
+        // Test with multiple flags set
+        let data = vec![
+            0x00, 0x00, 0x00, 0x00, // sequence: 0
+            0x05, 0x40, 0x00, 0x00, // flags: BLOB_FRAGMENTS | ACK_SEQUENCE (0x4005)
+            0x00, 0x00, 0x00, 0x00, // checksum: 0
+            0x00, 0x00, // id: 0
+            0x00, 0x00, // time: 0
+            0x64, 0x00, // size: 100
+            0x00, 0x00, // iteration: 0
+        ];
+
+        let mut reader = BinaryReader::new(&data);
+        let header = PacketHeader::parse(&mut reader).unwrap();
+
+        assert!(header.flags.contains(PacketHeaderFlags::BLOB_FRAGMENTS));
+        assert!(header.flags.contains(PacketHeaderFlags::ACK_SEQUENCE));
+        assert_eq!(header.size, 100);
+    }
+
+    #[test]
+    fn test_packet_header_parse_insufficient_data() {
+        // Only 10 bytes when 20 are needed
+        let data = vec![0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
+
+        let mut reader = BinaryReader::new(&data);
+        let result = PacketHeader::parse(&mut reader);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_packet_header_base_size() {
+        assert_eq!(PacketHeader::BASE_SIZE, 20);
+    }
+}

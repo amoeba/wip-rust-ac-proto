@@ -120,3 +120,151 @@ impl Fragment {
         store.remove(&self.header.sequence);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fragment_chunk_size() {
+        assert_eq!(FRAGMENT_CHUNK_SIZE, 448);
+    }
+
+    #[test]
+    fn test_fragment_new() {
+        let fragment = Fragment::new(12345, 3);
+
+        assert_eq!(fragment.header.sequence, 12345);
+        assert_eq!(fragment.header.count, 3);
+        assert_eq!(fragment.data.len(), 3 * FRAGMENT_CHUNK_SIZE);
+        assert!(!fragment.is_complete());
+
+        // Cleanup
+        fragment.cleanup();
+    }
+
+    #[test]
+    fn test_fragment_add_chunk() {
+        let mut fragment = Fragment::new(100, 2);
+
+        // Add first chunk
+        let chunk1 = vec![0xAA; 100];
+        fragment.add_chunk(&chunk1, 0);
+
+        // Not complete yet
+        assert!(!fragment.is_complete());
+
+        // Add second chunk
+        let chunk2 = vec![0xBB; 200];
+        fragment.add_chunk(&chunk2, 1);
+
+        // Now it should be complete
+        assert!(fragment.is_complete());
+
+        // Verify data
+        let data = fragment.get_data();
+        assert_eq!(data[0], 0xAA);
+        assert_eq!(data[FRAGMENT_CHUNK_SIZE], 0xBB);
+
+        // Cleanup
+        fragment.cleanup();
+    }
+
+    #[test]
+    fn test_fragment_is_complete() {
+        let mut fragment = Fragment::new(200, 3);
+
+        assert!(!fragment.is_complete());
+
+        fragment.add_chunk(&[1; 10], 0);
+        assert!(!fragment.is_complete());
+
+        fragment.add_chunk(&[2; 10], 1);
+        assert!(!fragment.is_complete());
+
+        fragment.add_chunk(&[3; 10], 2);
+        assert!(fragment.is_complete());
+
+        // Cleanup
+        fragment.cleanup();
+    }
+
+    #[test]
+    fn test_fragment_duplicate_chunk() {
+        let mut fragment = Fragment::new(300, 2);
+
+        // Add same chunk twice
+        fragment.add_chunk(&[0xFF; 50], 0);
+        assert!(!fragment.is_complete());
+
+        fragment.add_chunk(&[0xEE; 50], 0); // Duplicate index 0
+        assert!(!fragment.is_complete()); // Still not complete (missing index 1)
+
+        fragment.add_chunk(&[0xDD; 50], 1);
+        assert!(fragment.is_complete());
+
+        // Cleanup
+        fragment.cleanup();
+    }
+
+    #[test]
+    fn test_fragment_set_and_get_info() {
+        let mut fragment = Fragment::new(400, 1);
+
+        fragment.set_fragment_info(1024, 5);
+
+        assert_eq!(fragment.get_size(), 1024);
+        assert_eq!(fragment.get_group(), 5);
+
+        // Cleanup
+        fragment.cleanup();
+    }
+
+    #[test]
+    fn test_fragment_get_data() {
+        let mut fragment = Fragment::new(500, 1);
+
+        let test_data = vec![0x12, 0x34, 0x56, 0x78];
+        fragment.add_chunk(&test_data, 0);
+
+        let data = fragment.get_data();
+        assert_eq!(data[0], 0x12);
+        assert_eq!(data[1], 0x34);
+        assert_eq!(data[2], 0x56);
+        assert_eq!(data[3], 0x78);
+
+        // Cleanup
+        fragment.cleanup();
+    }
+
+    #[test]
+    fn test_fragment_cleanup() {
+        let fragment = Fragment::new(600, 1);
+
+        // Verify metadata exists
+        {
+            let store = get_metadata_store().lock().unwrap();
+            assert!(store.contains_key(&600));
+        }
+
+        // Cleanup
+        fragment.cleanup();
+
+        // Verify metadata removed
+        {
+            let store = get_metadata_store().lock().unwrap();
+            assert!(!store.contains_key(&600));
+        }
+    }
+
+    #[test]
+    fn test_fragment_metadata_new() {
+        let metadata = FragmentMetadata::new(5);
+
+        assert_eq!(metadata.size, 0);
+        assert_eq!(metadata.group, 0);
+        assert_eq!(metadata.received_chunks, 0);
+        assert_eq!(metadata.chunks.len(), 5);
+        assert!(metadata.chunks.iter().all(|&c| !c));
+    }
+}

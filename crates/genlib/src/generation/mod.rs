@@ -330,96 +330,21 @@ pub fn generate_with_source(
         }
     }
 
-    // Generate mod.rs for c2s
-    let mut c2s_mod = String::new();
-    for module_name in &c2s_modules {
-        c2s_mod.push_str(&format!("pub mod {};\n", module_name));
-    }
-    c2s_mod.push('\n');
-    for module_name in &c2s_modules {
-        c2s_mod.push_str(&format!("pub use {}::*;\n", module_name));
-    }
-    files.push(GeneratedFile {
-        path: "messages/c2s/mod.rs".to_string(),
-        content: c2s_mod,
-    });
+    // Generate mod.rs files for all modules using helper function
+    files.push(helpers::generate_module_file(&c2s_modules, "messages/c2s/mod.rs"));
+    files.push(helpers::generate_module_file(&s2c_modules, "messages/s2c/mod.rs"));
 
-    // Generate mod.rs for s2c
-    let mut s2c_mod = String::new();
-    for module_name in &s2c_modules {
-        s2c_mod.push_str(&format!("pub mod {};\n", module_name));
-    }
-    s2c_mod.push('\n');
-    for module_name in &s2c_modules {
-        s2c_mod.push_str(&format!("pub use {}::*;\n", module_name));
-    }
-    files.push(GeneratedFile {
-        path: "messages/s2c/mod.rs".to_string(),
-        content: s2c_mod,
-    });
-
-    // Generate mod.rs for messages
+    // Generate mod.rs for messages parent module
     let messages_mod = "pub mod c2s;\npub mod s2c;\n";
     files.push(GeneratedFile {
         path: "messages/mod.rs".to_string(),
         content: messages_mod.to_string(),
     });
 
-    // Generate mod.rs for gameactions
-    let mut gameactions_mod = String::new();
-    for module_name in &game_action_modules {
-        gameactions_mod.push_str(&format!("pub mod {};\n", module_name));
-    }
-    gameactions_mod.push('\n');
-    for module_name in &game_action_modules {
-        gameactions_mod.push_str(&format!("pub use {}::*;\n", module_name));
-    }
-    files.push(GeneratedFile {
-        path: "gameactions/mod.rs".to_string(),
-        content: gameactions_mod,
-    });
-
-    // Generate mod.rs for gameevents
-    let mut gameevents_mod = String::new();
-    for module_name in &game_event_modules {
-        gameevents_mod.push_str(&format!("pub mod {};\n", module_name));
-    }
-    gameevents_mod.push('\n');
-    for module_name in &game_event_modules {
-        gameevents_mod.push_str(&format!("pub use {}::*;\n", module_name));
-    }
-    files.push(GeneratedFile {
-        path: "gameevents/mod.rs".to_string(),
-        content: gameevents_mod,
-    });
-
-    // Generate mod.rs for packets (from protocol.xml <packets>)
-    let mut packets_mod = String::new();
-    for module_name in &packet_modules {
-        packets_mod.push_str(&format!("pub mod {};\n", module_name));
-    }
-    packets_mod.push('\n');
-    for module_name in &packet_modules {
-        packets_mod.push_str(&format!("pub use {}::*;\n", module_name));
-    }
-    files.push(GeneratedFile {
-        path: "packets/mod.rs".to_string(),
-        content: packets_mod,
-    });
-
-    // Generate mod.rs for network (from network.xml <packets>)
-    let mut network_mod = String::new();
-    for module_name in &network_modules {
-        network_mod.push_str(&format!("pub mod {};\n", module_name));
-    }
-    network_mod.push('\n');
-    for module_name in &network_modules {
-        network_mod.push_str(&format!("pub use {}::*;\n", module_name));
-    }
-    files.push(GeneratedFile {
-        path: "network/mod.rs".to_string(),
-        content: network_mod,
-    });
+    files.push(helpers::generate_module_file(&game_action_modules, "gameactions/mod.rs"));
+    files.push(helpers::generate_module_file(&game_event_modules, "gameevents/mod.rs"));
+    files.push(helpers::generate_module_file(&packet_modules, "packets/mod.rs"));
+    files.push(helpers::generate_module_file(&network_modules, "network/mod.rs"));
 
     // Generate root mod.rs for generated
     let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\n";
