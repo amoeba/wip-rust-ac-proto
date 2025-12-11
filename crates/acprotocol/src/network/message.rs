@@ -33,18 +33,16 @@ where
     let opcode = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
 
     // Try to parse the data as a structured message
+    // STRICT MODE: Fail loudly on any parsing error instead of falling back to hex
     match parse_message_to_json(opcode, data) {
         Ok(json_value) => json_value.serialize(serializer),
         Err(e) => {
-            // Debug: log the error (only if it's unusual)
-            let error_msg = format!("Failed to parse opcode 0x{:04x}: {}", opcode, e);
-            if !error_msg.contains("No discriminant in enum") && !error_msg.contains("invalid utf-8") {
-                eprintln!("{}", error_msg);
-            }
-
-            // Fallback to hex string if parsing fails
-            let hex_string: String = data.iter().map(|b| format!("{b:02x}")).collect();
-            serializer.serialize_str(&hex_string)
+            // STRICT: Always fail and panic with full error details
+            let hex_string: String = data.iter().map(|b| format!("{:02x}", b)).collect();
+            panic!(
+                "STRICT PARSING FAILED for opcode 0x{:04x}:\n  Error: {}\n  Raw data (hex): {}",
+                opcode, e, hex_string
+            );
         }
     }
 }
@@ -96,15 +94,22 @@ impl ParsedMessage {
 
     /// Get the human-readable message type name
     pub fn message_type_name(&self) -> String {
-        use crate::generated::enums::{C2SMessage, S2CMessage, GameEvent, GameAction};
+        use crate::generated::enums::{C2SMessage, GameAction, GameEvent, S2CMessage};
 
-        // Try C2S
+        // Skip the first 4 bytes which is the opcode, and then try to identify the inner message type
+        // for ordered messages
+        if self.data.len() < 4 {
+            return "Unknown".to_string();
+        }
+
+        let payload = &self.data[4..]; // Skip the outer opcode
+
+        // Based on the outer opcode, interpret the inner payload
         if let Ok(msg_type) = C2SMessage::try_from(self.opcode) {
-            // For ordered messages, get the inner type from the payload
-            if msg_type == C2SMessage::OrderedGameAction && self.data.len() >= 12 {
-                // Skip the 4-byte outer opcode, then read sequence (4 bytes) and action type (4 bytes)
-                // So the structure is: [outer_opcode][sequence][action_type][payload...]
-                let action_type_val = u32::from_le_bytes([self.data[8], self.data[9], self.data[10], self.data[11]]);
+            if msg_type == C2SMessage::OrderedGameAction && payload.len() >= 8 {
+                // For OrderedGameAction: [sequence (4)] [action_type (4)] [payload...]
+                let action_type_val =
+                    u32::from_le_bytes([payload[4], payload[5], payload[6], payload[7]]);
                 if let Ok(game_action) = GameAction::try_from(action_type_val) {
                     return format!("{:?}", game_action);
                 }
@@ -114,13 +119,11 @@ impl ParsedMessage {
             return format!("{:?}", msg_type);
         }
 
-        // Try S2C
         if let Ok(msg_type) = S2CMessage::try_from(self.opcode) {
-            // For ordered messages, get the inner type from the payload
-            if msg_type == S2CMessage::OrderedGameEvent && self.data.len() >= 16 {
-                // Skip the 4-byte outer opcode, then read: object_id (4), sequence (4), event_type (4)
-                // So the structure is: [outer_opcode][object_id][sequence][event_type][payload...]
-                let event_type_val = u32::from_le_bytes([self.data[12], self.data[13], self.data[14], self.data[15]]);
+            if msg_type == S2CMessage::OrderedGameEvent && payload.len() >= 12 {
+                // For OrderedGameEvent: [object_id (4)] [sequence (4)] [event_type (4)] [payload...]
+                let event_type_val =
+                    u32::from_le_bytes([payload[8], payload[9], payload[10], payload[11]]);
                 if let Ok(game_event) = GameEvent::try_from(event_type_val) {
                     return format!("{:?}", game_event);
                 }

@@ -3030,7 +3030,7 @@ impl crate::readers::ACDataType for EnvrionChangeType {
 #[repr(u8)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum MovementType {
-    InterpertedMotionState = 0x0,
+    InterpretedMotionState = 0x0,
     MoveToObject = 0x6,
     MoveToPosition = 0x7,
     TurnToObject = 0x8,

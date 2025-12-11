@@ -1827,7 +1827,7 @@ pub struct MovementDataType0 {
     #[serde(rename = "Stance")]
     pub stance: StanceMode,
     #[serde(rename = "State")]
-    pub state: InterpertedMotionState,
+    pub state: InterpretedMotionState,
     #[serde(rename = "StickyObject")]
     pub sticky_object: Option<ObjectId>,
 }
@@ -1922,7 +1922,7 @@ pub enum MovementData {
 
 // Contains information for animations and general free motion
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct InterpertedMotionState {
+pub struct InterpretedMotionState {
     #[serde(rename = "Flags")]
     pub flags: u32,
     #[serde(rename = "CurrentStyle")]
@@ -5720,7 +5720,7 @@ impl crate::readers::ACDataType for PositionPack {
 
 impl MovementDataType0 {
     pub fn read(reader: &mut dyn ACReader, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
-        let state = InterpertedMotionState::read(reader)?;
+        let state = InterpretedMotionState::read(reader)?;
         let sticky_object = if (option_flags.clone() as u32 & 0x01) != 0 { ObjectId::read(reader).map(Some) } else { Ok(None) }?;
 
         Ok(Self {
@@ -5819,7 +5819,7 @@ impl MovementData {
         let stance = StanceMode::try_from(read_u16(reader)?)?;
 
         match movement_type {
-            MovementType::InterpertedMotionState => {
+            MovementType::InterpretedMotionState => {
                 let variant_struct = MovementDataType0::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type0(variant_struct))
             },
@@ -5849,7 +5849,7 @@ impl crate::readers::ACDataType for MovementData {
     }
 }
 
-impl InterpertedMotionState {
+impl InterpretedMotionState {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
         let command_list_length = ((flags >> 7) & 0x7f) as u32;
@@ -5898,9 +5898,9 @@ impl InterpertedMotionState {
     }
 }
 
-impl crate::readers::ACDataType for InterpertedMotionState {
+impl crate::readers::ACDataType for InterpretedMotionState {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        InterpertedMotionState::read(reader)
+        InterpretedMotionState::read(reader)
     }
 }
 
