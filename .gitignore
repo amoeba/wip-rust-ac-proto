@@ -1,5 +1,7 @@
 /target
-bin
-obj
+pcap-cli/bin
+pcap-cli/obj
+test-harness/csharp-tester/bin
+test-harness/csharp-tester/obj
 test-harness/data
 test-harness/pcaps

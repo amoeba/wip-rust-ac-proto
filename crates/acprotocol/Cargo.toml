@@ -25,3 +25,8 @@ cli = ["clap"]
 name = "pcap"
 path = "src/bin/pcap.rs"
 required-features = ["cli"]
+
+[[bin]]
+name = "pcap-unified"
+path = "src/bin/pcap-unified.rs"
+required-features = ["cli"]

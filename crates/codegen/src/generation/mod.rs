@@ -6,6 +6,7 @@ pub mod read_generation;
 pub mod reader_generation;
 pub mod type_generation;
 pub mod types;
+pub mod unified_message_generation;
 
 use std::collections::BTreeMap;
 
@@ -355,10 +356,24 @@ pub fn generate_with_source(
             path: "message_parser.rs".to_string(),
             content: message_parser_content,
         });
+
+        // Generate unified message types
+        let unified_message_content =
+            unified_message_generation::generate_unified_message_types(
+                &rectified_c2s_types,
+                &rectified_s2c_types,
+                &game_action_types,
+                &game_event_types,
+                &enum_types
+            );
+        files.push(GeneratedFile {
+            path: "unified.rs".to_string(),
+            content: unified_message_content,
+        });
     }
 
     // Generate root mod.rs for generated
-    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\npub mod message_parser;\n";
+    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\npub mod message_parser;\npub mod unified;\n";
     files.push(GeneratedFile {
         path: "mod.rs".to_string(),
         content: generated_mod.to_string(),
