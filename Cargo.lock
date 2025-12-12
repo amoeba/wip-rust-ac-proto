@@ -9,8 +9,8 @@ dependencies = [
  "anyhow",
  "bitflags",
  "clap",
+ "codegen",
  "env_logger",
- "genlib",
  "num_enum",
  "serde",
  "serde_json",
@@ -131,6 +131,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1d728cc89cf3aee9ff92b05e62b19ee65a02b5702cff7d5a377e32c6ae29d8d"
 
 [[package]]
+name = "codegen"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "log",
+ "quick-xml",
+]
+
+[[package]]
 name = "colorchoice"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -164,15 +173,6 @@ name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
-
-[[package]]
-name = "genlib"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "log",
- "quick-xml",
-]
 
 [[package]]
 name = "hashbrown"
@@ -503,7 +503,7 @@ dependencies = [
 name = "xtask"
 version = "0.1.0"
 dependencies = [
+ "codegen",
  "env_logger",
- "genlib",
  "log",
 ]

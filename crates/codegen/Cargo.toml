@@ -1,5 +1,5 @@
 [package]
-name = "genlib"
+name = "codegen"
 version.workspace = true
 edition.workspace = true
 

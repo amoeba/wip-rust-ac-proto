@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
   "crates/acprotocol",
-  "crates/genlib",
+  "crates/codegen",
   "test-harness/rust-tester",
   "xtask",
 ]

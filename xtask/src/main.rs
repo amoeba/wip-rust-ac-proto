@@ -30,7 +30,7 @@ fn generate() {
     }
 
     // Use shared code generation workflow
-    genlib::codegen::generate_and_write(&workspace_root, &generated_dir, &filter_types)
+    codegen::codegen::generate_and_write(&workspace_root, &generated_dir, &filter_types)
         .expect("Code generation failed");
 
     println!("Code generation complete!");
