@@ -131,22 +131,23 @@ impl FragmentAssembler {
 
             // If this packet has fragments, parse them
              if header.flags.contains(PacketHeaderFlags::BLOB_FRAGMENTS) {
-                 while reader.position() < packet_end && reader.remaining() > 0 {
-                     match self.parse_fragment_internal(&mut reader, Some(header.iteration)) {
-                         Ok(Some(msg)) => {
-                             completed_messages.push(msg);
-                         }
-                         Ok(None) => {
-                             // Fragment received but not complete yet
-                         }
-                         Err(_e) => {
-                             // Fragment parsing failed - skip to end of packet like C# does
-                             // C# catches exceptions in ParseFragment and returns null,
-                             // then the outer loop advances to the next packet
-                             break;  // Break to next packet
-                         }
-                     }
-                 }
+                  let header_flags = header.flags.bits();
+                  while reader.position() < packet_end && reader.remaining() > 0 {
+                      match self.parse_fragment_internal(&mut reader, Some(header.iteration), Some(header_flags)) {
+                          Ok(Some(msg)) => {
+                              completed_messages.push(msg);
+                          }
+                          Ok(None) => {
+                              // Fragment received but not complete yet
+                          }
+                          Err(_e) => {
+                              // Fragment parsing failed - skip to end of packet like C# does
+                              // C# catches exceptions in ParseFragment and returns null,
+                              // then the outer loop advances to the next packet
+                              break;  // Break to next packet
+                          }
+                      }
+                  }
              }
 
             // Move to next packet
@@ -164,6 +165,7 @@ impl FragmentAssembler {
        &mut self,
        reader: &mut BinaryReader,
        packet_iteration: Option<u16>,
+       header_flags: Option<u32>,
     ) -> io::Result<Option<ParsedMessage>> {
        let sequence = reader.read_u32()?;
        let id = reader.read_u32()?;
@@ -206,7 +208,7 @@ impl FragmentAssembler {
              self.next_message_id += 1;
         
              let parsed_msg =
-                 ParsedMessage::from_fragment_with_iteration(assembled_data, sequence, msg_id, packet_iteration)?;
+                 ParsedMessage::from_fragment_with_iteration(assembled_data, sequence, msg_id, packet_iteration, header_flags)?;
              Ok(Some(parsed_msg))
          } else {
              Ok(None)
@@ -216,7 +218,7 @@ impl FragmentAssembler {
         /// Parse a single fragment from the reader
         /// Returns Some(ParsedMessage) if the fragment completes a message, None otherwise
         fn parse_fragment(&mut self, reader: &mut BinaryReader) -> io::Result<Option<ParsedMessage>> {
-         self.parse_fragment_internal(reader, None)
+         self.parse_fragment_internal(reader, None, None)
         }
         }
 

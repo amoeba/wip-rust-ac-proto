@@ -27,6 +27,9 @@ pub struct ParsedMessage {
     /// Packet iteration counter (from AC packet header)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub iteration: Option<u16>,
+    /// Packet header flags (Flow, ACK, etc.)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub header_flags: Option<u32>,
 }
 
 fn serialize_parsed_data<S>(data: &[u8], serializer: S) -> Result<S::Ok, S::Error>
@@ -88,7 +91,7 @@ impl ParsedMessage {
 
     /// Parse a message from assembled fragment data
     pub fn from_fragment(data: Vec<u8>, sequence: u32, id: u32) -> io::Result<Self> {
-        Self::from_fragment_with_iteration(data, sequence, id, None)
+        Self::from_fragment_with_iteration(data, sequence, id, None, None)
     }
 
     /// Parse a message from assembled fragment data with packet header info
@@ -97,6 +100,7 @@ impl ParsedMessage {
         sequence: u32,
         id: u32,
         iteration: Option<u16>,
+        header_flags: Option<u32>,
     ) -> io::Result<Self> {
         if data.len() < 4 {
             return Err(io::Error::new(
@@ -117,6 +121,7 @@ impl ParsedMessage {
             data,
             sequence,
             iteration,
+            header_flags,
         };
 
         let message_type = message.message_type_name();
@@ -137,6 +142,7 @@ impl ParsedMessage {
             data: message.data,
             sequence: message.sequence,
             iteration: message.iteration,
+            header_flags,
         })
     }
 
