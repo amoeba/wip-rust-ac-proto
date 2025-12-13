@@ -57,6 +57,8 @@ mod tui {
     };
     use serde_json::Value;
     use std::io;
+    use acprotocol::enums::PacketHeaderFlags;
+    use acprotocol::packet_flags::format_packet_flags;
 
     pub fn run(path: &Path) -> Result<()> {
         // Setup terminal
@@ -536,7 +538,7 @@ mod tui {
                     // Format header_flags if present
                     if let Some(flags_val) = json_val.get("header_flags") {
                         if let Some(flags_num) = flags_val.as_u64() {
-                            let formatted_flags = format_packet_flags(flags_num as u32);
+                            let formatted_flags = format_packet_flags(PacketHeaderFlags::from_bits_retain(flags_num as u32));
                             json_val["header_flags"] = Value::String(formatted_flags);
                         }
                     }
@@ -686,106 +688,7 @@ mod tui {
         format!("{}.{:03}", ts_sec, millis)
     }
 
-    fn format_packet_flags(flags_u32: u32) -> String {
-        let mut flags = Vec::new();
-        
-        // Map of flag bits to names (from protocol.xml)
-        const RETRANSMISSION: u32 = 0x00000001;
-        const ENCRYPTED_CHECKSUM: u32 = 0x00000002;
-        const BLOB_FRAGMENTS: u32 = 0x00000004;
-        const SERVER_SWITCH: u32 = 0x00000100;
-        const LOGON_SERVER_ADDR: u32 = 0x00000200;
-        const EMPTY_HEADER1: u32 = 0x00000400;
-        const REFERRAL: u32 = 0x00000800;
-        const REQUEST_RETRANSMIT: u32 = 0x00001000;
-        const REJECT_RETRANSMIT: u32 = 0x00002000;
-        const ACK_SEQUENCE: u32 = 0x00004000;
-        const DISCONNECT: u32 = 0x00008000;
-        const LOGIN_REQUEST: u32 = 0x00010000;
-        const WORLD_LOGIN_REQUEST: u32 = 0x00020000;
-        const CONNECT_REQUEST: u32 = 0x00040000;
-        const CONNECT_RESPONSE: u32 = 0x00080000;
-        const NET_ERROR: u32 = 0x00100000;
-        const NET_ERROR_DISCONNECT: u32 = 0x00200000;
-        const CICMD_COMMAND: u32 = 0x00400000;
-        const TIME_SYNC: u32 = 0x01000000;
-        const ECHO_REQUEST: u32 = 0x02000000;
-        const ECHO_RESPONSE: u32 = 0x04000000;
-        const FLOW: u32 = 0x08000000;
-        
-        if flags_u32 & RETRANSMISSION != 0 {
-            flags.push("Retrans");
-        }
-        if flags_u32 & ENCRYPTED_CHECKSUM != 0 {
-            flags.push("EncCksum");
-        }
-        if flags_u32 & BLOB_FRAGMENTS != 0 {
-            flags.push("BlobFrag");
-        }
-        if flags_u32 & SERVER_SWITCH != 0 {
-            flags.push("SrvSwitch");
-        }
-        if flags_u32 & LOGON_SERVER_ADDR != 0 {
-            flags.push("LogonAddr");
-        }
-        if flags_u32 & EMPTY_HEADER1 != 0 {
-            flags.push("EmptyHdr1");
-        }
-        if flags_u32 & REFERRAL != 0 {
-            flags.push("Referral");
-        }
-        if flags_u32 & REQUEST_RETRANSMIT != 0 {
-            flags.push("ReqRetrans");
-        }
-        if flags_u32 & REJECT_RETRANSMIT != 0 {
-            flags.push("RejRetrans");
-        }
-        if flags_u32 & ACK_SEQUENCE != 0 {
-            flags.push("Ack");
-        }
-        if flags_u32 & DISCONNECT != 0 {
-            flags.push("Disc");
-        }
-        if flags_u32 & LOGIN_REQUEST != 0 {
-            flags.push("Login");
-        }
-        if flags_u32 & WORLD_LOGIN_REQUEST != 0 {
-            flags.push("WorldLogin");
-        }
-        if flags_u32 & CONNECT_REQUEST != 0 {
-            flags.push("ConnectReq");
-        }
-        if flags_u32 & CONNECT_RESPONSE != 0 {
-            flags.push("ConnectResp");
-        }
-        if flags_u32 & NET_ERROR != 0 {
-            flags.push("NetErr");
-        }
-        if flags_u32 & NET_ERROR_DISCONNECT != 0 {
-            flags.push("NetErrDisc");
-        }
-        if flags_u32 & CICMD_COMMAND != 0 {
-            flags.push("CICMD");
-        }
-        if flags_u32 & TIME_SYNC != 0 {
-            flags.push("TimeSync");
-        }
-        if flags_u32 & ECHO_REQUEST != 0 {
-            flags.push("EchoReq");
-        }
-        if flags_u32 & ECHO_RESPONSE != 0 {
-            flags.push("EchoResp");
-        }
-        if flags_u32 & FLOW != 0 {
-            flags.push("Flow");
-        }
-        
-        if flags.is_empty() {
-            "None".to_string()
-        } else {
-            flags.join("|")
-        }
-    }
+
 
     fn extract_packet_info(
         id: u32,
@@ -825,7 +728,7 @@ mod tui {
         let flags = json_val
             .get("header_flags")
             .and_then(|v| v.as_u64())
-            .map(|f| format_packet_flags(f as u32))
+            .map(|f| format_packet_flags(PacketHeaderFlags::from_bits_retain(f as u32)))
             .unwrap_or_else(|| "Unknown".to_string());
 
         // Extract queue from JSON (already populated from codegen)

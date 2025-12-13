@@ -10,4 +10,5 @@ pub use generated::types;
 pub use generated::unified;
 
 pub mod network;
+pub mod packet_flags;
 pub mod readers;
