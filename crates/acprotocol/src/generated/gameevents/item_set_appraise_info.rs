@@ -16,57 +16,57 @@ pub struct ItemSetAppraiseInfo {
     pub flags: u32,
     #[serde(rename = "Success")]
     pub success: bool,
-    #[serde(rename = "IntProperties")]
+    #[serde(rename = "IntProperties", skip_serializing_if = "Option::is_none")]
     pub int_properties: Option<PackableHashTable<PropertyInt, i32>>,
-    #[serde(rename = "Int64Properties")]
+    #[serde(rename = "Int64Properties", skip_serializing_if = "Option::is_none")]
     pub int64_properties: Option<PackableHashTable<PropertyInt64, i64>>,
-    #[serde(rename = "BoolProperties")]
+    #[serde(rename = "BoolProperties", skip_serializing_if = "Option::is_none")]
     pub bool_properties: Option<PackableHashTable<PropertyBool, bool>>,
-    #[serde(rename = "FloatProperties")]
+    #[serde(rename = "FloatProperties", skip_serializing_if = "Option::is_none")]
     pub float_properties: Option<PackableHashTable<PropertyFloat, f64>>,
-    #[serde(rename = "StringProperties")]
+    #[serde(rename = "StringProperties", skip_serializing_if = "Option::is_none")]
     pub string_properties: Option<PackableHashTable<PropertyString, String>>,
-    #[serde(rename = "DataIdProperties")]
+    #[serde(rename = "DataIdProperties", skip_serializing_if = "Option::is_none")]
     pub data_id_properties: Option<PackableHashTable<PropertyDataId, DataId>>,
-    #[serde(rename = "SpellBook")]
+    #[serde(rename = "SpellBook", skip_serializing_if = "Option::is_none")]
     pub spell_book: Option<PackableList<LayeredSpellId>>,
-    #[serde(rename = "ArmorProfile")]
+    #[serde(rename = "ArmorProfile", skip_serializing_if = "Option::is_none")]
     pub armor_profile: Option<ArmorProfile>,
-    #[serde(rename = "CreatureProfile")]
+    #[serde(rename = "CreatureProfile", skip_serializing_if = "Option::is_none")]
     pub creature_profile: Option<CreatureAppraisalProfile>,
-    #[serde(rename = "WeaponProfile")]
+    #[serde(rename = "WeaponProfile", skip_serializing_if = "Option::is_none")]
     pub weapon_profile: Option<WeaponProfile>,
-    #[serde(rename = "HookProfile")]
+    #[serde(rename = "HookProfile", skip_serializing_if = "Option::is_none")]
     pub hook_profile: Option<HookAppraisalProfile>,
-    #[serde(rename = "ArmorHighlight")]
+    #[serde(rename = "ArmorHighlight", skip_serializing_if = "Option::is_none")]
     pub armor_highlight: Option<ArmorHighlightMask>,
-    #[serde(rename = "ArmorColor")]
+    #[serde(rename = "ArmorColor", skip_serializing_if = "Option::is_none")]
     pub armor_color: Option<ArmorHighlightMask>,
-    #[serde(rename = "WeaponHighlight")]
+    #[serde(rename = "WeaponHighlight", skip_serializing_if = "Option::is_none")]
     pub weapon_highlight: Option<WeaponHighlightMask>,
-    #[serde(rename = "WeaponColor")]
+    #[serde(rename = "WeaponColor", skip_serializing_if = "Option::is_none")]
     pub weapon_color: Option<WeaponHighlightMask>,
-    #[serde(rename = "ResistHighlight")]
+    #[serde(rename = "ResistHighlight", skip_serializing_if = "Option::is_none")]
     pub resist_highlight: Option<ResistHighlightMask>,
-    #[serde(rename = "ResistColor")]
+    #[serde(rename = "ResistColor", skip_serializing_if = "Option::is_none")]
     pub resist_color: Option<ResistHighlightMask>,
-    #[serde(rename = "BaseArmorHead")]
+    #[serde(rename = "BaseArmorHead", skip_serializing_if = "Option::is_none")]
     pub base_armor_head: Option<u32>,
-    #[serde(rename = "BaseArmorChest")]
+    #[serde(rename = "BaseArmorChest", skip_serializing_if = "Option::is_none")]
     pub base_armor_chest: Option<u32>,
-    #[serde(rename = "BaseArmorGroin")]
+    #[serde(rename = "BaseArmorGroin", skip_serializing_if = "Option::is_none")]
     pub base_armor_groin: Option<u32>,
-    #[serde(rename = "BaseArmorBicep")]
+    #[serde(rename = "BaseArmorBicep", skip_serializing_if = "Option::is_none")]
     pub base_armor_bicep: Option<u32>,
-    #[serde(rename = "BaseArmorWrist")]
+    #[serde(rename = "BaseArmorWrist", skip_serializing_if = "Option::is_none")]
     pub base_armor_wrist: Option<u32>,
-    #[serde(rename = "BaseArmorHand")]
+    #[serde(rename = "BaseArmorHand", skip_serializing_if = "Option::is_none")]
     pub base_armor_hand: Option<u32>,
-    #[serde(rename = "BaseArmorThigh")]
+    #[serde(rename = "BaseArmorThigh", skip_serializing_if = "Option::is_none")]
     pub base_armor_thigh: Option<u32>,
-    #[serde(rename = "BaseArmorShin")]
+    #[serde(rename = "BaseArmorShin", skip_serializing_if = "Option::is_none")]
     pub base_armor_shin: Option<u32>,
-    #[serde(rename = "BaseArmorFoot")]
+    #[serde(rename = "BaseArmorFoot", skip_serializing_if = "Option::is_none")]
     pub base_armor_foot: Option<u32>,
 }
 

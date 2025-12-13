@@ -23,21 +23,21 @@ pub struct S2CPacket {
     pub size: u16,
     #[serde(rename = "Iteration")]
     pub iteration: u16,
-    #[serde(rename = "AckSequence")]
+    #[serde(rename = "AckSequence", skip_serializing_if = "Option::is_none")]
     pub ack_sequence: Option<u32>,
-    #[serde(rename = "LogonServerAddr")]
+    #[serde(rename = "LogonServerAddr", skip_serializing_if = "Option::is_none")]
     pub logon_server_addr: Option<SocketAddress>,
-    #[serde(rename = "Referral")]
+    #[serde(rename = "Referral", skip_serializing_if = "Option::is_none")]
     pub referral: Option<ReferralHeader>,
-    #[serde(rename = "ConnectRequest")]
+    #[serde(rename = "ConnectRequest", skip_serializing_if = "Option::is_none")]
     pub connect_request: Option<ConnectRequestHeader>,
-    #[serde(rename = "NetError")]
+    #[serde(rename = "NetError", skip_serializing_if = "Option::is_none")]
     pub net_error: Option<NetError>,
-    #[serde(rename = "NetErrorDisconnect")]
+    #[serde(rename = "NetErrorDisconnect", skip_serializing_if = "Option::is_none")]
     pub net_error_disconnect: Option<NetError>,
-    #[serde(rename = "EchoResponse")]
+    #[serde(rename = "EchoResponse", skip_serializing_if = "Option::is_none")]
     pub echo_response: Option<EchoResponseHeader>,
-    #[serde(rename = "Fragments")]
+    #[serde(rename = "Fragments", skip_serializing_if = "Option::is_none")]
     pub fragments: Option<BlobFragments>,
 }
 

@@ -23,29 +23,29 @@ pub struct C2SPacket {
     pub size: u16,
     #[serde(rename = "Iteration")]
     pub iteration: u16,
-    #[serde(rename = "ServerSwitch")]
+    #[serde(rename = "ServerSwitch", skip_serializing_if = "Option::is_none")]
     pub server_switch: Option<ServerSwitchHeader>,
-    #[serde(rename = "RetransmitSequences")]
+    #[serde(rename = "RetransmitSequences", skip_serializing_if = "Option::is_none")]
     pub retransmit_sequences: Option<PackableList<u32>>,
-    #[serde(rename = "RejectSequences")]
+    #[serde(rename = "RejectSequences", skip_serializing_if = "Option::is_none")]
     pub reject_sequences: Option<PackableList<u32>>,
-    #[serde(rename = "AckSequence")]
+    #[serde(rename = "AckSequence", skip_serializing_if = "Option::is_none")]
     pub ack_sequence: Option<u32>,
-    #[serde(rename = "LoginRequest")]
+    #[serde(rename = "LoginRequest", skip_serializing_if = "Option::is_none")]
     pub login_request: Option<LoginRequestHeader>,
-    #[serde(rename = "WorldLoginRequest")]
+    #[serde(rename = "WorldLoginRequest", skip_serializing_if = "Option::is_none")]
     pub world_login_request: Option<u64>,
-    #[serde(rename = "ConnectResponse")]
+    #[serde(rename = "ConnectResponse", skip_serializing_if = "Option::is_none")]
     pub connect_response: Option<u64>,
-    #[serde(rename = "CICMDCommand")]
+    #[serde(rename = "CICMDCommand", skip_serializing_if = "Option::is_none")]
     pub cicmd_command: Option<CICMDCommandHeader>,
-    #[serde(rename = "Time")]
+    #[serde(rename = "Time", skip_serializing_if = "Option::is_none")]
     pub time: Option<u64>,
-    #[serde(rename = "EchoTime")]
+    #[serde(rename = "EchoTime", skip_serializing_if = "Option::is_none")]
     pub echo_time: Option<f32>,
-    #[serde(rename = "Flow")]
+    #[serde(rename = "Flow", skip_serializing_if = "Option::is_none")]
     pub flow: Option<FlowHeader>,
-    #[serde(rename = "Fragments")]
+    #[serde(rename = "Fragments", skip_serializing_if = "Option::is_none")]
     pub fragments: Option<BlobFragments>,
 }
 

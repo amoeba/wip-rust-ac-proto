@@ -105,10 +105,21 @@ pub fn generate_field_line(field: &Field, is_enum_variant: bool) -> String {
     // Enum variant fields can't have pub visibility
     let visibility = if is_enum_variant { "" } else { "pub " };
 
+    // Build serde attributes
+    let mut serde_attrs = Vec::new();
     if safe_id.needs_rename {
+        serde_attrs.push(format!("rename = \"{original_name}\""));
+    }
+    if field.is_optional {
+        serde_attrs.push("skip_serializing_if = \"Option::is_none\"".to_string());
+    }
+
+    if !serde_attrs.is_empty() {
         format!(
-            "    #[serde(rename = \"{original_name}\")]\n    {}{}: {rust_type}",
-            visibility, safe_id.name
+            "    #[serde({})]\n    {}{}: {rust_type}",
+            serde_attrs.join(", "),
+            visibility,
+            safe_id.name
         )
     } else {
         format!("    {}{}: {rust_type}", visibility, safe_id.name)

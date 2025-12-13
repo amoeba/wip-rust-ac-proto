@@ -293,21 +293,21 @@ pub struct ACBaseQualities {
     pub flags: ACBaseQualitiesFlags,
     #[serde(rename = "WeenieType")]
     pub weenie_type: WeenieType,
-    #[serde(rename = "IntProperties")]
+    #[serde(rename = "IntProperties", skip_serializing_if = "Option::is_none")]
     pub int_properties: Option<PackableHashTable<PropertyInt, i32>>,
-    #[serde(rename = "Int64Properties")]
+    #[serde(rename = "Int64Properties", skip_serializing_if = "Option::is_none")]
     pub int64_properties: Option<PackableHashTable<PropertyInt64, i64>>,
-    #[serde(rename = "BoolProperties")]
+    #[serde(rename = "BoolProperties", skip_serializing_if = "Option::is_none")]
     pub bool_properties: Option<PackableHashTable<PropertyBool, bool>>,
-    #[serde(rename = "FloatProperties")]
+    #[serde(rename = "FloatProperties", skip_serializing_if = "Option::is_none")]
     pub float_properties: Option<PackableHashTable<PropertyFloat, f64>>,
-    #[serde(rename = "StringProperties")]
+    #[serde(rename = "StringProperties", skip_serializing_if = "Option::is_none")]
     pub string_properties: Option<PackableHashTable<PropertyString, String>>,
-    #[serde(rename = "DataProperties")]
+    #[serde(rename = "DataProperties", skip_serializing_if = "Option::is_none")]
     pub data_properties: Option<PackableHashTable<PropertyDataId, DataId>>,
-    #[serde(rename = "InstanceProperties")]
+    #[serde(rename = "InstanceProperties", skip_serializing_if = "Option::is_none")]
     pub instance_properties: Option<PackableHashTable<PropertyInstanceId, ObjectId>>,
-    #[serde(rename = "PositionProperties")]
+    #[serde(rename = "PositionProperties", skip_serializing_if = "Option::is_none")]
     pub position_properties: Option<PackableHashTable<PropertyPosition, Position>>,
 }
 
@@ -318,29 +318,29 @@ pub struct ACQualities {
     pub flags: ACQualitiesFlags,
     #[serde(rename = "HasHealth")]
     pub has_health: bool,
-    #[serde(rename = "Attributes")]
+    #[serde(rename = "Attributes", skip_serializing_if = "Option::is_none")]
     pub attributes: Option<AttributeCache>,
-    #[serde(rename = "Skills")]
+    #[serde(rename = "Skills", skip_serializing_if = "Option::is_none")]
     pub skills: Option<PackableHashTable<SkillId, Skill>>,
-    #[serde(rename = "Body")]
+    #[serde(rename = "Body", skip_serializing_if = "Option::is_none")]
     pub body: Option<Body>,
-    #[serde(rename = "SpellBook")]
+    #[serde(rename = "SpellBook", skip_serializing_if = "Option::is_none")]
     pub spell_book: Option<PackableHashTable<LayeredSpellId, SpellBookPage>>,
-    #[serde(rename = "Enchantments")]
+    #[serde(rename = "Enchantments", skip_serializing_if = "Option::is_none")]
     pub enchantments: Option<EnchantmentRegistry>,
-    #[serde(rename = "EventFilter")]
+    #[serde(rename = "EventFilter", skip_serializing_if = "Option::is_none")]
     pub event_filter: Option<EventFilter>,
-    #[serde(rename = "Emotes")]
+    #[serde(rename = "Emotes", skip_serializing_if = "Option::is_none")]
     pub emotes: Option<EmoteTable>,
-    #[serde(rename = "CreationProfile")]
+    #[serde(rename = "CreationProfile", skip_serializing_if = "Option::is_none")]
     pub creation_profile: Option<PackableList<CreationProfile>>,
-    #[serde(rename = "PageData")]
+    #[serde(rename = "PageData", skip_serializing_if = "Option::is_none")]
     pub page_data: Option<PageDataList>,
-    #[serde(rename = "Generators")]
+    #[serde(rename = "Generators", skip_serializing_if = "Option::is_none")]
     pub generators: Option<GeneratorTable>,
-    #[serde(rename = "GeneratorRegistry")]
+    #[serde(rename = "GeneratorRegistry", skip_serializing_if = "Option::is_none")]
     pub generator_registry: Option<GeneratorRegistry>,
-    #[serde(rename = "GeneratorQueue")]
+    #[serde(rename = "GeneratorQueue", skip_serializing_if = "Option::is_none")]
     pub generator_queue: Option<GeneratorQueue>,
 }
 
@@ -349,23 +349,23 @@ pub struct ACQualities {
 pub struct AttributeCache {
     #[serde(rename = "Flags")]
     pub flags: u32,
-    #[serde(rename = "Strength")]
+    #[serde(rename = "Strength", skip_serializing_if = "Option::is_none")]
     pub strength: Option<AttributeInfo>,
-    #[serde(rename = "Endurance")]
+    #[serde(rename = "Endurance", skip_serializing_if = "Option::is_none")]
     pub endurance: Option<AttributeInfo>,
-    #[serde(rename = "Quickness")]
+    #[serde(rename = "Quickness", skip_serializing_if = "Option::is_none")]
     pub quickness: Option<AttributeInfo>,
-    #[serde(rename = "Coordination")]
+    #[serde(rename = "Coordination", skip_serializing_if = "Option::is_none")]
     pub coordination: Option<AttributeInfo>,
-    #[serde(rename = "Focus")]
+    #[serde(rename = "Focus", skip_serializing_if = "Option::is_none")]
     pub focus: Option<AttributeInfo>,
-    #[serde(rename = "Self")]
+    #[serde(rename = "Self", skip_serializing_if = "Option::is_none")]
     pub self_: Option<AttributeInfo>,
-    #[serde(rename = "Health")]
+    #[serde(rename = "Health", skip_serializing_if = "Option::is_none")]
     pub health: Option<SecondaryAttributeInfo>,
-    #[serde(rename = "Stamina")]
+    #[serde(rename = "Stamina", skip_serializing_if = "Option::is_none")]
     pub stamina: Option<SecondaryAttributeInfo>,
-    #[serde(rename = "Mana")]
+    #[serde(rename = "Mana", skip_serializing_if = "Option::is_none")]
     pub mana: Option<SecondaryAttributeInfo>,
 }
 
@@ -430,7 +430,7 @@ pub struct BodyPart {
     pub armor_cache: ArmorCache,
     #[serde(rename = "BH")]
     pub bh: i32,
-    #[serde(rename = "BPSD")]
+    #[serde(rename = "BPSD", skip_serializing_if = "Option::is_none")]
     pub bpsd: Option<BodyPartSelectionData>,
 }
 
@@ -490,9 +490,9 @@ pub struct BodyPartSelectionData {
 pub struct SpellBookPage {
     #[serde(rename = "CastingLikelihood")]
     pub casting_likelihood: f32,
-    #[serde(rename = "CastingLikelihood2")]
+    #[serde(rename = "CastingLikelihood2", skip_serializing_if = "Option::is_none")]
     pub casting_likelihood2: Option<f32>,
-    #[serde(rename = "Unknown")]
+    #[serde(rename = "Unknown", skip_serializing_if = "Option::is_none")]
     pub unknown: Option<i32>,
 }
 
@@ -501,13 +501,13 @@ pub struct SpellBookPage {
 pub struct EnchantmentRegistry {
     #[serde(rename = "Flags")]
     pub flags: EnchantmentRegistryFlags,
-    #[serde(rename = "LifeSpells")]
+    #[serde(rename = "LifeSpells", skip_serializing_if = "Option::is_none")]
     pub life_spells: Option<PackableList<Enchantment>>,
-    #[serde(rename = "CreatureSpells")]
+    #[serde(rename = "CreatureSpells", skip_serializing_if = "Option::is_none")]
     pub creature_spells: Option<PackableList<Enchantment>>,
-    #[serde(rename = "Vitae")]
+    #[serde(rename = "Vitae", skip_serializing_if = "Option::is_none")]
     pub vitae: Option<Enchantment>,
-    #[serde(rename = "Cooldowns")]
+    #[serde(rename = "Cooldowns", skip_serializing_if = "Option::is_none")]
     pub cooldowns: Option<PackableList<Enchantment>>,
 }
 
@@ -536,7 +536,7 @@ pub struct Enchantment {
     pub last_time_degraded: f64,
     #[serde(rename = "StatMod")]
     pub stat_mod: StatMod,
-    #[serde(rename = "EquipmentSet")]
+    #[serde(rename = "EquipmentSet", skip_serializing_if = "Option::is_none")]
     pub equipment_set: Option<EquipmentSet>,
 }
 
@@ -1024,7 +1024,7 @@ pub struct PageData {
     pub text_included: bool,
     #[serde(rename = "IgnoreAuthor")]
     pub ignore_author: bool,
-    #[serde(rename = "PageText")]
+    #[serde(rename = "PageText", skip_serializing_if = "Option::is_none")]
     pub page_text: Option<String>,
 }
 
@@ -1275,7 +1275,7 @@ pub struct PlayerModule {
     pub flags: u32,
     #[serde(rename = "Options")]
     pub options: CharacterOptions1,
-    #[serde(rename = "Shortcuts")]
+    #[serde(rename = "Shortcuts", skip_serializing_if = "Option::is_none")]
     pub shortcuts: Option<PackableList<ShortCutData>>,
     #[serde(rename = "Tab1Spells")]
     pub tab1_spells: PackableList<LayeredSpellId>,
@@ -1293,17 +1293,17 @@ pub struct PlayerModule {
     pub tab7_spells: PackableList<LayeredSpellId>,
     #[serde(rename = "Tab8Spells")]
     pub tab8_spells: PackableList<LayeredSpellId>,
-    #[serde(rename = "FillComps")]
+    #[serde(rename = "FillComps", skip_serializing_if = "Option::is_none")]
     pub fill_comps: Option<PackableHashTable<u32, u32>>,
-    #[serde(rename = "SpellBookFilters")]
+    #[serde(rename = "SpellBookFilters", skip_serializing_if = "Option::is_none")]
     pub spell_book_filters: Option<u32>,
-    #[serde(rename = "OptionFlags")]
+    #[serde(rename = "OptionFlags", skip_serializing_if = "Option::is_none")]
     pub option_flags: Option<u32>,
-    #[serde(rename = "Unknown100_1")]
+    #[serde(rename = "Unknown100_1", skip_serializing_if = "Option::is_none")]
     pub unknown100_1: Option<u32>,
-    #[serde(rename = "OptionStrings")]
+    #[serde(rename = "OptionStrings", skip_serializing_if = "Option::is_none")]
     pub option_strings: Option<PackableHashTable<u32, String>>,
-    #[serde(rename = "GameplayOptions")]
+    #[serde(rename = "GameplayOptions", skip_serializing_if = "Option::is_none")]
     pub gameplay_options: Option<GameplayOptions>,
 }
 
@@ -1407,7 +1407,7 @@ pub struct AllegianceHierarchy {
     pub is_locked: bool,
     #[serde(rename = "ApprovedVassal")]
     pub approved_vassal: i32,
-    #[serde(rename = "MonarchData")]
+    #[serde(rename = "MonarchData", skip_serializing_if = "Option::is_none")]
     pub monarch_data: Option<AllegianceData>,
     #[serde(rename = "Records")]
     pub records: Vec<AllegianceRecord>,
@@ -1430,15 +1430,15 @@ pub struct AllegianceData {
     pub heritage: HeritageGroup,
     #[serde(rename = "Rank")]
     pub rank: u16,
-    #[serde(rename = "Level")]
+    #[serde(rename = "Level", skip_serializing_if = "Option::is_none")]
     pub level: Option<u32>,
     #[serde(rename = "Loyalty")]
     pub loyalty: u16,
     #[serde(rename = "Leadership")]
     pub leadership: u16,
-    #[serde(rename = "AllegianceAge")]
+    #[serde(rename = "AllegianceAge", skip_serializing_if = "Option::is_none")]
     pub allegiance_age: Option<u32>,
-    #[serde(rename = "TimeOnline")]
+    #[serde(rename = "TimeOnline", skip_serializing_if = "Option::is_none")]
     pub time_online: Option<u64>,
     #[serde(rename = "Name")]
     pub name: String,
@@ -1503,79 +1503,79 @@ pub struct PublicWeenieDesc {
     pub type_: ItemType,
     #[serde(rename = "Behavior")]
     pub behavior: ObjectDescriptionFlag,
-    #[serde(rename = "Header2")]
+    #[serde(rename = "Header2", skip_serializing_if = "Option::is_none")]
     pub header2: Option<u32>,
-    #[serde(rename = "PluralName")]
+    #[serde(rename = "PluralName", skip_serializing_if = "Option::is_none")]
     pub plural_name: Option<String>,
-    #[serde(rename = "ItemsCapacity")]
+    #[serde(rename = "ItemsCapacity", skip_serializing_if = "Option::is_none")]
     pub items_capacity: Option<u8>,
-    #[serde(rename = "ContainerCapacity")]
+    #[serde(rename = "ContainerCapacity", skip_serializing_if = "Option::is_none")]
     pub container_capacity: Option<u8>,
-    #[serde(rename = "AmmunitionType")]
+    #[serde(rename = "AmmunitionType", skip_serializing_if = "Option::is_none")]
     pub ammunition_type: Option<AmmoType>,
-    #[serde(rename = "Value")]
+    #[serde(rename = "Value", skip_serializing_if = "Option::is_none")]
     pub value: Option<u32>,
-    #[serde(rename = "Useability")]
+    #[serde(rename = "Useability", skip_serializing_if = "Option::is_none")]
     pub useability: Option<Usable>,
-    #[serde(rename = "UseRadius")]
+    #[serde(rename = "UseRadius", skip_serializing_if = "Option::is_none")]
     pub use_radius: Option<f32>,
-    #[serde(rename = "TargetType")]
+    #[serde(rename = "TargetType", skip_serializing_if = "Option::is_none")]
     pub target_type: Option<ItemType>,
-    #[serde(rename = "Effects")]
+    #[serde(rename = "Effects", skip_serializing_if = "Option::is_none")]
     pub effects: Option<IconHighlight>,
-    #[serde(rename = "CombatUse")]
+    #[serde(rename = "CombatUse", skip_serializing_if = "Option::is_none")]
     pub combat_use: Option<WieldType>,
-    #[serde(rename = "Structure")]
+    #[serde(rename = "Structure", skip_serializing_if = "Option::is_none")]
     pub structure: Option<u16>,
-    #[serde(rename = "MaxStructure")]
+    #[serde(rename = "MaxStructure", skip_serializing_if = "Option::is_none")]
     pub max_structure: Option<u16>,
-    #[serde(rename = "StackSize")]
+    #[serde(rename = "StackSize", skip_serializing_if = "Option::is_none")]
     pub stack_size: Option<u16>,
-    #[serde(rename = "MaxStackSize")]
+    #[serde(rename = "MaxStackSize", skip_serializing_if = "Option::is_none")]
     pub max_stack_size: Option<u16>,
-    #[serde(rename = "ContainerId")]
+    #[serde(rename = "ContainerId", skip_serializing_if = "Option::is_none")]
     pub container_id: Option<ObjectId>,
-    #[serde(rename = "WielderId")]
+    #[serde(rename = "WielderId", skip_serializing_if = "Option::is_none")]
     pub wielder_id: Option<ObjectId>,
-    #[serde(rename = "ValidSlots")]
+    #[serde(rename = "ValidSlots", skip_serializing_if = "Option::is_none")]
     pub valid_slots: Option<EquipMask>,
-    #[serde(rename = "Slot")]
+    #[serde(rename = "Slot", skip_serializing_if = "Option::is_none")]
     pub slot: Option<EquipMask>,
-    #[serde(rename = "Priority")]
+    #[serde(rename = "Priority", skip_serializing_if = "Option::is_none")]
     pub priority: Option<CoverageMask>,
-    #[serde(rename = "BlipColor")]
+    #[serde(rename = "BlipColor", skip_serializing_if = "Option::is_none")]
     pub blip_color: Option<RadarColor>,
-    #[serde(rename = "RadarEnum")]
+    #[serde(rename = "RadarEnum", skip_serializing_if = "Option::is_none")]
     pub radar_enum: Option<RadarBehavior>,
-    #[serde(rename = "PhysicsScript")]
+    #[serde(rename = "PhysicsScript", skip_serializing_if = "Option::is_none")]
     pub physics_script: Option<u16>,
-    #[serde(rename = "Workmanship")]
+    #[serde(rename = "Workmanship", skip_serializing_if = "Option::is_none")]
     pub workmanship: Option<f32>,
-    #[serde(rename = "Burden")]
+    #[serde(rename = "Burden", skip_serializing_if = "Option::is_none")]
     pub burden: Option<u16>,
-    #[serde(rename = "SpellId")]
+    #[serde(rename = "SpellId", skip_serializing_if = "Option::is_none")]
     pub spell_id: Option<SpellId>,
-    #[serde(rename = "OwnerId")]
+    #[serde(rename = "OwnerId", skip_serializing_if = "Option::is_none")]
     pub owner_id: Option<ObjectId>,
-    #[serde(rename = "Restrictions")]
+    #[serde(rename = "Restrictions", skip_serializing_if = "Option::is_none")]
     pub restrictions: Option<RestrictionDB>,
-    #[serde(rename = "HookItemTypes")]
+    #[serde(rename = "HookItemTypes", skip_serializing_if = "Option::is_none")]
     pub hook_item_types: Option<HookType>,
-    #[serde(rename = "MonarchId")]
+    #[serde(rename = "MonarchId", skip_serializing_if = "Option::is_none")]
     pub monarch_id: Option<ObjectId>,
-    #[serde(rename = "HookType")]
+    #[serde(rename = "HookType", skip_serializing_if = "Option::is_none")]
     pub hook_type: Option<HookType>,
-    #[serde(rename = "IconOverlay")]
+    #[serde(rename = "IconOverlay", skip_serializing_if = "Option::is_none")]
     pub icon_overlay: Option<PackedDWORD>,
-    #[serde(rename = "IconUnderlay")]
+    #[serde(rename = "IconUnderlay", skip_serializing_if = "Option::is_none")]
     pub icon_underlay: Option<PackedDWORD>,
-    #[serde(rename = "Material")]
+    #[serde(rename = "Material", skip_serializing_if = "Option::is_none")]
     pub material: Option<MaterialType>,
-    #[serde(rename = "CooldownId")]
+    #[serde(rename = "CooldownId", skip_serializing_if = "Option::is_none")]
     pub cooldown_id: Option<u32>,
-    #[serde(rename = "CooldownDuration")]
+    #[serde(rename = "CooldownDuration", skip_serializing_if = "Option::is_none")]
     pub cooldown_duration: Option<u64>,
-    #[serde(rename = "PetOwnerId")]
+    #[serde(rename = "PetOwnerId", skip_serializing_if = "Option::is_none")]
     pub pet_owner_id: Option<ObjectId>,
 }
 
@@ -1607,69 +1607,69 @@ pub struct OldPublicWeenieDesc {
     pub type_: ItemType,
     #[serde(rename = "Bitfield")]
     pub bitfield: ObjectDescriptionFlag,
-    #[serde(rename = "PluralName")]
+    #[serde(rename = "PluralName", skip_serializing_if = "Option::is_none")]
     pub plural_name: Option<String>,
-    #[serde(rename = "ItemsCapacity")]
+    #[serde(rename = "ItemsCapacity", skip_serializing_if = "Option::is_none")]
     pub items_capacity: Option<u8>,
-    #[serde(rename = "ContainerCapacity")]
+    #[serde(rename = "ContainerCapacity", skip_serializing_if = "Option::is_none")]
     pub container_capacity: Option<u8>,
-    #[serde(rename = "Value")]
+    #[serde(rename = "Value", skip_serializing_if = "Option::is_none")]
     pub value: Option<u32>,
-    #[serde(rename = "Useability")]
+    #[serde(rename = "Useability", skip_serializing_if = "Option::is_none")]
     pub useability: Option<Usable>,
-    #[serde(rename = "UseRadius")]
+    #[serde(rename = "UseRadius", skip_serializing_if = "Option::is_none")]
     pub use_radius: Option<f32>,
-    #[serde(rename = "tTargetType")]
+    #[serde(rename = "tTargetType", skip_serializing_if = "Option::is_none")]
     pub t_target_type: Option<ItemType>,
-    #[serde(rename = "Effects")]
+    #[serde(rename = "Effects", skip_serializing_if = "Option::is_none")]
     pub effects: Option<IconHighlight>,
-    #[serde(rename = "AmmunitionType")]
+    #[serde(rename = "AmmunitionType", skip_serializing_if = "Option::is_none")]
     pub ammunition_type: Option<AmmoType>,
-    #[serde(rename = "CombatUse")]
+    #[serde(rename = "CombatUse", skip_serializing_if = "Option::is_none")]
     pub combat_use: Option<WieldType>,
-    #[serde(rename = "Structure")]
+    #[serde(rename = "Structure", skip_serializing_if = "Option::is_none")]
     pub structure: Option<u16>,
-    #[serde(rename = "MaxStructure")]
+    #[serde(rename = "MaxStructure", skip_serializing_if = "Option::is_none")]
     pub max_structure: Option<u16>,
-    #[serde(rename = "StackSize")]
+    #[serde(rename = "StackSize", skip_serializing_if = "Option::is_none")]
     pub stack_size: Option<u16>,
-    #[serde(rename = "MaxStackSize")]
+    #[serde(rename = "MaxStackSize", skip_serializing_if = "Option::is_none")]
     pub max_stack_size: Option<u16>,
-    #[serde(rename = "ContainerId")]
+    #[serde(rename = "ContainerId", skip_serializing_if = "Option::is_none")]
     pub container_id: Option<ObjectId>,
-    #[serde(rename = "WielderId")]
+    #[serde(rename = "WielderId", skip_serializing_if = "Option::is_none")]
     pub wielder_id: Option<ObjectId>,
-    #[serde(rename = "ValidSlots")]
+    #[serde(rename = "ValidSlots", skip_serializing_if = "Option::is_none")]
     pub valid_slots: Option<EquipMask>,
-    #[serde(rename = "Slots")]
+    #[serde(rename = "Slots", skip_serializing_if = "Option::is_none")]
     pub slots: Option<EquipMask>,
-    #[serde(rename = "Priority")]
+    #[serde(rename = "Priority", skip_serializing_if = "Option::is_none")]
     pub priority: Option<CoverageMask>,
-    #[serde(rename = "BlipColor")]
+    #[serde(rename = "BlipColor", skip_serializing_if = "Option::is_none")]
     pub blip_color: Option<RadarColor>,
-    #[serde(rename = "RadarEnum")]
+    #[serde(rename = "RadarEnum", skip_serializing_if = "Option::is_none")]
     pub radar_enum: Option<RadarBehavior>,
-    #[serde(rename = "ObviousDistance")]
+    #[serde(rename = "ObviousDistance", skip_serializing_if = "Option::is_none")]
     pub obvious_distance: Option<f32>,
-    #[serde(rename = "Vndwcid")]
+    #[serde(rename = "Vndwcid", skip_serializing_if = "Option::is_none")]
     pub vndwcid: Option<u16>,
-    #[serde(rename = "SpellId")]
+    #[serde(rename = "SpellId", skip_serializing_if = "Option::is_none")]
     pub spell_id: Option<SpellId>,
-    #[serde(rename = "HouseOwnerId")]
+    #[serde(rename = "HouseOwnerId", skip_serializing_if = "Option::is_none")]
     pub house_owner_id: Option<ObjectId>,
-    #[serde(rename = "PhysicsScript")]
+    #[serde(rename = "PhysicsScript", skip_serializing_if = "Option::is_none")]
     pub physics_script: Option<u16>,
-    #[serde(rename = "Restrictions")]
+    #[serde(rename = "Restrictions", skip_serializing_if = "Option::is_none")]
     pub restrictions: Option<RestrictionDB>,
-    #[serde(rename = "HookType")]
+    #[serde(rename = "HookType", skip_serializing_if = "Option::is_none")]
     pub hook_type: Option<HookType>,
-    #[serde(rename = "HookItemTypes")]
+    #[serde(rename = "HookItemTypes", skip_serializing_if = "Option::is_none")]
     pub hook_item_types: Option<HookType>,
-    #[serde(rename = "MonarchId")]
+    #[serde(rename = "MonarchId", skip_serializing_if = "Option::is_none")]
     pub monarch_id: Option<ObjectId>,
-    #[serde(rename = "IconOverlay")]
+    #[serde(rename = "IconOverlay", skip_serializing_if = "Option::is_none")]
     pub icon_overlay: Option<PackedDWORD>,
-    #[serde(rename = "Material")]
+    #[serde(rename = "Material", skip_serializing_if = "Option::is_none")]
     pub material: Option<MaterialType>,
 }
 
@@ -1741,27 +1741,27 @@ pub struct PackedMotionCommand {
 pub struct RawMotionState {
     #[serde(rename = "Flags")]
     pub flags: u32,
-    #[serde(rename = "CurrentHoldkey")]
+    #[serde(rename = "CurrentHoldkey", skip_serializing_if = "Option::is_none")]
     pub current_holdkey: Option<HoldKey>,
-    #[serde(rename = "CurrentStyle")]
+    #[serde(rename = "CurrentStyle", skip_serializing_if = "Option::is_none")]
     pub current_style: Option<StanceMode>,
-    #[serde(rename = "ForwardCommand")]
+    #[serde(rename = "ForwardCommand", skip_serializing_if = "Option::is_none")]
     pub forward_command: Option<Command>,
-    #[serde(rename = "ForwardHoldkey")]
+    #[serde(rename = "ForwardHoldkey", skip_serializing_if = "Option::is_none")]
     pub forward_holdkey: Option<HoldKey>,
-    #[serde(rename = "ForwardSpeed")]
+    #[serde(rename = "ForwardSpeed", skip_serializing_if = "Option::is_none")]
     pub forward_speed: Option<f32>,
-    #[serde(rename = "SidestepCommand")]
+    #[serde(rename = "SidestepCommand", skip_serializing_if = "Option::is_none")]
     pub sidestep_command: Option<Command>,
-    #[serde(rename = "SidestepHoldkey")]
+    #[serde(rename = "SidestepHoldkey", skip_serializing_if = "Option::is_none")]
     pub sidestep_holdkey: Option<HoldKey>,
-    #[serde(rename = "SidestepSpeed")]
+    #[serde(rename = "SidestepSpeed", skip_serializing_if = "Option::is_none")]
     pub sidestep_speed: Option<f32>,
-    #[serde(rename = "TurnCommand")]
+    #[serde(rename = "TurnCommand", skip_serializing_if = "Option::is_none")]
     pub turn_command: Option<Command>,
-    #[serde(rename = "TurnHoldkey")]
+    #[serde(rename = "TurnHoldkey", skip_serializing_if = "Option::is_none")]
     pub turn_holdkey: Option<u32>,
-    #[serde(rename = "TurnSpeed")]
+    #[serde(rename = "TurnSpeed", skip_serializing_if = "Option::is_none")]
     pub turn_speed: Option<f32>,
     #[serde(rename = "Commands")]
     pub commands: Vec<PackedMotionCommand>,
@@ -1791,17 +1791,17 @@ pub struct PositionPack {
     pub flags: PositionFlags,
     #[serde(rename = "Origin")]
     pub origin: Origin,
-    #[serde(rename = "WQuat")]
+    #[serde(rename = "WQuat", skip_serializing_if = "Option::is_none")]
     pub w_quat: Option<f32>,
-    #[serde(rename = "XQuat")]
+    #[serde(rename = "XQuat", skip_serializing_if = "Option::is_none")]
     pub x_quat: Option<f32>,
-    #[serde(rename = "YQuat")]
+    #[serde(rename = "YQuat", skip_serializing_if = "Option::is_none")]
     pub y_quat: Option<f32>,
-    #[serde(rename = "ZQuat")]
+    #[serde(rename = "ZQuat", skip_serializing_if = "Option::is_none")]
     pub z_quat: Option<f32>,
-    #[serde(rename = "Velocity")]
+    #[serde(rename = "Velocity", skip_serializing_if = "Option::is_none")]
     pub velocity: Option<Vector3>,
-    #[serde(rename = "PlacementId")]
+    #[serde(rename = "PlacementId", skip_serializing_if = "Option::is_none")]
     pub placement_id: Option<u32>,
     #[serde(rename = "ObjectInstanceSequence")]
     pub object_instance_sequence: u16,
@@ -1828,7 +1828,7 @@ pub struct MovementDataType0 {
     pub stance: StanceMode,
     #[serde(rename = "State")]
     pub state: InterpretedMotionState,
-    #[serde(rename = "StickyObject")]
+    #[serde(rename = "StickyObject", skip_serializing_if = "Option::is_none")]
     pub sticky_object: Option<ObjectId>,
 }
 
@@ -1925,19 +1925,19 @@ pub enum MovementData {
 pub struct InterpretedMotionState {
     #[serde(rename = "Flags")]
     pub flags: u32,
-    #[serde(rename = "CurrentStyle")]
+    #[serde(rename = "CurrentStyle", skip_serializing_if = "Option::is_none")]
     pub current_style: Option<StanceMode>,
-    #[serde(rename = "ForwardCommand")]
+    #[serde(rename = "ForwardCommand", skip_serializing_if = "Option::is_none")]
     pub forward_command: Option<Command>,
-    #[serde(rename = "SidestepCommand")]
+    #[serde(rename = "SidestepCommand", skip_serializing_if = "Option::is_none")]
     pub sidestep_command: Option<Command>,
-    #[serde(rename = "TurnCommand")]
+    #[serde(rename = "TurnCommand", skip_serializing_if = "Option::is_none")]
     pub turn_command: Option<Command>,
-    #[serde(rename = "ForwardSpeed")]
+    #[serde(rename = "ForwardSpeed", skip_serializing_if = "Option::is_none")]
     pub forward_speed: Option<f32>,
-    #[serde(rename = "SidestepSpeed")]
+    #[serde(rename = "SidestepSpeed", skip_serializing_if = "Option::is_none")]
     pub sidestep_speed: Option<f32>,
-    #[serde(rename = "TurnSpeed")]
+    #[serde(rename = "TurnSpeed", skip_serializing_if = "Option::is_none")]
     pub turn_speed: Option<f32>,
     #[serde(rename = "Commands")]
     pub commands: Vec<PackedMotionCommand>,
@@ -1996,7 +1996,7 @@ pub struct ObjDesc {
     pub texture_count: u8,
     #[serde(rename = "ModelCount")]
     pub model_count: u8,
-    #[serde(rename = "Palette")]
+    #[serde(rename = "Palette", skip_serializing_if = "Option::is_none")]
     pub palette: Option<DataId>,
     #[serde(rename = "Subpalettes")]
     pub subpalettes: Vec<Subpalette>,
@@ -2146,45 +2146,45 @@ pub struct PhysicsDesc {
     pub flags: u32,
     #[serde(rename = "State")]
     pub state: PhysicsState,
-    #[serde(rename = "MovementBuffer")]
+    #[serde(rename = "MovementBuffer", skip_serializing_if = "Option::is_none")]
     pub movement_buffer: Option<PackableList<u8>>,
-    #[serde(rename = "Autonomous")]
+    #[serde(rename = "Autonomous", skip_serializing_if = "Option::is_none")]
     pub autonomous: Option<bool>,
-    #[serde(rename = "AnimationFrame")]
+    #[serde(rename = "AnimationFrame", skip_serializing_if = "Option::is_none")]
     pub animation_frame: Option<u32>,
-    #[serde(rename = "Position")]
+    #[serde(rename = "Position", skip_serializing_if = "Option::is_none")]
     pub position: Option<Position>,
-    #[serde(rename = "MotionId")]
+    #[serde(rename = "MotionId", skip_serializing_if = "Option::is_none")]
     pub motion_id: Option<DataId>,
-    #[serde(rename = "SoundId")]
+    #[serde(rename = "SoundId", skip_serializing_if = "Option::is_none")]
     pub sound_id: Option<DataId>,
-    #[serde(rename = "PhysicsScriptId")]
+    #[serde(rename = "PhysicsScriptId", skip_serializing_if = "Option::is_none")]
     pub physics_script_id: Option<DataId>,
-    #[serde(rename = "SetupId")]
+    #[serde(rename = "SetupId", skip_serializing_if = "Option::is_none")]
     pub setup_id: Option<DataId>,
-    #[serde(rename = "ParentId")]
+    #[serde(rename = "ParentId", skip_serializing_if = "Option::is_none")]
     pub parent_id: Option<ObjectId>,
-    #[serde(rename = "ParentLocation")]
+    #[serde(rename = "ParentLocation", skip_serializing_if = "Option::is_none")]
     pub parent_location: Option<ParentLocation>,
-    #[serde(rename = "Children")]
+    #[serde(rename = "Children", skip_serializing_if = "Option::is_none")]
     pub children: Option<PackableList<EquipLocation>>,
-    #[serde(rename = "Scale")]
+    #[serde(rename = "Scale", skip_serializing_if = "Option::is_none")]
     pub scale: Option<f32>,
-    #[serde(rename = "Friction")]
+    #[serde(rename = "Friction", skip_serializing_if = "Option::is_none")]
     pub friction: Option<f32>,
-    #[serde(rename = "Elasticity")]
+    #[serde(rename = "Elasticity", skip_serializing_if = "Option::is_none")]
     pub elasticity: Option<f32>,
-    #[serde(rename = "Translucency")]
+    #[serde(rename = "Translucency", skip_serializing_if = "Option::is_none")]
     pub translucency: Option<f32>,
-    #[serde(rename = "Velocity")]
+    #[serde(rename = "Velocity", skip_serializing_if = "Option::is_none")]
     pub velocity: Option<Vector3>,
-    #[serde(rename = "Acceleration")]
+    #[serde(rename = "Acceleration", skip_serializing_if = "Option::is_none")]
     pub acceleration: Option<Vector3>,
-    #[serde(rename = "Omega")]
+    #[serde(rename = "Omega", skip_serializing_if = "Option::is_none")]
     pub omega: Option<Vector3>,
-    #[serde(rename = "DefaultScript")]
+    #[serde(rename = "DefaultScript", skip_serializing_if = "Option::is_none")]
     pub default_script: Option<u32>,
-    #[serde(rename = "DefaultScriptIntensity")]
+    #[serde(rename = "DefaultScriptIntensity", skip_serializing_if = "Option::is_none")]
     pub default_script_intensity: Option<f32>,
     #[serde(rename = "ObjectPositionSequence")]
     pub object_position_sequence: u16,
@@ -2271,29 +2271,29 @@ pub struct CreatureAppraisalProfile {
     pub health: u32,
     #[serde(rename = "HealthMax")]
     pub health_max: u32,
-    #[serde(rename = "Strength")]
+    #[serde(rename = "Strength", skip_serializing_if = "Option::is_none")]
     pub strength: Option<u32>,
-    #[serde(rename = "Endurance")]
+    #[serde(rename = "Endurance", skip_serializing_if = "Option::is_none")]
     pub endurance: Option<u32>,
-    #[serde(rename = "Quickness")]
+    #[serde(rename = "Quickness", skip_serializing_if = "Option::is_none")]
     pub quickness: Option<u32>,
-    #[serde(rename = "Coordination")]
+    #[serde(rename = "Coordination", skip_serializing_if = "Option::is_none")]
     pub coordination: Option<u32>,
-    #[serde(rename = "Focus")]
+    #[serde(rename = "Focus", skip_serializing_if = "Option::is_none")]
     pub focus: Option<u32>,
-    #[serde(rename = "Self")]
+    #[serde(rename = "Self", skip_serializing_if = "Option::is_none")]
     pub self_: Option<u32>,
-    #[serde(rename = "Stamina")]
+    #[serde(rename = "Stamina", skip_serializing_if = "Option::is_none")]
     pub stamina: Option<u32>,
-    #[serde(rename = "Mana")]
+    #[serde(rename = "Mana", skip_serializing_if = "Option::is_none")]
     pub mana: Option<u32>,
-    #[serde(rename = "StaminaMax")]
+    #[serde(rename = "StaminaMax", skip_serializing_if = "Option::is_none")]
     pub stamina_max: Option<u32>,
-    #[serde(rename = "ManaMax")]
+    #[serde(rename = "ManaMax", skip_serializing_if = "Option::is_none")]
     pub mana_max: Option<u32>,
-    #[serde(rename = "AttrHighlight")]
+    #[serde(rename = "AttrHighlight", skip_serializing_if = "Option::is_none")]
     pub attr_highlight: Option<AttributeMask>,
-    #[serde(rename = "AttrColor")]
+    #[serde(rename = "AttrColor", skip_serializing_if = "Option::is_none")]
     pub attr_color: Option<AttributeMask>,
 }
 
