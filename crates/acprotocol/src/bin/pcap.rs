@@ -107,10 +107,95 @@ mod tui {
         raw_json: String,
     }
 
+    #[derive(Clone)]
+    struct TreeNode {
+        key: String,
+        value: String,
+        children: Vec<TreeNode>,
+        expanded: bool,
+    }
+
+    impl TreeNode {
+        fn from_json(key: &str, value: &Value) -> Self {
+            let (value_str, children) = match value {
+                Value::Object(obj) => {
+                    let val = format!("{{...}}", );
+                    let children: Vec<TreeNode> = obj
+                        .iter()
+                        .map(|(k, v)| TreeNode::from_json(k, v))
+                        .collect();
+                    (val, children)
+                }
+                Value::Array(arr) => {
+                    let val = format!("[{}]", arr.len());
+                    let children: Vec<TreeNode> = arr
+                        .iter()
+                        .enumerate()
+                        .map(|(i, v)| TreeNode::from_json(&format!("[{}]", i), v))
+                        .collect();
+                    (val, children)
+                }
+                _ => (value.to_string(), Vec::new()),
+            };
+
+            TreeNode {
+                key: key.to_string(),
+                value: value_str,
+                children,
+                expanded: false,
+            }
+        }
+
+        fn get_display_lines(&self, depth: usize, expanded_set: &std::collections::HashSet<String>, path: String) -> Vec<(String, String)> {
+            let mut lines = Vec::new();
+            let current_path = if path.is_empty() {
+                self.key.clone()
+            } else {
+                format!("{}.{}", path, self.key)
+            };
+
+            let prefix = "  ".repeat(depth);
+            let expanded = expanded_set.contains(&current_path);
+            let toggle = if !self.children.is_empty() {
+                if expanded { "▼" } else { "▶" }
+            } else {
+                " "
+            };
+
+            lines.push((
+                format!("{}{} {}: {}", prefix, toggle, self.key, self.value),
+                current_path.clone(),
+            ));
+
+            if expanded && !self.children.is_empty() {
+                for child in &self.children {
+                    lines.extend(child.get_display_lines(depth + 1, expanded_set, current_path.clone()));
+                }
+            }
+
+            lines
+        }
+    }
+
     struct App {
         packets: Vec<PacketInfo>,
         selected: usize,
         scroll_offset: usize,
+        tree_expanded: std::collections::HashSet<String>,
+        tree_scroll_offset: usize,
+        tree_focused_line: usize,
+        detail_mode: DetailMode,
+        focused_pane: FocusedPane,
+    }
+
+    enum DetailMode {
+        JSON,
+        Tree,
+    }
+
+    enum FocusedPane {
+        List,
+        Details,
     }
 
     impl App {
@@ -119,6 +204,11 @@ mod tui {
                 packets,
                 selected: 0,
                 scroll_offset: 0,
+                tree_expanded: std::collections::HashSet::new(),
+                tree_scroll_offset: 0,
+                tree_focused_line: 0,
+                detail_mode: DetailMode::Tree,
+                focused_pane: FocusedPane::List,
             }
         }
 
@@ -126,6 +216,8 @@ mod tui {
             if !self.packets.is_empty() {
                 self.selected = (self.selected + 1) % self.packets.len();
                 self.update_scroll(visible_rows);
+                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
+                self.tree_focused_line = 0;
             }
         }
 
@@ -137,6 +229,8 @@ mod tui {
                     self.selected - 1
                 };
                 self.update_scroll(visible_rows);
+                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
+                self.tree_focused_line = 0;
             }
         }
 
@@ -144,6 +238,8 @@ mod tui {
             if !self.packets.is_empty() {
                 self.selected = (self.selected + visible_rows).min(self.packets.len() - 1);
                 self.update_scroll(visible_rows);
+                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
+                self.tree_focused_line = 0;
             }
         }
 
@@ -151,6 +247,8 @@ mod tui {
             if !self.packets.is_empty() {
                 self.selected = self.selected.saturating_sub(visible_rows);
                 self.update_scroll(visible_rows);
+                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
+                self.tree_focused_line = 0;
             }
         }
 
@@ -165,10 +263,62 @@ mod tui {
                 self.scroll_offset = self.selected.saturating_sub(visible_rows - 1);
             }
         }
+
+        fn toggle_tree_node(&mut self, path: String) {
+            if self.tree_expanded.contains(&path) {
+                self.tree_expanded.remove(&path);
+            } else {
+                self.tree_expanded.insert(path);
+            }
+        }
+
+        fn tree_scroll_up(&mut self) {
+            self.tree_scroll_offset = self.tree_scroll_offset.saturating_sub(1);
+        }
+
+        fn tree_scroll_down(&mut self) {
+            self.tree_scroll_offset = self.tree_scroll_offset.saturating_add(1);
+        }
+
+        fn tree_line_down(&mut self, total_lines: usize, visible_rows: usize) {
+            if self.tree_focused_line < total_lines.saturating_sub(1) {
+                self.tree_focused_line += 1;
+                // Auto-scroll to keep focused line visible
+                if self.tree_focused_line >= self.tree_scroll_offset + visible_rows {
+                    self.tree_scroll_offset = self.tree_focused_line.saturating_sub(visible_rows - 1);
+                }
+            }
+        }
+
+        fn tree_line_up(&mut self) {
+            if self.tree_focused_line > 0 {
+                self.tree_focused_line -= 1;
+                // Auto-scroll to keep focused line visible
+                if self.tree_focused_line < self.tree_scroll_offset {
+                    self.tree_scroll_offset = self.tree_focused_line;
+                }
+            }
+        }
     }
 
     fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> io::Result<()> {
         loop {
+            // Get detail lines before drawing (for Enter key handling)
+            let detail_lines = if !app.packets.is_empty() {
+                let packet = &app.packets[app.selected];
+                match serde_json::from_str::<Value>(&packet.raw_json) {
+                    Ok(json_val) => {
+                        let mut expanded = app.tree_expanded.clone();
+                        expanded.insert("root".to_string()); // Root is always expanded
+                        let root = TreeNode::from_json("root", &json_val);
+                        root.get_display_lines(0, &expanded, String::new())
+                    }
+                    Err(_) => vec![],
+                }
+            } else {
+                vec![]
+            };
+
             terminal.draw(|f| ui(f, app))?;
 
             if crossterm::event::poll(std::time::Duration::from_millis(250))? {
@@ -178,18 +328,76 @@ mod tui {
                     match key.code {
                         KeyCode::Char('q') | KeyCode::Esc => return Ok(()),
                         KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => return Ok(()),
-                        KeyCode::Down | KeyCode::Char('j') => app.next(visible_rows),
-                        KeyCode::Up | KeyCode::Char('k') => app.prev(visible_rows),
+                        KeyCode::Tab => {
+                            // Switch between panes
+                            app.focused_pane = match app.focused_pane {
+                                FocusedPane::List => FocusedPane::Details,
+                                FocusedPane::Details => FocusedPane::List,
+                            };
+                        }
+                        KeyCode::Char('j') | KeyCode::Down => {
+                            match app.focused_pane {
+                                FocusedPane::List => app.next(visible_rows),
+                                FocusedPane::Details => {
+                                    let total_lines = detail_lines.len();
+                                    app.tree_line_down(total_lines, visible_rows);
+                                }
+                            }
+                        }
+                        KeyCode::Char('k') | KeyCode::Up => {
+                            match app.focused_pane {
+                                FocusedPane::List => app.prev(visible_rows),
+                                FocusedPane::Details => app.tree_line_up(),
+                            }
+                        }
                         KeyCode::PageDown => app.page_down(visible_rows),
                         KeyCode::PageUp => app.page_up(visible_rows),
                         KeyCode::Home => {
                             app.selected = 0;
                             app.scroll_offset = 0;
+                            app.tree_scroll_offset = 0;
+                            app.tree_focused_line = 0;
                         }
                         KeyCode::End => {
                             if !app.packets.is_empty() {
                                 app.selected = app.packets.len() - 1;
                                 app.update_scroll(visible_rows);
+                            }
+                        }
+                        KeyCode::Enter => {
+                            // Only expand/collapse in details pane
+                            if matches!(app.focused_pane, FocusedPane::Details) {
+                                let focused_global_line = app.tree_scroll_offset + app.tree_focused_line;
+                                if focused_global_line < detail_lines.len() {
+                                    let (line, path) = &detail_lines[focused_global_line];
+                                    // Only toggle if line contains expand/collapse markers
+                                    if (line.contains("▶") || line.contains("▼")) && !path.is_empty() {
+                                        app.toggle_tree_node(path.clone());
+                                    }
+                                }
+                            }
+                        }
+                        KeyCode::Char('f') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                            // Ctrl+f: page down
+                            match app.focused_pane {
+                                FocusedPane::List => app.page_down(visible_rows),
+                                FocusedPane::Details => {
+                                    for _ in 0..visible_rows {
+                                        let total_lines = detail_lines.len();
+                                        app.tree_line_down(total_lines, visible_rows);
+                                    }
+                                }
+                            }
+                        }
+                        KeyCode::Char('b') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                            // Ctrl+b: page up
+                            match app.focused_pane {
+                                FocusedPane::List => app.page_up(visible_rows),
+                                FocusedPane::Details => {
+                                    for _ in 0..visible_rows {
+                                        app.tree_line_up();
+                                    }
+                                }
                             }
                         }
                         _ => {}
@@ -200,21 +408,21 @@ mod tui {
     }
 
     fn ui(f: &mut ratatui::Frame, app: &App) {
-        let chunks = Layout::default()
+        let outer_chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(3),
                 Constraint::Min(10),
-                Constraint::Length(10),
+                Constraint::Length(2),
             ])
             .split(f.area());
 
-        // Title
-        let title = Paragraph::new("Pcap Packet Viewer")
-            .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
-            .alignment(Alignment::Center)
-            .block(Block::default().borders(Borders::ALL));
-        f.render_widget(title, chunks[0]);
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(66),
+                Constraint::Percentage(34),
+            ])
+            .split(outer_chunks[0]);
 
         // Table
         let header = Row::new(vec![
@@ -248,6 +456,8 @@ mod tui {
 
                 let style = if i == app.selected {
                     Style::default().bg(Color::Cyan).fg(Color::Black)
+                } else if !matches!(app.focused_pane, FocusedPane::List) {
+                    Style::default().add_modifier(Modifier::DIM)
                 } else {
                     Style::default()
                 };
@@ -259,42 +469,116 @@ mod tui {
         let table = Table::new(
             rows,
             [
-                Constraint::Length(3),           // #
-                Constraint::Length(5),           // Dir
-                Constraint::Length(12),          // Timestamp
-                Constraint::Length(16),          // Flags
-                Constraint::Min(20),             // Message Type (expandable)
-                Constraint::Length(6),           // Size
-                Constraint::Length(8),           // OpCode
-                Constraint::Length(6),           // Seq
-                Constraint::Length(10),          // Queue
-                Constraint::Length(4),           // Iter
-                Constraint::Length(5),           // Port
+                Constraint::Length(2),           // #
+                Constraint::Length(4),           // Dir
+                Constraint::Length(8),           // Timestamp
+                Constraint::Length(8),           // Flags
+                Constraint::Min(15),             // Message Type (expandable)
+                Constraint::Length(5),           // Size
+                Constraint::Length(6),           // OpCode
+                Constraint::Length(4),           // Seq
+                Constraint::Length(7),           // Queue
+                Constraint::Length(3),           // Iter
+                Constraint::Length(4),           // Port
             ],
         )
         .header(header)
-        .block(Block::default().borders(Borders::ALL).title("Packets"));
+        .block({
+            let style = if matches!(app.focused_pane, FocusedPane::List) {
+                Style::default().add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+            };
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Packets")
+                .style(style)
+        });
 
-        f.render_widget(table, chunks[1]);
+        f.render_widget(table, chunks[0]);
 
         // Details panel
-        let detail_text = if !app.packets.is_empty() {
-            let packet = &app.packets[app.selected];
-            format!(
-                "Packet #{} - {}\nMessage Type: {}\nRaw JSON:\n{}",
-                packet.id,
-                packet.direction,
-                packet.packet_type,
-                truncate_json(&packet.raw_json, 500)
-            )
-        } else {
-            "No packets loaded".to_string()
-        };
+        let detail_title = "Details";
 
-        let detail_para = Paragraph::new(detail_text)
-            .block(Block::default().title("Details").borders(Borders::ALL))
-            .style(Style::default().fg(Color::White));
-        f.render_widget(detail_para, chunks[2]);
+        if !app.packets.is_empty() {
+            let packet = &app.packets[app.selected];
+            
+            // Parse JSON and build tree
+            let detail_lines = match serde_json::from_str::<Value>(&packet.raw_json) {
+                Ok(json_val) => {
+                    let mut expanded = app.tree_expanded.clone();
+                    expanded.insert("root".to_string()); // Root is always expanded
+                    let root = TreeNode::from_json("root", &json_val);
+                    root.get_display_lines(0, &expanded, String::new())
+                }
+                Err(e) => {
+                    vec![(format!("Failed to parse JSON: {}\n\nRaw:\n{}", e, &packet.raw_json), String::new())]
+                }
+            };
+            
+            let visible_rows = chunks[1].height.saturating_sub(2) as usize;
+            let mut detail_text = String::new();
+            
+            // Render visible lines with focused line highlighted
+            for (i, (line, _path)) in detail_lines.iter().enumerate() {
+                if i >= app.tree_scroll_offset && i < app.tree_scroll_offset + visible_rows {
+                    let display_idx = i - app.tree_scroll_offset;
+                    if display_idx == app.tree_focused_line {
+                        detail_text.push_str(&format!("► {}\n", line));
+                    } else {
+                        detail_text.push_str(&format!("{}\n", line));
+                    }
+                }
+            }
+            
+            let text_style = if matches!(app.focused_pane, FocusedPane::Details) {
+                Style::default()
+            } else {
+                Style::default().add_modifier(Modifier::DIM)
+            };
+            
+            let detail_para = Paragraph::new(detail_text)
+                .block({
+                    let style = if matches!(app.focused_pane, FocusedPane::Details) {
+                        Style::default().add_modifier(Modifier::BOLD)
+                    } else {
+                        Style::default()
+                    };
+                    Block::default()
+                        .title(detail_title)
+                        .borders(Borders::ALL)
+                        .style(style)
+                })
+                .style(text_style);
+            f.render_widget(detail_para, chunks[1]);
+        } else {
+            let text_style = if matches!(app.focused_pane, FocusedPane::Details) {
+                Style::default()
+            } else {
+                Style::default().add_modifier(Modifier::DIM)
+            };
+            
+            let detail_para = Paragraph::new("No packets loaded")
+                .block({
+                    let style = if matches!(app.focused_pane, FocusedPane::Details) {
+                        Style::default().add_modifier(Modifier::BOLD)
+                    } else {
+                        Style::default()
+                    };
+                    Block::default()
+                        .title(detail_title)
+                        .borders(Borders::ALL)
+                        .style(style)
+                })
+                .style(text_style);
+            f.render_widget(detail_para, chunks[1]);
+        }
+
+        // Footer with controls
+        let controls_text = "q/Esc: Quit | Tab: Switch pane | ↑/↓: Navigate | Enter: Expand/collapse";
+        let controls = Paragraph::new(controls_text)
+            .block(Block::default().borders(Borders::TOP));
+        f.render_widget(controls, outer_chunks[1]);
     }
 
     fn truncate_json(json: &str, max_len: usize) -> String {
