@@ -2,8 +2,12 @@
 name = "codegen"
 version.workspace = true
 edition.workspace = true
+description = "codegen crate for acprotocol crate"
+repository.workspace = true
+license.workspace = true
+publish = false
 
 [dependencies]
-env_logger = "0.11.8"
-log = "0.4.28"
-quick-xml = "0.38.4"
+env_logger = { workspace = true }
+log = { workspace = true }
+quick-xml = { workspace = true }
