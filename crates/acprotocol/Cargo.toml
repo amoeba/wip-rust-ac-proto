@@ -22,10 +22,12 @@ required-features = ["cli"]
 [dependencies]
 anyhow = { workspace = true }
 bitflags = { workspace = true }
-clap = { workspace = true, optional = true }
+clap = { workspace = true, optional = true, features = ["derive"] }
 num_enum = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+ratatui = { version = "0.28", optional = true }
+crossterm = { version = "0.28", optional = true }
 
 [build-dependencies]
 codegen = { path = "../codegen" }
@@ -33,4 +35,4 @@ env_logger = { workspace = true }
 
 [features]
 default = ["cli"]
-cli = ["clap"]
+cli = ["clap", "ratatui", "crossterm"]

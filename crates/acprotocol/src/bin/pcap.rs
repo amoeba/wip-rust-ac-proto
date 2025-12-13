@@ -1,46 +1,39 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, Subcommand};
+use std::path::PathBuf;
+
+mod read;
+mod tui;
 
 #[derive(Parser)]
 #[command(name = "pcap")]
 #[command(about = "Parse .pcap network capture files", long_about = None)]
 struct Cli {
-    /// Path to .pcap file
-    path: String,
+    #[command(subcommand)]
+    command: Commands,
 }
 
-fn process_pcap(path: &str) -> Result<()> {
-    use acprotocol::network::{FragmentAssembler, pcap};
-
-    let mut pcap_iter = pcap::open(path)?;
-    let mut assembler = FragmentAssembler::new();
-
-    while let Some(packet_result) = pcap_iter.next() {
-        let packet = packet_result?;
-
-        // Skip first 42 bytes (Ethernet + IP + UDP headers)
-        if packet.data.len() <= 42 {
-            continue;
-        }
-        let udp_payload = &packet.data[42..];
-
-        // Try to parse messages from this packet
-        match assembler.parse_packet_payload(udp_payload) {
-            Ok(messages) => {
-                for msg in messages {
-                    println!("{}", serde_json::to_string(&msg)?);
-                }
-            }
-            Err(_) => {
-                // Silently skip packets that can't be parsed
-            }
-        }
-    }
-
-    Ok(())
+#[derive(Subcommand)]
+enum Commands {
+    /// Read and print packet data from a pcap file
+    Read {
+        /// Path to .pcap file
+        path: PathBuf,
+    },
+    /// Interactive view for browsing pcap files
+    View {
+        /// Path to .pcap file
+        path: PathBuf,
+    },
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    process_pcap(&cli.path)
+
+    match cli.command {
+        Commands::Read { path } => read::run(&path)?,
+        Commands::View { path } => tui::run(&path)?,
+    }
+
+    Ok(())
 }
