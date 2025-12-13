@@ -9,6 +9,7 @@ pub struct FragmentMetadata {
     pub size: u16,
     pub group: u16,
     pub received_chunks: usize,
+    pub total_length: usize,  // Track actual data length like C# implementation
     pub chunks: Vec<bool>,
 }
 
@@ -19,6 +20,7 @@ impl FragmentMetadata {
             size: 0,
             group: 0,
             received_chunks: 0,
+            total_length: 0,
             chunks: vec![false; count_usize],
         }
     }
@@ -53,18 +55,24 @@ impl Fragment {
     }
 
     /// Add a chunk of data at the specified index
-    pub fn add_chunk(&mut self, data: &[u8], index: usize) {
+    /// chunk_size is the size of this specific fragment (for tracking total length)
+    pub fn add_chunk(&mut self, data: &[u8], index: usize, chunk_size: usize) {
         let start = index * FRAGMENT_CHUNK_SIZE;
         let end = start + data.len();
         if end <= self.data.len() {
             self.data[start..end].copy_from_slice(data);
 
-            // Track received chunks
+            // Track received chunks and update total length to the maximum written position
             let mut store = get_metadata_store().lock().unwrap();
             if let Some(metadata) = store.get_mut(&self.header.sequence) {
                 if !metadata.chunks[index] {
                     metadata.chunks[index] = true;
                     metadata.received_chunks += 1;
+                }
+                // Track the maximum end position (start of this chunk + its actual size)
+                let chunk_end = start + chunk_size;
+                if chunk_end > metadata.total_length {
+                    metadata.total_length = chunk_end;
                 }
             }
         }
@@ -81,6 +89,7 @@ impl Fragment {
     }
 
     /// Get the assembled data
+    /// Like C#, return the full buffer - message parsers are self-delimiting
     pub fn get_data(&self) -> &[u8] {
         &self.data
     }
@@ -149,22 +158,25 @@ mod tests {
 
         // Add first chunk
         let chunk1 = vec![0xAA; 100];
-        fragment.add_chunk(&chunk1, 0);
+        fragment.add_chunk(&chunk1, 0, 100);
 
         // Not complete yet
         assert!(!fragment.is_complete());
 
         // Add second chunk
         let chunk2 = vec![0xBB; 200];
-        fragment.add_chunk(&chunk2, 1);
+        fragment.add_chunk(&chunk2, 1, 200);
 
         // Now it should be complete
         assert!(fragment.is_complete());
 
-        // Verify data
+        // Verify data - returns full buffer like C# implementation
         let data = fragment.get_data();
-        assert_eq!(data[0], 0xAA);
-        assert_eq!(data[FRAGMENT_CHUNK_SIZE], 0xBB);
+        assert_eq!(data.len(), 2 * FRAGMENT_CHUNK_SIZE);  // Full allocated buffer
+        assert_eq!(data[0], 0xAA);   // First chunk starts here
+        assert_eq!(data[99], 0xAA);   // First chunk ends at 99
+        assert_eq!(data[FRAGMENT_CHUNK_SIZE], 0xBB);  // Second chunk starts at 448
+        assert_eq!(data[FRAGMENT_CHUNK_SIZE + 199], 0xBB);  // Second chunk ends at 647
 
         // Cleanup
         fragment.cleanup();
@@ -176,13 +188,13 @@ mod tests {
 
         assert!(!fragment.is_complete());
 
-        fragment.add_chunk(&[1; 10], 0);
+        fragment.add_chunk(&[1; 10], 0, 10);
         assert!(!fragment.is_complete());
 
-        fragment.add_chunk(&[2; 10], 1);
+        fragment.add_chunk(&[2; 10], 1, 10);
         assert!(!fragment.is_complete());
 
-        fragment.add_chunk(&[3; 10], 2);
+        fragment.add_chunk(&[3; 10], 2, 10);
         assert!(fragment.is_complete());
 
         // Cleanup
@@ -194,13 +206,13 @@ mod tests {
         let mut fragment = Fragment::new(300, 2);
 
         // Add same chunk twice
-        fragment.add_chunk(&[0xFF; 50], 0);
+        fragment.add_chunk(&[0xFF; 50], 0, 50);
         assert!(!fragment.is_complete());
 
-        fragment.add_chunk(&[0xEE; 50], 0); // Duplicate index 0
+        fragment.add_chunk(&[0xEE; 50], 0, 50); // Duplicate index 0
         assert!(!fragment.is_complete()); // Still not complete (missing index 1)
 
-        fragment.add_chunk(&[0xDD; 50], 1);
+        fragment.add_chunk(&[0xDD; 50], 1, 50);
         assert!(fragment.is_complete());
 
         // Cleanup
@@ -225,9 +237,10 @@ mod tests {
         let mut fragment = Fragment::new(500, 1);
 
         let test_data = vec![0x12, 0x34, 0x56, 0x78];
-        fragment.add_chunk(&test_data, 0);
+        fragment.add_chunk(&test_data, 0, test_data.len());
 
         let data = fragment.get_data();
+        assert_eq!(data.len(), FRAGMENT_CHUNK_SIZE);  // Returns full buffer like C#
         assert_eq!(data[0], 0x12);
         assert_eq!(data[1], 0x34);
         assert_eq!(data[2], 0x56);

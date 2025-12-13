@@ -1,7 +1,8 @@
-use super::message_parser::parse_message_to_json;
 use super::reader::BinaryReader;
 use serde::Serialize;
-use std::io;
+use std::io::{self, Cursor};
+use crate::unified::{Direction, MessageKind};
+use crate::readers::ACReader;
 
 /// A parsed message extracted from assembled fragments
 #[derive(Debug, Clone, Serialize)]
@@ -32,18 +33,36 @@ where
 
     let opcode = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
 
-    // Try to parse the data as a structured message
-    // STRICT MODE: Fail loudly on any parsing error instead of falling back to hex
-    match parse_message_to_json(opcode, data) {
-        Ok(json_value) => json_value.serialize(serializer),
+    // Determine direction based on opcode
+    let direction = determine_direction(opcode);
+
+    // Try to parse the data as a structured message using unified types
+    // Note: MessageKind::read will read the opcode from the cursor, so start from beginning
+    let mut cursor = Cursor::new(data);
+
+    match MessageKind::read(&mut cursor, direction) {
+        Ok(message) => message.serialize(serializer),
         Err(e) => {
-            // STRICT: Always fail and panic with full error details
-            let hex_string: String = data.iter().map(|b| format!("{:02x}", b)).collect();
-            panic!(
-                "STRICT PARSING FAILED for opcode 0x{:04x}:\n  Error: {}\n  Raw data (hex): {}",
-                opcode, e, hex_string
-            );
+            // Serialize error information instead of panicking
+            use serde::ser::SerializeMap;
+            let mut map = serializer.serialize_map(Some(2))?;
+            map.serialize_entry("error", &format!("{}", e))?;
+            map.serialize_entry("opcode", &format!("0x{:04x}", opcode))?;
+            map.end()
         }
+    }
+}
+
+fn determine_direction(opcode: u32) -> Direction {
+    use crate::enums::{C2SMessage, S2CMessage};
+
+    if C2SMessage::try_from(opcode).is_ok() {
+        Direction::ClientToServer
+    } else if S2CMessage::try_from(opcode).is_ok() {
+        Direction::ServerToClient
+    } else {
+        // Default to server to client for unknown opcodes
+        Direction::ServerToClient
     }
 }
 

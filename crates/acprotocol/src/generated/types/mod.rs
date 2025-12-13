@@ -1746,19 +1746,19 @@ pub struct RawMotionState {
     #[serde(rename = "CurrentStyle")]
     pub current_style: Option<StanceMode>,
     #[serde(rename = "ForwardCommand")]
-    pub forward_command: Option<MovementCommand>,
+    pub forward_command: Option<Command>,
     #[serde(rename = "ForwardHoldkey")]
     pub forward_holdkey: Option<HoldKey>,
     #[serde(rename = "ForwardSpeed")]
     pub forward_speed: Option<f32>,
     #[serde(rename = "SidestepCommand")]
-    pub sidestep_command: Option<MovementCommand>,
+    pub sidestep_command: Option<Command>,
     #[serde(rename = "SidestepHoldkey")]
     pub sidestep_holdkey: Option<HoldKey>,
     #[serde(rename = "SidestepSpeed")]
     pub sidestep_speed: Option<f32>,
     #[serde(rename = "TurnCommand")]
-    pub turn_command: Option<MovementCommand>,
+    pub turn_command: Option<Command>,
     #[serde(rename = "TurnHoldkey")]
     pub turn_holdkey: Option<u32>,
     #[serde(rename = "TurnSpeed")]
@@ -1928,11 +1928,11 @@ pub struct InterpretedMotionState {
     #[serde(rename = "CurrentStyle")]
     pub current_style: Option<StanceMode>,
     #[serde(rename = "ForwardCommand")]
-    pub forward_command: Option<MovementCommand>,
+    pub forward_command: Option<Command>,
     #[serde(rename = "SidestepCommand")]
-    pub sidestep_command: Option<MovementCommand>,
+    pub sidestep_command: Option<Command>,
     #[serde(rename = "TurnCommand")]
-    pub turn_command: Option<MovementCommand>,
+    pub turn_command: Option<Command>,
     #[serde(rename = "ForwardSpeed")]
     pub forward_speed: Option<f32>,
     #[serde(rename = "SidestepSpeed")]
@@ -5575,7 +5575,7 @@ impl RawMotionState {
         }
         let mut forward_command = None;
         if (flags & 0x00000004) != 0 {
-            forward_command = Some(MovementCommand::try_from(read_u16(reader)?)?);
+            forward_command = Some(Command::try_from(read_u16(reader)?)?);
         }
         let mut forward_holdkey = None;
         if (flags & 0x0000008) != 0 {
@@ -5587,7 +5587,7 @@ impl RawMotionState {
         }
         let mut sidestep_command = None;
         if (flags & 0x00000020) != 0 {
-            sidestep_command = Some(MovementCommand::try_from(read_u16(reader)?)?);
+            sidestep_command = Some(Command::try_from(read_u16(reader)?)?);
         }
         let mut sidestep_holdkey = None;
         if (flags & 0x00000040) != 0 {
@@ -5599,7 +5599,7 @@ impl RawMotionState {
         }
         let mut turn_command = None;
         if (flags & 0x00000100) != 0 {
-            turn_command = Some(MovementCommand::try_from(read_u16(reader)?)?);
+            turn_command = Some(Command::try_from(read_u16(reader)?)?);
         }
         let mut turn_holdkey = None;
         if (flags & 0x00000200) != 0 {
@@ -5859,15 +5859,15 @@ impl InterpretedMotionState {
         }
         let mut forward_command = None;
         if (flags & 0x00000002) != 0 {
-            forward_command = Some(MovementCommand::try_from(read_u16(reader)?)?);
+            forward_command = Some(Command::try_from(read_u16(reader)?)?);
         }
         let mut sidestep_command = None;
         if (flags & 0x00000008) != 0 {
-            sidestep_command = Some(MovementCommand::try_from(read_u16(reader)?)?);
+            sidestep_command = Some(Command::try_from(read_u16(reader)?)?);
         }
         let mut turn_command = None;
         if (flags & 0x00000020) != 0 {
-            turn_command = Some(MovementCommand::try_from(read_u16(reader)?)?);
+            turn_command = Some(Command::try_from(read_u16(reader)?)?);
         }
         let mut forward_speed = None;
         if (flags & 0x00000004) != 0 {

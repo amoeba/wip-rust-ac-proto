@@ -43,20 +43,91 @@ impl FragmentAssembler {
             // Parse packet header
             let header = PacketHeader::parse(&mut reader)?;
 
+            // Calculate packet boundaries (header is always 20 bytes + variable size payload)
+            let packet_end = start_pos + PacketHeader::BASE_SIZE + header.size as usize;
+
             // Parse optional headers based on flags
+            // NOTE: We must parse ALL optional headers to advance reader correctly!
+            if header.flags.contains(PacketHeaderFlags::SERVER_SWITCH) {
+                reader.read_u32()?; // SeqNo
+                reader.read_u32()?; // Type
+            }
+            if header.flags.contains(PacketHeaderFlags::LOGON_SERVER_ADDR) {
+                reader.read_u16()?; // Family
+                reader.read_u16()?; // Port
+                reader.read_bytes(4)?; // Address (IPv4)
+                reader.read_bytes(8)?; // Zero padding
+            }
             if header.flags.contains(PacketHeaderFlags::REQUEST_RETRANSMIT) {
                 let num = reader.read_u32()?;
                 for _ in 0..num {
                     reader.read_u32()?; // sequence id
                 }
             }
-
+            if header.flags.contains(PacketHeaderFlags::REFERRAL) {
+                reader.read_bytes(8)?; // Cookie (u64)
+                // SocketAddr: Family (i16), Port (u16), Address (4 bytes), Zero (8 bytes)
+                reader.read_u16()?; // Family
+                reader.read_u16()?; // Port
+                reader.read_bytes(4)?; // Address
+                reader.read_bytes(8)?; // Zero padding
+                reader.read_u16()?; // IdServer
+                reader.read_u16()?; // Padding
+                reader.read_u32()?; // Unknown
+            }
             if header.flags.contains(PacketHeaderFlags::ACK_SEQUENCE) {
                 reader.read_u32()?; // sequence
             }
-
-            // Calculate packet boundaries
-            let packet_end = start_pos + PacketHeader::BASE_SIZE + header.size as usize;
+            if header.flags.contains(PacketHeaderFlags::LOGIN_REQUEST) {
+                // LoginRequest has variable-length strings - skip the entire payload
+                // as we can't reliably parse it without proper error recovery.
+                // C# implementation parses these fields but we don't need them for fragment assembly.
+                // Jump to the end of this packet's data.
+                reader.set_position(packet_end);
+                // No fragments can follow LOGIN_REQUEST in the same packet
+                continue;
+            }
+            if header.flags.contains(PacketHeaderFlags::WORLD_LOGIN_REQUEST) {
+                reader.read_bytes(8)?; // Prim (u64)
+            }
+            if header.flags.contains(PacketHeaderFlags::CONNECT_REQUEST) {
+                reader.read_bytes(8)?; // ServerTime (u64)
+                reader.read_bytes(8)?; // Cookie (u64)
+                reader.read_u32()?; // NetID
+                reader.read_u32()?; // OutgoingSeed
+                reader.read_u32()?; // IncomingSeed
+                reader.read_u32()?; // Unknown
+            }
+            if header.flags.contains(PacketHeaderFlags::CONNECT_RESPONSE) {
+                reader.read_bytes(8)?; // Prim (u64)
+            }
+            if header.flags.contains(PacketHeaderFlags::NET_ERROR) {
+                reader.read_u32()?; // StringId
+                reader.read_u32()?; // TableId
+            }
+            if header.flags.contains(PacketHeaderFlags::NET_ERROR_DISCONNECT) {
+                reader.read_u32()?; // StringId
+                reader.read_u32()?; // TableId
+            }
+            if header.flags.contains(PacketHeaderFlags::CICMD_COMMAND) {
+                // CICMDCommand: Command (u32) + Param (u32)
+                reader.read_u32()?; // Command
+                reader.read_u32()?; // Param
+            }
+            if header.flags.contains(PacketHeaderFlags::TIME_SYNC) {
+                reader.read_bytes(8)?; // Time (f64)
+            }
+            if header.flags.contains(PacketHeaderFlags::ECHO_REQUEST) {
+                reader.read_bytes(4)?; // LocalTime (f32)
+            }
+            if header.flags.contains(PacketHeaderFlags::ECHO_RESPONSE) {
+                reader.read_bytes(4)?; // LocalTime (f32)
+                reader.read_bytes(4)?; // HoldingTime (f32)
+            }
+            if header.flags.contains(PacketHeaderFlags::FLOW) {
+                reader.read_u32()?; // DataReceived
+                reader.read_u16()?; // Interval
+            }
 
             // If this packet has fragments, parse them
             if header.flags.contains(PacketHeaderFlags::BLOB_FRAGMENTS) {
@@ -68,7 +139,12 @@ impl FragmentAssembler {
                         Ok(None) => {
                             // Fragment received but not complete yet
                         }
-                        Err(_) => break,
+                        Err(_e) => {
+                            // Fragment parsing failed - skip to end of packet like C# does
+                            // C# catches exceptions in ParseFragment and returns null,
+                            // then the outer loop advances to the next packet
+                            break;  // Break to next packet
+                        }
                     }
                 }
             }
@@ -92,14 +168,8 @@ impl FragmentAssembler {
         let index = reader.read_u16()?;
         let group = reader.read_u16()?;
 
-        if size < 16 {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "Invalid fragment size",
-            ));
-        }
-
-        let frag_length = size as usize - 16;
+        // Calculate fragment data length (size includes 16-byte header)
+        let frag_length = size.saturating_sub(16) as usize;
 
         if reader.remaining() < frag_length {
             return Err(io::Error::new(
@@ -116,7 +186,7 @@ impl FragmentAssembler {
             .entry(sequence)
             .or_insert_with(|| Fragment::new(sequence, count));
 
-        fragment.add_chunk(&data, index as usize);
+        fragment.add_chunk(&data, index as usize, frag_length);  // Pass chunk size
         fragment.header.id = id;
         fragment.header.index = index;
         fragment.set_fragment_info(size, group);
