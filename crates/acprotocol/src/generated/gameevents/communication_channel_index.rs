@@ -14,19 +14,13 @@ pub struct CommunicationChannelIndex {
     pub channels: PackableList<String>,
 }
 
-impl CommunicationChannelIndex {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationChannelIndex {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let channels = read_packable_list::<String>(reader)?;
 
         Ok(Self {
             channels,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationChannelIndex {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationChannelIndex::read(reader)
     }
 }
 

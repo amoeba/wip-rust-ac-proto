@@ -16,8 +16,8 @@ pub struct VendorSell {
     pub items: PackableList<ItemProfile>,
 }
 
-impl VendorSell {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for VendorSell {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let items = read_packable_list::<ItemProfile>(reader)?;
 
@@ -25,12 +25,6 @@ impl VendorSell {
             object_id,
             items,
         })
-    }
-}
-
-impl crate::readers::ACDataType for VendorSell {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        VendorSell::read(reader)
     }
 }
 

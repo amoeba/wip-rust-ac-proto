@@ -16,8 +16,8 @@ pub struct FellowshipCreate {
     pub share_xp: bool,
 }
 
-impl FellowshipCreate {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for FellowshipCreate {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let name = read_string(reader)?;
         let share_xp = read_bool(reader)?;
 
@@ -25,12 +25,6 @@ impl FellowshipCreate {
             name,
             share_xp,
         })
-    }
-}
-
-impl crate::readers::ACDataType for FellowshipCreate {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        FellowshipCreate::read(reader)
     }
 }
 

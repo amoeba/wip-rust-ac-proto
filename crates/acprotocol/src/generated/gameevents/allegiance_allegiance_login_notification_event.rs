@@ -16,8 +16,8 @@ pub struct AllegianceAllegianceLoginNotificationEvent {
     pub is_logged_in: bool,
 }
 
-impl AllegianceAllegianceLoginNotificationEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for AllegianceAllegianceLoginNotificationEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let character_id = ObjectId::read(reader)?;
         let is_logged_in = read_bool(reader)?;
 
@@ -25,12 +25,6 @@ impl AllegianceAllegianceLoginNotificationEvent {
             character_id,
             is_logged_in,
         })
-    }
-}
-
-impl crate::readers::ACDataType for AllegianceAllegianceLoginNotificationEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        AllegianceAllegianceLoginNotificationEvent::read(reader)
     }
 }
 

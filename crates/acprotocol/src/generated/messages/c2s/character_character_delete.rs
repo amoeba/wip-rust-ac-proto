@@ -16,8 +16,8 @@ pub struct CharacterCharacterDelete {
     pub slot: i32,
 }
 
-impl CharacterCharacterDelete {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterCharacterDelete {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let account = read_string(reader)?;
         let slot = read_i32(reader)?;
 
@@ -25,12 +25,6 @@ impl CharacterCharacterDelete {
             account,
             slot,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterCharacterDelete {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterCharacterDelete::read(reader)
     }
 }
 

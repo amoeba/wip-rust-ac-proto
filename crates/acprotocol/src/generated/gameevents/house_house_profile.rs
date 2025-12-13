@@ -16,8 +16,8 @@ pub struct HouseHouseProfile {
     pub profile: HouseProfile,
 }
 
-impl HouseHouseProfile {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for HouseHouseProfile {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let profile = HouseProfile::read(reader)?;
 
@@ -25,12 +25,6 @@ impl HouseHouseProfile {
             object_id,
             profile,
         })
-    }
-}
-
-impl crate::readers::ACDataType for HouseHouseProfile {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        HouseHouseProfile::read(reader)
     }
 }
 

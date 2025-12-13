@@ -16,8 +16,8 @@ pub struct CommunicationWeenieErrorWithString {
     pub text: String,
 }
 
-impl CommunicationWeenieErrorWithString {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationWeenieErrorWithString {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let type_ = WeenieErrorWithString::try_from(read_u32(reader)?)?;
         let text = read_string(reader)?;
 
@@ -25,12 +25,6 @@ impl CommunicationWeenieErrorWithString {
             type_,
             text,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationWeenieErrorWithString {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationWeenieErrorWithString::read(reader)
     }
 }
 

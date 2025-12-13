@@ -16,8 +16,8 @@ pub struct DDDInterrogationResponseMessage {
     pub files: PackableList<i64>,
 }
 
-impl DDDInterrogationResponseMessage {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for DDDInterrogationResponseMessage {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let language = read_u32(reader)?;
         let files = read_packable_list::<i64>(reader)?;
 
@@ -25,12 +25,6 @@ impl DDDInterrogationResponseMessage {
             language,
             files,
         })
-    }
-}
-
-impl crate::readers::ACDataType for DDDInterrogationResponseMessage {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        DDDInterrogationResponseMessage::read(reader)
     }
 }
 

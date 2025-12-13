@@ -16,8 +16,8 @@ pub struct SocialCharacterTitleTable {
     pub titles: PackableList<u32>,
 }
 
-impl SocialCharacterTitleTable {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for SocialCharacterTitleTable {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let display_title = read_u32(reader)?;
         let titles = read_packable_list::<u32>(reader)?;
 
@@ -25,12 +25,6 @@ impl SocialCharacterTitleTable {
             display_title,
             titles,
         })
-    }
-}
-
-impl crate::readers::ACDataType for SocialCharacterTitleTable {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        SocialCharacterTitleTable::read(reader)
     }
 }
 

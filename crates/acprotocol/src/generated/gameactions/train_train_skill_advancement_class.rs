@@ -16,8 +16,8 @@ pub struct TrainTrainSkillAdvancementClass {
     pub credits: u32,
 }
 
-impl TrainTrainSkillAdvancementClass {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for TrainTrainSkillAdvancementClass {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let skill = SkillId::try_from(read_i32(reader)?)?;
         let credits = read_u32(reader)?;
 
@@ -25,12 +25,6 @@ impl TrainTrainSkillAdvancementClass {
             skill,
             credits,
         })
-    }
-}
-
-impl crate::readers::ACDataType for TrainTrainSkillAdvancementClass {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        TrainTrainSkillAdvancementClass::read(reader)
     }
 }
 

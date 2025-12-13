@@ -44,8 +44,8 @@ pub struct CharacterFinishBarber {
     pub option2: i32,
 }
 
-impl CharacterFinishBarber {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterFinishBarber {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let base_palette = DataId::read(reader)?;
         let head_object = DataId::read(reader)?;
         let head_texture = DataId::read(reader)?;
@@ -81,12 +81,6 @@ impl CharacterFinishBarber {
             option1,
             option2,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterFinishBarber {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterFinishBarber::read(reader)
     }
 }
 

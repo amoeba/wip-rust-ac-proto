@@ -18,8 +18,8 @@ pub struct SocialSendClientContractTracker {
     pub set_as_display_contract: bool,
 }
 
-impl SocialSendClientContractTracker {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for SocialSendClientContractTracker {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let contract_tracker = ContractTracker::read(reader)?;
         let delete_contract = read_bool(reader)?;
         let set_as_display_contract = read_bool(reader)?;
@@ -29,12 +29,6 @@ impl SocialSendClientContractTracker {
             delete_contract,
             set_as_display_contract,
         })
-    }
-}
-
-impl crate::readers::ACDataType for SocialSendClientContractTracker {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        SocialSendClientContractTracker::read(reader)
     }
 }
 

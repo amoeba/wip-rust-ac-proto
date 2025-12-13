@@ -16,8 +16,8 @@ pub struct CommunicationTalkDirect {
     pub target_id: ObjectId,
 }
 
-impl CommunicationTalkDirect {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationTalkDirect {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let target_id = ObjectId::read(reader)?;
 
@@ -25,12 +25,6 @@ impl CommunicationTalkDirect {
             message,
             target_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationTalkDirect {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationTalkDirect::read(reader)
     }
 }
 

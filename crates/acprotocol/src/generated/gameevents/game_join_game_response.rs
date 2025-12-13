@@ -16,8 +16,8 @@ pub struct GameJoinGameResponse {
     pub team: i32,
 }
 
-impl GameJoinGameResponse {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for GameJoinGameResponse {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let game_id = read_u32(reader)?;
         let team = read_i32(reader)?;
 
@@ -25,12 +25,6 @@ impl GameJoinGameResponse {
             game_id,
             team,
         })
-    }
-}
-
-impl crate::readers::ACDataType for GameJoinGameResponse {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        GameJoinGameResponse::read(reader)
     }
 }
 

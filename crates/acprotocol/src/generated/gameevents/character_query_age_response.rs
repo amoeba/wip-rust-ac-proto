@@ -16,8 +16,8 @@ pub struct CharacterQueryAgeResponse {
     pub age: String,
 }
 
-impl CharacterQueryAgeResponse {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterQueryAgeResponse {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let target_name = read_string(reader)?;
         let age = read_string(reader)?;
 
@@ -25,12 +25,6 @@ impl CharacterQueryAgeResponse {
             target_name,
             age,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterQueryAgeResponse {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterQueryAgeResponse::read(reader)
     }
 }
 

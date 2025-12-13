@@ -20,8 +20,8 @@ pub struct DDDInterrogationMessage {
     pub supported_languages: PackableList<u32>,
 }
 
-impl DDDInterrogationMessage {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for DDDInterrogationMessage {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let servers_region = read_u32(reader)?;
         let name_rule_language = read_u32(reader)?;
         let product_id = read_u32(reader)?;
@@ -33,12 +33,6 @@ impl DDDInterrogationMessage {
             product_id,
             supported_languages,
         })
-    }
-}
-
-impl crate::readers::ACDataType for DDDInterrogationMessage {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        DDDInterrogationMessage::read(reader)
     }
 }
 

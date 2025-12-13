@@ -18,8 +18,8 @@ pub struct CombatHandlePlayerDeathEvent {
     pub killer_id: ObjectId,
 }
 
-impl CombatHandlePlayerDeathEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CombatHandlePlayerDeathEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let killed_id = ObjectId::read(reader)?;
         let killer_id = ObjectId::read(reader)?;
@@ -29,12 +29,6 @@ impl CombatHandlePlayerDeathEvent {
             killed_id,
             killer_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CombatHandlePlayerDeathEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CombatHandlePlayerDeathEvent::read(reader)
     }
 }
 

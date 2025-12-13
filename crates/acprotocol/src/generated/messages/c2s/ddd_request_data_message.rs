@@ -16,8 +16,8 @@ pub struct DDDRequestDataMessage {
     pub resource_id: DataId,
 }
 
-impl DDDRequestDataMessage {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for DDDRequestDataMessage {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let resource_type = read_u32(reader)?;
         let resource_id = DataId::read(reader)?;
 
@@ -25,12 +25,6 @@ impl DDDRequestDataMessage {
             resource_type,
             resource_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for DDDRequestDataMessage {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        DDDRequestDataMessage::read(reader)
     }
 }
 

@@ -18,8 +18,8 @@ pub struct InventoryStackableMerge {
     pub amount: u32,
 }
 
-impl InventoryStackableMerge {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for InventoryStackableMerge {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let target_id = ObjectId::read(reader)?;
         let amount = read_u32(reader)?;
@@ -29,12 +29,6 @@ impl InventoryStackableMerge {
             target_id,
             amount,
         })
-    }
-}
-
-impl crate::readers::ACDataType for InventoryStackableMerge {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        InventoryStackableMerge::read(reader)
     }
 }
 

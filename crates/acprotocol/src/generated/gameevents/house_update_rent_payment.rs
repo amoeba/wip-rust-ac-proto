@@ -14,19 +14,13 @@ pub struct HouseUpdateRentPayment {
     pub rent: PackableList<HousePayment>,
 }
 
-impl HouseUpdateRentPayment {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for HouseUpdateRentPayment {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let rent = read_packable_list::<HousePayment>(reader)?;
 
         Ok(Self {
             rent,
         })
-    }
-}
-
-impl crate::readers::ACDataType for HouseUpdateRentPayment {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        HouseUpdateRentPayment::read(reader)
     }
 }
 

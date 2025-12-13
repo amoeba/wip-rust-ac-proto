@@ -16,8 +16,8 @@ pub struct MagicCastTargetedSpell {
     pub spell_id: LayeredSpellId,
 }
 
-impl MagicCastTargetedSpell {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for MagicCastTargetedSpell {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let spell_id = LayeredSpellId::read(reader)?;
 
@@ -25,12 +25,6 @@ impl MagicCastTargetedSpell {
             object_id,
             spell_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for MagicCastTargetedSpell {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        MagicCastTargetedSpell::read(reader)
     }
 }
 

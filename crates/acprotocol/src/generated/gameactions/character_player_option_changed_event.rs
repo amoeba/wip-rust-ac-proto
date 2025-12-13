@@ -16,8 +16,8 @@ pub struct CharacterPlayerOptionChangedEvent {
     pub value: bool,
 }
 
-impl CharacterPlayerOptionChangedEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterPlayerOptionChangedEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let option = Ok::<_, Box<dyn std::error::Error>>(CharacterOptions1::from_bits_retain(read_u32(reader)?))?;
         let value = read_bool(reader)?;
 
@@ -25,12 +25,6 @@ impl CharacterPlayerOptionChangedEvent {
             option,
             value,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterPlayerOptionChangedEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterPlayerOptionChangedEvent::read(reader)
     }
 }
 

@@ -20,8 +20,8 @@ pub struct ItemServerSaysContainId {
     pub container_type: ContainerProperties,
 }
 
-impl ItemServerSaysContainId {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemServerSaysContainId {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let container_id = ObjectId::read(reader)?;
         let slot_index = read_u32(reader)?;
@@ -33,12 +33,6 @@ impl ItemServerSaysContainId {
             slot_index,
             container_type,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemServerSaysContainId {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemServerSaysContainId::read(reader)
     }
 }
 

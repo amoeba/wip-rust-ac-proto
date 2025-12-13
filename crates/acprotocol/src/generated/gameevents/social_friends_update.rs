@@ -16,8 +16,8 @@ pub struct SocialFriendsUpdate {
     pub type_: FriendsUpdateType,
 }
 
-impl SocialFriendsUpdate {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for SocialFriendsUpdate {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let friends = read_packable_list::<FriendData>(reader)?;
         let type_ = Ok::<_, Box<dyn std::error::Error>>(FriendsUpdateType::from_bits_retain(read_u32(reader)?))?;
 
@@ -25,12 +25,6 @@ impl SocialFriendsUpdate {
             friends,
             type_,
         })
-    }
-}
-
-impl crate::readers::ACDataType for SocialFriendsUpdate {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        SocialFriendsUpdate::read(reader)
     }
 }
 

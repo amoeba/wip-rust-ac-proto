@@ -18,8 +18,8 @@ pub struct QualitiesRemoveStringEvent {
     pub type_: PropertyString,
 }
 
-impl QualitiesRemoveStringEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for QualitiesRemoveStringEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u8(reader)?;
         let object_id = ObjectId::read(reader)?;
         let type_ = PropertyString::try_from(read_u32(reader)?)?;
@@ -29,12 +29,6 @@ impl QualitiesRemoveStringEvent {
             object_id,
             type_,
         })
-    }
-}
-
-impl crate::readers::ACDataType for QualitiesRemoveStringEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        QualitiesRemoveStringEvent::read(reader)
     }
 }
 

@@ -14,19 +14,13 @@ pub struct CommunicationEmote {
     pub message: String,
 }
 
-impl CommunicationEmote {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationEmote {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
 
         Ok(Self {
             message,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationEmote {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationEmote::read(reader)
     }
 }
 

@@ -16,8 +16,8 @@ pub struct CharacterSendCharGenResult {
     pub result: CharGenResult,
 }
 
-impl CharacterSendCharGenResult {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterSendCharGenResult {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let account = read_string(reader)?;
         let result = CharGenResult::read(reader)?;
 
@@ -25,12 +25,6 @@ impl CharacterSendCharGenResult {
             account,
             result,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterSendCharGenResult {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterSendCharGenResult::read(reader)
     }
 }
 

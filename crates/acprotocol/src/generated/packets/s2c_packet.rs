@@ -41,8 +41,8 @@ pub struct S2CPacket {
     pub fragments: Option<BlobFragments>,
 }
 
-impl S2CPacket {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for S2CPacket {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u32(reader)?;
         let flags = Ok::<_, Box<dyn std::error::Error>>(PacketHeaderFlags::from_bits_retain(read_u32(reader)?))?;
         let checksum = read_u32(reader)?;
@@ -100,12 +100,6 @@ impl S2CPacket {
             echo_response,
             fragments,
         })
-    }
-}
-
-impl crate::readers::ACDataType for S2CPacket {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        S2CPacket::read(reader)
     }
 }
 

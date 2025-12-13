@@ -18,8 +18,8 @@ pub struct AdminSendAdminRestoreCharacter {
     pub account_to_restore_to: String,
 }
 
-impl AdminSendAdminRestoreCharacter {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for AdminSendAdminRestoreCharacter {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let restored_char_name = read_string(reader)?;
         let account_to_restore_to = read_string(reader)?;
@@ -29,12 +29,6 @@ impl AdminSendAdminRestoreCharacter {
             restored_char_name,
             account_to_restore_to,
         })
-    }
-}
-
-impl crate::readers::ACDataType for AdminSendAdminRestoreCharacter {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        AdminSendAdminRestoreCharacter::read(reader)
     }
 }
 

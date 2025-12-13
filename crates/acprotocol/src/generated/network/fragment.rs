@@ -15,8 +15,8 @@ pub struct Fragment {
     pub data: Vec<u8>,
 }
 
-impl Fragment {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for Fragment {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let header = FragmentHeader::read(reader)?;
         let data = (|| -> Result<Vec<u8>, Box<dyn std::error::Error>> {
                 let mut data = Vec::new();
@@ -28,12 +28,6 @@ impl Fragment {
             header,
             data,
         })
-    }
-}
-
-impl crate::readers::ACDataType for Fragment {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        Fragment::read(reader)
     }
 }
 

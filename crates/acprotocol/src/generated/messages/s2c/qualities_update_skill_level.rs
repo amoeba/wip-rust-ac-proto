@@ -20,8 +20,8 @@ pub struct QualitiesUpdateSkillLevel {
     pub value: u32,
 }
 
-impl QualitiesUpdateSkillLevel {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for QualitiesUpdateSkillLevel {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u8(reader)?;
         let object_id = ObjectId::read(reader)?;
         let key = SkillId::try_from(read_i32(reader)?)?;
@@ -33,12 +33,6 @@ impl QualitiesUpdateSkillLevel {
             key,
             value,
         })
-    }
-}
-
-impl crate::readers::ACDataType for QualitiesUpdateSkillLevel {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        QualitiesUpdateSkillLevel::read(reader)
     }
 }
 

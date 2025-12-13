@@ -24,8 +24,8 @@ pub struct ItemParentEvent {
     pub child_position_sequence: u16,
 }
 
-impl ItemParentEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemParentEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let parent_id = ObjectId::read(reader)?;
         let child_id = ObjectId::read(reader)?;
         let location = ParentLocation::try_from(read_u32(reader)?)?;
@@ -41,12 +41,6 @@ impl ItemParentEvent {
             object_instance_sequence,
             child_position_sequence,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemParentEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemParentEvent::read(reader)
     }
 }
 

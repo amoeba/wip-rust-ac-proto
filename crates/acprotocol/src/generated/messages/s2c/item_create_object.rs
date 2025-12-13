@@ -20,8 +20,8 @@ pub struct ItemCreateObject {
     pub weenie_description: PublicWeenieDesc,
 }
 
-impl ItemCreateObject {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemCreateObject {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let object_description = ObjDesc::read(reader)?;
         let physics_description = PhysicsDesc::read(reader)?;
@@ -33,12 +33,6 @@ impl ItemCreateObject {
             physics_description,
             weenie_description,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemCreateObject {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemCreateObject::read(reader)
     }
 }
 

@@ -49,8 +49,8 @@ pub struct C2SPacket {
     pub fragments: Option<BlobFragments>,
 }
 
-impl C2SPacket {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for C2SPacket {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u32(reader)?;
         let flags = Ok::<_, Box<dyn std::error::Error>>(PacketHeaderFlags::from_bits_retain(read_u32(reader)?))?;
         let checksum = read_u32(reader)?;
@@ -128,12 +128,6 @@ impl C2SPacket {
             flow,
             fragments,
         })
-    }
-}
-
-impl crate::readers::ACDataType for C2SPacket {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        C2SPacket::read(reader)
     }
 }
 

@@ -16,8 +16,8 @@ pub struct AllegianceAllegianceChatBoot {
     pub reason: String,
 }
 
-impl AllegianceAllegianceChatBoot {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for AllegianceAllegianceChatBoot {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let character_name = read_string(reader)?;
         let reason = read_string(reader)?;
 
@@ -25,12 +25,6 @@ impl AllegianceAllegianceChatBoot {
             character_name,
             reason,
         })
-    }
-}
-
-impl crate::readers::ACDataType for AllegianceAllegianceChatBoot {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        AllegianceAllegianceChatBoot::read(reader)
     }
 }
 

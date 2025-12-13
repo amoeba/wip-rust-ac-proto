@@ -16,8 +16,8 @@ pub struct QualitiesPrivateRemoveInt64Event {
     pub type_: PropertyInt64,
 }
 
-impl QualitiesPrivateRemoveInt64Event {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for QualitiesPrivateRemoveInt64Event {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u8(reader)?;
         let type_ = PropertyInt64::try_from(read_u32(reader)?)?;
 
@@ -25,12 +25,6 @@ impl QualitiesPrivateRemoveInt64Event {
             sequence,
             type_,
         })
-    }
-}
-
-impl crate::readers::ACDataType for QualitiesPrivateRemoveInt64Event {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        QualitiesPrivateRemoveInt64Event::read(reader)
     }
 }
 

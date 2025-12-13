@@ -16,8 +16,8 @@ pub struct CommunicationModifyGlobalSquelch {
     pub type_: ChatFragmentType,
 }
 
-impl CommunicationModifyGlobalSquelch {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationModifyGlobalSquelch {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let add = read_bool(reader)?;
         let type_ = ChatFragmentType::try_from(read_u32(reader)?)?;
 
@@ -25,12 +25,6 @@ impl CommunicationModifyGlobalSquelch {
             add,
             type_,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationModifyGlobalSquelch {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationModifyGlobalSquelch::read(reader)
     }
 }
 

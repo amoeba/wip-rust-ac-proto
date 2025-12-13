@@ -16,8 +16,8 @@ pub struct SocialAddOrSetCharacterTitle {
     pub set_as_display_title: bool,
 }
 
-impl SocialAddOrSetCharacterTitle {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for SocialAddOrSetCharacterTitle {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let new_title = read_u32(reader)?;
         let set_as_display_title = read_bool(reader)?;
 
@@ -25,12 +25,6 @@ impl SocialAddOrSetCharacterTitle {
             new_title,
             set_as_display_title,
         })
-    }
-}
-
-impl crate::readers::ACDataType for SocialAddOrSetCharacterTitle {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        SocialAddOrSetCharacterTitle::read(reader)
     }
 }
 

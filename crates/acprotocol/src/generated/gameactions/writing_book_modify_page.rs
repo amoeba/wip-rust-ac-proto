@@ -18,8 +18,8 @@ pub struct WritingBookModifyPage {
     pub page_text: String,
 }
 
-impl WritingBookModifyPage {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for WritingBookModifyPage {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let page_num = read_i32(reader)?;
         let page_text = read_string(reader)?;
@@ -29,12 +29,6 @@ impl WritingBookModifyPage {
             page_num,
             page_text,
         })
-    }
-}
-
-impl crate::readers::ACDataType for WritingBookModifyPage {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        WritingBookModifyPage::read(reader)
     }
 }
 

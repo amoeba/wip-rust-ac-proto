@@ -14,19 +14,13 @@ pub struct FellowshipChangeFellowOpeness {
     pub open: bool,
 }
 
-impl FellowshipChangeFellowOpeness {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for FellowshipChangeFellowOpeness {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let open = read_bool(reader)?;
 
         Ok(Self {
             open,
         })
-    }
-}
-
-impl crate::readers::ACDataType for FellowshipChangeFellowOpeness {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        FellowshipChangeFellowOpeness::read(reader)
     }
 }
 

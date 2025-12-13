@@ -32,8 +32,8 @@ pub struct CommunicationChatRoomTracker {
     pub society_radiant_blood_chat_room_id: u32,
 }
 
-impl CommunicationChatRoomTracker {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationChatRoomTracker {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let allegiance_room_id = read_u32(reader)?;
         let general_chat_room_id = read_u32(reader)?;
         let trade_chat_room_id = read_u32(reader)?;
@@ -57,12 +57,6 @@ impl CommunicationChatRoomTracker {
             society_eldrich_web_chat_room_id,
             society_radiant_blood_chat_room_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationChatRoomTracker {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationChatRoomTracker::read(reader)
     }
 }
 

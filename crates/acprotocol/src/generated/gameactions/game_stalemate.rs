@@ -14,19 +14,13 @@ pub struct GameStalemate {
     pub on: bool,
 }
 
-impl GameStalemate {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for GameStalemate {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let on = read_bool(reader)?;
 
         Ok(Self {
             on,
         })
-    }
-}
-
-impl crate::readers::ACDataType for GameStalemate {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        GameStalemate::read(reader)
     }
 }
 

@@ -24,8 +24,8 @@ pub struct CommunicationHearDirectSpeech {
     pub secret_flags: u32,
 }
 
-impl CommunicationHearDirectSpeech {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationHearDirectSpeech {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let sender_name = read_string(reader)?;
         let sender_id = ObjectId::read(reader)?;
@@ -41,12 +41,6 @@ impl CommunicationHearDirectSpeech {
             type_,
             secret_flags,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationHearDirectSpeech {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationHearDirectSpeech::read(reader)
     }
 }
 

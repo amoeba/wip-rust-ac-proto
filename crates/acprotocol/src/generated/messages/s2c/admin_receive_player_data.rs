@@ -16,8 +16,8 @@ pub struct AdminReceivePlayerData {
     pub admin_player_data: PackableList<AdminPlayerData>,
 }
 
-impl AdminReceivePlayerData {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for AdminReceivePlayerData {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let unknown = read_i32(reader)?;
         let admin_player_data = read_packable_list::<AdminPlayerData>(reader)?;
 
@@ -25,12 +25,6 @@ impl AdminReceivePlayerData {
             unknown,
             admin_player_data,
         })
-    }
-}
-
-impl crate::readers::ACDataType for AdminReceivePlayerData {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        AdminReceivePlayerData::read(reader)
     }
 }
 

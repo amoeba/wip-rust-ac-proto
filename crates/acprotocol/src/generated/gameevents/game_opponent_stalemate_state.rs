@@ -18,8 +18,8 @@ pub struct GameOpponentStalemateState {
     pub on: bool,
 }
 
-impl GameOpponentStalemateState {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for GameOpponentStalemateState {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let game_id = read_u32(reader)?;
         let team = read_i32(reader)?;
         let on = read_bool(reader)?;
@@ -29,12 +29,6 @@ impl GameOpponentStalemateState {
             team,
             on,
         })
-    }
-}
-
-impl crate::readers::ACDataType for GameOpponentStalemateState {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        GameOpponentStalemateState::read(reader)
     }
 }
 

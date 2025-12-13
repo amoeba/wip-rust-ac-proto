@@ -22,8 +22,8 @@ pub struct CommunicationHearRangedSpeech {
     pub type_: ChatFragmentType,
 }
 
-impl CommunicationHearRangedSpeech {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationHearRangedSpeech {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let sender_name = read_string(reader)?;
         let sender_id = ObjectId::read(reader)?;
@@ -37,12 +37,6 @@ impl CommunicationHearRangedSpeech {
             range,
             type_,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationHearRangedSpeech {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationHearRangedSpeech::read(reader)
     }
 }
 

@@ -22,8 +22,8 @@ pub struct LoginPlayerDescription {
     pub inventory_placement: PackableList<InventoryPlacement>,
 }
 
-impl LoginPlayerDescription {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for LoginPlayerDescription {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let base_qualities = ACBaseQualities::read(reader)?;
         let qualities = ACQualities::read(reader)?;
         let player_module = PlayerModule::read(reader)?;
@@ -37,12 +37,6 @@ impl LoginPlayerDescription {
             content_profile,
             inventory_placement,
         })
-    }
-}
-
-impl crate::readers::ACDataType for LoginPlayerDescription {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        LoginPlayerDescription::read(reader)
     }
 }
 

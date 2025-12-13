@@ -16,8 +16,8 @@ pub struct HouseChangeStoragePermission {
     pub has_permission: bool,
 }
 
-impl HouseChangeStoragePermission {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for HouseChangeStoragePermission {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let guest_name = read_string(reader)?;
         let has_permission = read_bool(reader)?;
 
@@ -25,12 +25,6 @@ impl HouseChangeStoragePermission {
             guest_name,
             has_permission,
         })
-    }
-}
-
-impl crate::readers::ACDataType for HouseChangeStoragePermission {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        HouseChangeStoragePermission::read(reader)
     }
 }
 

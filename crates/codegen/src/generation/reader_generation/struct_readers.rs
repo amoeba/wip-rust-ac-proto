@@ -16,10 +16,10 @@ pub fn generate_struct_reader_impl(
 ) -> String {
     let mut out = String::new();
 
-    out.push_str(&format!("impl {type_name} {{\n",));
-    out.push_str(
-        "    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {\n",
-    );
+    // Add ACDataType implementation with the reading logic inlined
+    out.push_str(&format!("impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n",
+        type_name
+    ));
 
     // Group consecutive fields with the same condition
     let field_groups = helpers::group_consecutive_fields_by_condition(&field_set.common_fields);
@@ -48,12 +48,6 @@ pub fn generate_struct_reader_impl(
     out.push_str("        })\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
-
-    // Add ACDataType implementation
-    out.push_str(&format!(
-        "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
-        type_name, type_name
-    ));
 
     out
 }

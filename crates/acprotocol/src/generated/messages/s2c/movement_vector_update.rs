@@ -22,8 +22,8 @@ pub struct MovementVectorUpdate {
     pub object_vector_sequence: u16,
 }
 
-impl MovementVectorUpdate {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for MovementVectorUpdate {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let velocity = Vector3::read(reader)?;
         let omega = Vector3::read(reader)?;
@@ -37,12 +37,6 @@ impl MovementVectorUpdate {
             object_instance_sequence,
             object_vector_sequence,
         })
-    }
-}
-
-impl crate::readers::ACDataType for MovementVectorUpdate {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementVectorUpdate::read(reader)
     }
 }
 

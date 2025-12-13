@@ -14,19 +14,13 @@ pub struct CommunicationRemoveFromChannel {
     pub channel: Channel,
 }
 
-impl CommunicationRemoveFromChannel {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationRemoveFromChannel {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let channel = Ok::<_, Box<dyn std::error::Error>>(Channel::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             channel,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationRemoveFromChannel {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationRemoveFromChannel::read(reader)
     }
 }
 

@@ -16,8 +16,8 @@ pub struct MovementPositionEvent {
     pub position: PositionPack,
 }
 
-impl MovementPositionEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for MovementPositionEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let position = PositionPack::read(reader)?;
 
@@ -25,12 +25,6 @@ impl MovementPositionEvent {
             object_id,
             position,
         })
-    }
-}
-
-impl crate::readers::ACDataType for MovementPositionEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementPositionEvent::read(reader)
     }
 }
 

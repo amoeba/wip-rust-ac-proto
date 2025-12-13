@@ -16,8 +16,8 @@ pub struct AllegianceAllegianceInfoResponseEvent {
     pub profile: AllegianceProfile,
 }
 
-impl AllegianceAllegianceInfoResponseEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for AllegianceAllegianceInfoResponseEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let target_id = ObjectId::read(reader)?;
         let profile = AllegianceProfile::read(reader)?;
 
@@ -25,12 +25,6 @@ impl AllegianceAllegianceInfoResponseEvent {
             target_id,
             profile,
         })
-    }
-}
-
-impl crate::readers::ACDataType for AllegianceAllegianceInfoResponseEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        AllegianceAllegianceInfoResponseEvent::read(reader)
     }
 }
 

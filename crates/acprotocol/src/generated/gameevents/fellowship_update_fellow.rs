@@ -16,8 +16,8 @@ pub struct FellowshipUpdateFellow {
     pub update_type: FellowUpdateType,
 }
 
-impl FellowshipUpdateFellow {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for FellowshipUpdateFellow {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let fellow = Fellow::read(reader)?;
         let update_type = FellowUpdateType::try_from(read_u32(reader)?)?;
 
@@ -25,12 +25,6 @@ impl FellowshipUpdateFellow {
             fellow,
             update_type,
         })
-    }
-}
-
-impl crate::readers::ACDataType for FellowshipUpdateFellow {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        FellowshipUpdateFellow::read(reader)
     }
 }
 

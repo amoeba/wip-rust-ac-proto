@@ -16,8 +16,8 @@ pub struct InventoryUseWithTargetEvent {
     pub target_id: ObjectId,
 }
 
-impl InventoryUseWithTargetEvent {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for InventoryUseWithTargetEvent {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let target_id = ObjectId::read(reader)?;
 
@@ -25,12 +25,6 @@ impl InventoryUseWithTargetEvent {
             object_id,
             target_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for InventoryUseWithTargetEvent {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        InventoryUseWithTargetEvent::read(reader)
     }
 }
 

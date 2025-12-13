@@ -70,8 +70,8 @@ pub struct ItemSetAppraiseInfo {
     pub base_armor_foot: Option<u32>,
 }
 
-impl ItemSetAppraiseInfo {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemSetAppraiseInfo {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let flags = read_u32(reader)?;
         let success = read_bool(reader)?;
@@ -189,12 +189,6 @@ impl ItemSetAppraiseInfo {
             base_armor_shin,
             base_armor_foot,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemSetAppraiseInfo {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemSetAppraiseInfo::read(reader)
     }
 }
 

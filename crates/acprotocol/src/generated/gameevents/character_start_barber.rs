@@ -44,8 +44,8 @@ pub struct CharacterStartBarber {
     pub option2: i32,
 }
 
-impl CharacterStartBarber {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterStartBarber {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let base_palette = DataId::read(reader)?;
         let head_object = DataId::read(reader)?;
         let head_texture = DataId::read(reader)?;
@@ -81,12 +81,6 @@ impl CharacterStartBarber {
             option1,
             option2,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterStartBarber {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterStartBarber::read(reader)
     }
 }
 

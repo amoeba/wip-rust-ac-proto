@@ -16,8 +16,8 @@ pub struct LoginAccountBanned {
     pub text: String,
 }
 
-impl LoginAccountBanned {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for LoginAccountBanned {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let banned_until = read_u32(reader)?;
         let text = read_string(reader)?;
 
@@ -25,12 +25,6 @@ impl LoginAccountBanned {
             banned_until,
             text,
         })
-    }
-}
-
-impl crate::readers::ACDataType for LoginAccountBanned {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        LoginAccountBanned::read(reader)
     }
 }
 

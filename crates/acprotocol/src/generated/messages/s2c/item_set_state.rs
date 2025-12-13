@@ -20,8 +20,8 @@ pub struct ItemSetState {
     pub object_state_sequence: u16,
 }
 
-impl ItemSetState {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemSetState {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let new_state = Ok::<_, Box<dyn std::error::Error>>(PhysicsState::from_bits_retain(read_u32(reader)?))?;
         let object_instance_sequence = read_u16(reader)?;
@@ -33,12 +33,6 @@ impl ItemSetState {
             object_instance_sequence,
             object_state_sequence,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemSetState {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemSetState::read(reader)
     }
 }
 

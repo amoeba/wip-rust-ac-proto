@@ -19,8 +19,8 @@ pub struct FragmentHeader {
     pub index: u16,
 }
 
-impl FragmentHeader {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for FragmentHeader {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u32(reader)?;
         let id = read_u32(reader)?;
         let count = read_u16(reader)?;
@@ -32,12 +32,6 @@ impl FragmentHeader {
             count,
             index,
         })
-    }
-}
-
-impl crate::readers::ACDataType for FragmentHeader {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        FragmentHeader::read(reader)
     }
 }
 

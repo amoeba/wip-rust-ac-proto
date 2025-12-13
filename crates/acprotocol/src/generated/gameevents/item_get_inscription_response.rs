@@ -18,8 +18,8 @@ pub struct ItemGetInscriptionResponse {
     pub scribe_account: String,
 }
 
-impl ItemGetInscriptionResponse {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemGetInscriptionResponse {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let inscription = read_string(reader)?;
         let scribe_name = read_string(reader)?;
         let scribe_account = read_string(reader)?;
@@ -29,12 +29,6 @@ impl ItemGetInscriptionResponse {
             scribe_name,
             scribe_account,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemGetInscriptionResponse {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemGetInscriptionResponse::read(reader)
     }
 }
 

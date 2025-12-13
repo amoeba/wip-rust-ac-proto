@@ -16,8 +16,8 @@ pub struct AllegianceSetAllegianceOfficerTitle {
     pub title: String,
 }
 
-impl AllegianceSetAllegianceOfficerTitle {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for AllegianceSetAllegianceOfficerTitle {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let level = AllegianceOfficerLevel::try_from(read_u32(reader)?)?;
         let title = read_string(reader)?;
 
@@ -25,12 +25,6 @@ impl AllegianceSetAllegianceOfficerTitle {
             level,
             title,
         })
-    }
-}
-
-impl crate::readers::ACDataType for AllegianceSetAllegianceOfficerTitle {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        AllegianceSetAllegianceOfficerTitle::read(reader)
     }
 }
 

@@ -18,8 +18,8 @@ pub struct CommunicationChannelBroadcast {
     pub message: String,
 }
 
-impl CommunicationChannelBroadcast {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationChannelBroadcast {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let channel = Ok::<_, Box<dyn std::error::Error>>(Channel::from_bits_retain(read_u32(reader)?))?;
         let sender_name = read_string(reader)?;
         let message = read_string(reader)?;
@@ -29,12 +29,6 @@ impl CommunicationChannelBroadcast {
             sender_name,
             message,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationChannelBroadcast {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationChannelBroadcast::read(reader)
     }
 }
 

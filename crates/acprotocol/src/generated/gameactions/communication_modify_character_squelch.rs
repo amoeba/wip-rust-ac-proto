@@ -20,8 +20,8 @@ pub struct CommunicationModifyCharacterSquelch {
     pub type_: ChatFragmentType,
 }
 
-impl CommunicationModifyCharacterSquelch {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CommunicationModifyCharacterSquelch {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let add = read_bool(reader)?;
         let object_id = ObjectId::read(reader)?;
         let character_name = read_string(reader)?;
@@ -33,12 +33,6 @@ impl CommunicationModifyCharacterSquelch {
             character_name,
             type_,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CommunicationModifyCharacterSquelch {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CommunicationModifyCharacterSquelch::read(reader)
     }
 }
 

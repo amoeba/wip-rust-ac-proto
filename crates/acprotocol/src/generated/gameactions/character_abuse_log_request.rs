@@ -18,8 +18,8 @@ pub struct CharacterAbuseLogRequest {
     pub complaint: String,
 }
 
-impl CharacterAbuseLogRequest {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterAbuseLogRequest {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let character = read_string(reader)?;
         let status = read_u32(reader)?;
         let complaint = read_string(reader)?;
@@ -29,12 +29,6 @@ impl CharacterAbuseLogRequest {
             status,
             complaint,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterAbuseLogRequest {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterAbuseLogRequest::read(reader)
     }
 }
 

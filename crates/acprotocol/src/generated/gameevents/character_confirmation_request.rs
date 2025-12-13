@@ -18,8 +18,8 @@ pub struct CharacterConfirmationRequest {
     pub text: String,
 }
 
-impl CharacterConfirmationRequest {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterConfirmationRequest {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let confirmation_type = ConfirmationType::try_from(read_u32(reader)?)?;
         let context_id = read_u32(reader)?;
         let text = read_string(reader)?;
@@ -29,12 +29,6 @@ impl CharacterConfirmationRequest {
             context_id,
             text,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterConfirmationRequest {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterConfirmationRequest::read(reader)
     }
 }
 

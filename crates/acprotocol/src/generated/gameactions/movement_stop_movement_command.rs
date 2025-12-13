@@ -16,8 +16,8 @@ pub struct MovementStopMovementCommand {
     pub hold_key: HoldKey,
 }
 
-impl MovementStopMovementCommand {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for MovementStopMovementCommand {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let motion = read_u32(reader)?;
         let hold_key = HoldKey::try_from(read_u32(reader)?)?;
 
@@ -25,12 +25,6 @@ impl MovementStopMovementCommand {
             motion,
             hold_key,
         })
-    }
-}
-
-impl crate::readers::ACDataType for MovementStopMovementCommand {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        MovementStopMovementCommand::read(reader)
     }
 }
 

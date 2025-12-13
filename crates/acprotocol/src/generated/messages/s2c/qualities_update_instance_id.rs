@@ -20,8 +20,8 @@ pub struct QualitiesUpdateInstanceId {
     pub value: ObjectId,
 }
 
-impl QualitiesUpdateInstanceId {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for QualitiesUpdateInstanceId {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let sequence = read_u8(reader)?;
         let object_id = ObjectId::read(reader)?;
         let key = PropertyInstanceId::try_from(read_u32(reader)?)?;
@@ -33,12 +33,6 @@ impl QualitiesUpdateInstanceId {
             key,
             value,
         })
-    }
-}
-
-impl crate::readers::ACDataType for QualitiesUpdateInstanceId {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        QualitiesUpdateInstanceId::read(reader)
     }
 }
 

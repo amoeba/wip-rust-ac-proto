@@ -16,8 +16,8 @@ pub struct CharacterConfirmationDone {
     pub context_id: u32,
 }
 
-impl CharacterConfirmationDone {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for CharacterConfirmationDone {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let confirmation_type = ConfirmationType::try_from(read_u32(reader)?)?;
         let context_id = read_u32(reader)?;
 
@@ -25,12 +25,6 @@ impl CharacterConfirmationDone {
             confirmation_type,
             context_id,
         })
-    }
-}
-
-impl crate::readers::ACDataType for CharacterConfirmationDone {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        CharacterConfirmationDone::read(reader)
     }
 }
 

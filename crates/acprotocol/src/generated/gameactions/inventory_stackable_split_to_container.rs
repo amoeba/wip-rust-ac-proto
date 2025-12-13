@@ -20,8 +20,8 @@ pub struct InventoryStackableSplitToContainer {
     pub amount: u32,
 }
 
-impl InventoryStackableSplitToContainer {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for InventoryStackableSplitToContainer {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
         let container_id = ObjectId::read(reader)?;
         let slot_index = read_u32(reader)?;
@@ -33,12 +33,6 @@ impl InventoryStackableSplitToContainer {
             slot_index,
             amount,
         })
-    }
-}
-
-impl crate::readers::ACDataType for InventoryStackableSplitToContainer {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        InventoryStackableSplitToContainer::read(reader)
     }
 }
 

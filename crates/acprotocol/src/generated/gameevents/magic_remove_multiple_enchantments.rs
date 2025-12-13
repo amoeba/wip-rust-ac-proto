@@ -14,19 +14,13 @@ pub struct MagicRemoveMultipleEnchantments {
     pub enchantments: PackableList<LayeredSpellId>,
 }
 
-impl MagicRemoveMultipleEnchantments {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for MagicRemoveMultipleEnchantments {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let enchantments = read_packable_list::<LayeredSpellId>(reader)?;
 
         Ok(Self {
             enchantments,
         })
-    }
-}
-
-impl crate::readers::ACDataType for MagicRemoveMultipleEnchantments {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        MagicRemoveMultipleEnchantments::read(reader)
     }
 }
 

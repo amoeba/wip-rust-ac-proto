@@ -16,8 +16,8 @@ pub struct ItemOnViewContents {
     pub items: PackableList<ContentProfile>,
 }
 
-impl ItemOnViewContents {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for ItemOnViewContents {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let container_id = ObjectId::read(reader)?;
         let items = read_packable_list::<ContentProfile>(reader)?;
 
@@ -25,12 +25,6 @@ impl ItemOnViewContents {
             container_id,
             items,
         })
-    }
-}
-
-impl crate::readers::ACDataType for ItemOnViewContents {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        ItemOnViewContents::read(reader)
     }
 }
 

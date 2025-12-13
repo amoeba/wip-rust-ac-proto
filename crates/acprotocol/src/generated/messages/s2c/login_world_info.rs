@@ -18,8 +18,8 @@ pub struct LoginWorldInfo {
     pub world_name: String,
 }
 
-impl LoginWorldInfo {
-    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+impl crate::readers::ACDataType for LoginWorldInfo {
+    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let connections = read_u32(reader)?;
         let max_connections = read_u32(reader)?;
         let world_name = read_string(reader)?;
@@ -29,12 +29,6 @@ impl LoginWorldInfo {
             max_connections,
             world_name,
         })
-    }
-}
-
-impl crate::readers::ACDataType for LoginWorldInfo {
-    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        LoginWorldInfo::read(reader)
     }
 }
 
