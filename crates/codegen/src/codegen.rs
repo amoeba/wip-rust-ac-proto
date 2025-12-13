@@ -6,6 +6,7 @@ pub fn generate_and_write(
     generated_dir: &Path,
     filter_types: &[String],
 ) -> std::io::Result<()> {
+    println!("workspace_root: {:?}", workspace_root);
     let protocol_path = workspace_root.join("ACProtocol/protocol.xml");
     let network_path = workspace_root.join("network.xml");
 

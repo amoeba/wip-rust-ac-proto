@@ -1,21 +1,11 @@
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
-fn main() {
-    env_logger::init();
-
-    let args: Vec<String> = env::args().collect();
-    match args.get(1).map(|s| s.as_str()) {
-        Some("generate") => generate(),
-        Some(cmd) => eprintln!("Unknown command: {}", cmd),
-        None => eprintln!("Usage: cargo xtask generate"),
-    }
-}
-
-fn generate() {
+pub fn generate() {
     // Get the workspace root
     let xtask_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-    let workspace_root = xtask_dir.parent().unwrap();
-    let generated_dir = workspace_root.join("crates/acprotocol/src/generated");
+    let workspace_root = xtask_dir.parent().unwrap().parent().unwrap();
+
+    let generated_dir = workspace_root.join("./crates/acprotocol/src/generated");
 
     // Read FILTER_TYPES env var - comma-separated list of types to generate readers for
     let filter_types = env::var("FILTER_TYPES")
