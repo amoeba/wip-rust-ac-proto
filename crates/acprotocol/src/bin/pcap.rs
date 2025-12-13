@@ -213,8 +213,8 @@ mod tui {
         }
 
         fn next(&mut self, visible_rows: usize) {
-            if !self.packets.is_empty() {
-                self.selected = (self.selected + 1) % self.packets.len();
+            if !self.packets.is_empty() && self.selected < self.packets.len() - 1 {
+                self.selected += 1;
                 self.update_scroll(visible_rows);
                 self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
                 self.tree_focused_line = 0;
@@ -222,12 +222,8 @@ mod tui {
         }
 
         fn prev(&mut self, visible_rows: usize) {
-            if !self.packets.is_empty() {
-                self.selected = if self.selected == 0 {
-                    self.packets.len() - 1
-                } else {
-                    self.selected - 1
-                };
+            if !self.packets.is_empty() && self.selected > 0 {
+                self.selected -= 1;
                 self.update_scroll(visible_rows);
                 self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
                 self.tree_focused_line = 0;
@@ -301,6 +297,24 @@ mod tui {
         }
     }
 
+    fn collect_all_expandable_paths(node: &TreeNode, path: String, expanded: &mut std::collections::HashSet<String>) {
+        let current_path = if path.is_empty() {
+            node.key.clone()
+        } else {
+            format!("{}.{}", path, node.key)
+        };
+
+        // Add current node if it has children
+        if !node.children.is_empty() {
+            expanded.insert(current_path.clone());
+        }
+
+        // Recursively process children
+        for child in &node.children {
+            collect_all_expandable_paths(child, current_path.clone(), expanded);
+        }
+    }
+
     fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> io::Result<()> {
         loop {
             // Get detail lines before drawing (for Enter key handling)
@@ -367,6 +381,7 @@ mod tui {
                         KeyCode::Enter => {
                             // Only expand/collapse in details pane
                             if matches!(app.focused_pane, FocusedPane::Details) {
+                                // Enter: toggle current node
                                 let focused_global_line = app.tree_scroll_offset + app.tree_focused_line;
                                 if focused_global_line < detail_lines.len() {
                                     let (line, path) = &detail_lines[focused_global_line];
@@ -396,6 +411,18 @@ mod tui {
                                 FocusedPane::Details => {
                                     for _ in 0..visible_rows {
                                         app.tree_line_up();
+                                    }
+                                }
+                            }
+                        }
+                        KeyCode::Char('a') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                            // Ctrl+a: expand all nodes (when Shift+Enter doesn't work)
+                            if matches!(app.focused_pane, FocusedPane::Details) {
+                                if !app.packets.is_empty() {
+                                    let packet = &app.packets[app.selected];
+                                    if let Ok(json_val) = serde_json::from_str::<Value>(&packet.raw_json) {
+                                        let root = TreeNode::from_json("root", &json_val);
+                                        collect_all_expandable_paths(&root, String::new(), &mut app.tree_expanded);
                                     }
                                 }
                             }
@@ -455,7 +482,7 @@ mod tui {
                 ];
 
                 let style = if i == app.selected {
-                    Style::default().bg(Color::Cyan).fg(Color::Black)
+                    Style::default().bg(Color::Black).fg(Color::White)
                 } else if !matches!(app.focused_pane, FocusedPane::List) {
                     Style::default().add_modifier(Modifier::DIM)
                 } else {
@@ -505,7 +532,21 @@ mod tui {
             
             // Parse JSON and build tree
             let detail_lines = match serde_json::from_str::<Value>(&packet.raw_json) {
-                Ok(json_val) => {
+                Ok(mut json_val) => {
+                    // Format header_flags if present
+                    if let Some(flags_val) = json_val.get("header_flags") {
+                        if let Some(flags_num) = flags_val.as_u64() {
+                            let formatted_flags = format_packet_flags(flags_num as u32);
+                            json_val["header_flags"] = Value::String(formatted_flags);
+                        }
+                    }
+                    // Format opcode if present
+                    if let Some(opcode_val) = json_val.get("opcode") {
+                        if let Some(opcode_num) = opcode_val.as_u64() {
+                            let formatted_opcode = format!("0x{:04x} ({})", opcode_num, opcode_num);
+                            json_val["opcode"] = Value::String(formatted_opcode);
+                        }
+                    }
                     let mut expanded = app.tree_expanded.clone();
                     expanded.insert("root".to_string()); // Root is always expanded
                     let root = TreeNode::from_json("root", &json_val);
@@ -517,27 +558,24 @@ mod tui {
             };
             
             let visible_rows = chunks[1].height.saturating_sub(2) as usize;
-            let mut detail_text = String::new();
             
-            // Render visible lines with focused line highlighted
+            // Build styled lines with focused line highlighted
+            let mut styled_lines = Vec::new();
             for (i, (line, _path)) in detail_lines.iter().enumerate() {
                 if i >= app.tree_scroll_offset && i < app.tree_scroll_offset + visible_rows {
                     let display_idx = i - app.tree_scroll_offset;
-                    if display_idx == app.tree_focused_line {
-                        detail_text.push_str(&format!("► {}\n", line));
+                    let style = if display_idx == app.tree_focused_line && matches!(app.focused_pane, FocusedPane::Details) {
+                        Style::default().bg(Color::Black).fg(Color::White)
+                    } else if !matches!(app.focused_pane, FocusedPane::Details) {
+                        Style::default().add_modifier(Modifier::DIM)
                     } else {
-                        detail_text.push_str(&format!("{}\n", line));
-                    }
+                        Style::default()
+                    };
+                    styled_lines.push(ratatui::text::Line::from(ratatui::text::Span::styled(line.clone(), style)));
                 }
             }
             
-            let text_style = if matches!(app.focused_pane, FocusedPane::Details) {
-                Style::default()
-            } else {
-                Style::default().add_modifier(Modifier::DIM)
-            };
-            
-            let detail_para = Paragraph::new(detail_text)
+            let detail_para = Paragraph::new(styled_lines)
                 .block({
                     let style = if matches!(app.focused_pane, FocusedPane::Details) {
                         Style::default().add_modifier(Modifier::BOLD)
@@ -548,8 +586,7 @@ mod tui {
                         .title(detail_title)
                         .borders(Borders::ALL)
                         .style(style)
-                })
-                .style(text_style);
+                });
             f.render_widget(detail_para, chunks[1]);
         } else {
             let text_style = if matches!(app.focused_pane, FocusedPane::Details) {
@@ -575,7 +612,7 @@ mod tui {
         }
 
         // Footer with controls
-        let controls_text = "q/Esc: Quit | Tab: Switch pane | ↑/↓: Navigate | Enter: Expand/collapse";
+        let controls_text = "q/Esc: Quit | Tab: Switch pane | ↑/↓: Navigate | Enter: Expand/collapse | Ctrl+a: Expand all";
         let controls = Paragraph::new(controls_text)
             .block(Block::default().borders(Borders::TOP));
         f.render_widget(controls, outer_chunks[1]);
