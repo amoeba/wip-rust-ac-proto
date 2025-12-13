@@ -1,10 +1,15 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use acprotocol::constants::{PACKET_HEADER_SIZE, UDP_DEST_PORT_OFFSET};
+
+// Border height in terminal UI (top and bottom borders)
+const BORDER_HEIGHT: usize = 2;
 
 mod read {
     use anyhow::Result;
     use std::path::Path;
+    use crate::PACKET_HEADER_SIZE;
 
     pub fn run(path: &Path) -> Result<()> {
         use acprotocol::network::{FragmentAssembler, pcap};
@@ -15,11 +20,11 @@ mod read {
         while let Some(packet_result) = pcap_iter.next() {
             let packet = packet_result?;
 
-            // Skip first 42 bytes (Ethernet + IP + UDP headers)
-            if packet.data.len() <= 42 {
+            // Skip network packet headers (Ethernet + IP + UDP)
+            if packet.data.len() <= PACKET_HEADER_SIZE {
                 continue;
             }
-            let udp_payload = &packet.data[42..];
+            let udp_payload = &packet.data[PACKET_HEADER_SIZE..];
 
             // Try to parse messages from this packet
             match assembler.parse_packet_payload(udp_payload) {
@@ -43,7 +48,7 @@ mod tui {
     use std::path::Path;
 
     use crossterm::{
-        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers},
+        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers, MouseEvent, MouseEventKind},
         execute,
         terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     };
@@ -59,6 +64,8 @@ mod tui {
     use std::io;
     use acprotocol::enums::PacketHeaderFlags;
     use acprotocol::packet_flags::format_packet_flags;
+    use acprotocol::tree::{TreeNode, collect_all_expandable_paths};
+    use crate::{PACKET_HEADER_SIZE, UDP_DEST_PORT_OFFSET, BORDER_HEIGHT};
 
     pub fn run(path: &Path) -> Result<()> {
         // Setup terminal
@@ -100,7 +107,6 @@ mod tui {
         flags: String,
         packet_type: String,
         size: usize,
-        extra_info: String,
         opcode: u32,
         sequence: u32,
         queue: String,
@@ -109,75 +115,7 @@ mod tui {
         raw_json: String,
     }
 
-    #[derive(Clone)]
-    struct TreeNode {
-        key: String,
-        value: String,
-        children: Vec<TreeNode>,
-        expanded: bool,
-    }
 
-    impl TreeNode {
-        fn from_json(key: &str, value: &Value) -> Self {
-            let (value_str, children) = match value {
-                Value::Object(obj) => {
-                    let val = format!("{{...}}", );
-                    let children: Vec<TreeNode> = obj
-                        .iter()
-                        .map(|(k, v)| TreeNode::from_json(k, v))
-                        .collect();
-                    (val, children)
-                }
-                Value::Array(arr) => {
-                    let val = format!("[{}]", arr.len());
-                    let children: Vec<TreeNode> = arr
-                        .iter()
-                        .enumerate()
-                        .map(|(i, v)| TreeNode::from_json(&format!("[{}]", i), v))
-                        .collect();
-                    (val, children)
-                }
-                _ => (value.to_string(), Vec::new()),
-            };
-
-            TreeNode {
-                key: key.to_string(),
-                value: value_str,
-                children,
-                expanded: false,
-            }
-        }
-
-        fn get_display_lines(&self, depth: usize, expanded_set: &std::collections::HashSet<String>, path: String) -> Vec<(String, String)> {
-            let mut lines = Vec::new();
-            let current_path = if path.is_empty() {
-                self.key.clone()
-            } else {
-                format!("{}.{}", path, self.key)
-            };
-
-            let prefix = "  ".repeat(depth);
-            let expanded = expanded_set.contains(&current_path);
-            let toggle = if !self.children.is_empty() {
-                if expanded { "▼" } else { "▶" }
-            } else {
-                " "
-            };
-
-            lines.push((
-                format!("{}{} {}: {}", prefix, toggle, self.key, self.value),
-                current_path.clone(),
-            ));
-
-            if expanded && !self.children.is_empty() {
-                for child in &self.children {
-                    lines.extend(child.get_display_lines(depth + 1, expanded_set, current_path.clone()));
-                }
-            }
-
-            lines
-        }
-    }
 
     struct App {
         packets: Vec<PacketInfo>,
@@ -214,12 +152,16 @@ mod tui {
             }
         }
 
+        fn reset_tree_state(&mut self) {
+            self.tree_scroll_offset = 0;
+            self.tree_focused_line = 0;
+        }
+
         fn next(&mut self, visible_rows: usize) {
             if !self.packets.is_empty() && self.selected < self.packets.len() - 1 {
                 self.selected += 1;
                 self.update_scroll(visible_rows);
-                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
-                self.tree_focused_line = 0;
+                self.reset_tree_state();
             }
         }
 
@@ -227,8 +169,7 @@ mod tui {
             if !self.packets.is_empty() && self.selected > 0 {
                 self.selected -= 1;
                 self.update_scroll(visible_rows);
-                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
-                self.tree_focused_line = 0;
+                self.reset_tree_state();
             }
         }
 
@@ -236,8 +177,7 @@ mod tui {
             if !self.packets.is_empty() {
                 self.selected = (self.selected + visible_rows).min(self.packets.len() - 1);
                 self.update_scroll(visible_rows);
-                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
-                self.tree_focused_line = 0;
+                self.reset_tree_state();
             }
         }
 
@@ -245,8 +185,7 @@ mod tui {
             if !self.packets.is_empty() {
                 self.selected = self.selected.saturating_sub(visible_rows);
                 self.update_scroll(visible_rows);
-                self.tree_scroll_offset = 0; // Reset tree scroll when changing packet
-                self.tree_focused_line = 0;
+                self.reset_tree_state();
             }
         }
 
@@ -296,24 +235,6 @@ mod tui {
                     self.tree_scroll_offset = self.tree_focused_line;
                 }
             }
-        }
-    }
-
-    fn collect_all_expandable_paths(node: &TreeNode, path: String, expanded: &mut std::collections::HashSet<String>) {
-        let current_path = if path.is_empty() {
-            node.key.clone()
-        } else {
-            format!("{}.{}", path, node.key)
-        };
-
-        // Add current node if it has children
-        if !node.children.is_empty() {
-            expanded.insert(current_path.clone());
-        }
-
-        // Recursively process children
-        for child in &node.children {
-            collect_all_expandable_paths(child, current_path.clone(), expanded);
         }
     }
 
@@ -436,6 +357,16 @@ mod tui {
         }
     }
 
+    fn get_focused_style(is_focused: bool, pane_focused: bool) -> Style {
+        if is_focused {
+            Style::default().bg(Color::Black).fg(Color::White)
+        } else if !pane_focused {
+            Style::default().add_modifier(Modifier::DIM)
+        } else {
+            Style::default()
+        }
+    }
+
     fn ui(f: &mut ratatui::Frame, app: &App) {
         let outer_chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -460,7 +391,7 @@ mod tui {
         .style(Style::default().bg(Color::DarkGray).bold())
         .bottom_margin(0);
 
-        let visible_rows = chunks[1].height.saturating_sub(2) as usize; // Account for borders
+        let visible_rows = chunks[1].height.saturating_sub(BORDER_HEIGHT as u16) as usize;
 
         let rows: Vec<Row> = app
             .packets
@@ -483,14 +414,10 @@ mod tui {
                     packet.port.to_string(),
                 ];
 
-                let style = if i == app.selected {
-                    Style::default().bg(Color::Black).fg(Color::White)
-                } else if !matches!(app.focused_pane, FocusedPane::List) {
-                    Style::default().add_modifier(Modifier::DIM)
-                } else {
-                    Style::default()
-                };
-
+                let style = get_focused_style(
+                    i == app.selected,
+                    matches!(app.focused_pane, FocusedPane::List),
+                );
                 Row::new(cells).style(style)
             })
             .collect();
@@ -559,20 +486,17 @@ mod tui {
                 }
             };
             
-            let visible_rows = chunks[1].height.saturating_sub(2) as usize;
+            let visible_rows = chunks[1].height.saturating_sub(BORDER_HEIGHT as u16) as usize;
             
             // Build styled lines with focused line highlighted
             let mut styled_lines = Vec::new();
             for (i, (line, _path)) in detail_lines.iter().enumerate() {
                 if i >= app.tree_scroll_offset && i < app.tree_scroll_offset + visible_rows {
                     let display_idx = i - app.tree_scroll_offset;
-                    let style = if display_idx == app.tree_focused_line && matches!(app.focused_pane, FocusedPane::Details) {
-                        Style::default().bg(Color::Black).fg(Color::White)
-                    } else if !matches!(app.focused_pane, FocusedPane::Details) {
-                        Style::default().add_modifier(Modifier::DIM)
-                    } else {
-                        Style::default()
-                    };
+                    let style = get_focused_style(
+                        display_idx == app.tree_focused_line && matches!(app.focused_pane, FocusedPane::Details),
+                        matches!(app.focused_pane, FocusedPane::Details),
+                    );
                     styled_lines.push(ratatui::text::Line::from(ratatui::text::Span::styled(line.clone(), style)));
                 }
             }
@@ -640,8 +564,8 @@ mod tui {
             let packet = packet_result?;
 
             // Extract port info from UDP header (before stripping headers)
-            let dest_port = if packet.data.len() > 37 {
-                u16::from_be_bytes([packet.data[36], packet.data[37]])
+            let dest_port = if packet.data.len() > UDP_DEST_PORT_OFFSET + 1 {
+                u16::from_be_bytes([packet.data[UDP_DEST_PORT_OFFSET], packet.data[UDP_DEST_PORT_OFFSET + 1]])
             } else {
                 0
             };
@@ -649,11 +573,11 @@ mod tui {
             // Format timestamp
             let timestamp = format_timestamp(packet.ts_sec, packet.ts_usec);
 
-            // Skip first 42 bytes (Ethernet + IP + UDP headers)
-            if packet.data.len() <= 42 {
+            // Skip network packet headers (Ethernet + IP + UDP)
+            if packet.data.len() <= PACKET_HEADER_SIZE {
                 continue;
             }
-            let udp_payload = &packet.data[42..];
+            let udp_payload = &packet.data[PACKET_HEADER_SIZE..];
 
             // Try to parse messages from this packet
             match assembler.parse_packet_payload(udp_payload) {
@@ -745,7 +669,6 @@ mod tui {
             flags,
             packet_type: message_type,
             size,
-            extra_info: format!("ID:{}", id_from_json),
             opcode,
             sequence,
             queue,
