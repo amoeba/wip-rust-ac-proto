@@ -71,7 +71,7 @@ pub fn generate_variant_name(value: i64) -> String {
 pub fn generate_acdata_type_impl(
     type_name: &str,
     parent_type: &str,
-    conversion: &str,  // Either "from_bits_retain" or "try_from"
+    conversion: &str, // Either "from_bits_retain" or "try_from"
 ) -> String {
     let rust_type = get_rust_type(parent_type);
 

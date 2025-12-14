@@ -1,8 +1,7 @@
 /// Generate unified message types: Message, MessageKind, C2SMessage, S2CMessage
 /// with improved enum structure that contains message data as variants
-
 use crate::identifiers::to_snake_case;
-use crate::types::{ProtocolType, ProtocolEnum};
+use crate::types::{ProtocolEnum, ProtocolType};
 
 /// Generate the unified message module with Message, MessageKind, C2SMessage, S2CMessage enums
 pub fn generate_unified_message_types(
@@ -66,10 +65,20 @@ pub fn generate_unified_message_types(
     let game_event_enum = enums.iter().find(|e| e.name == "GameEvent");
 
     // Generate GameActionMessage enum (for OrderedGameAction sub-messages)
-    out.push_str(&generate_message_enum("GameActionMessage", game_action_types, "gameactions", game_action_enum));
+    out.push_str(&generate_message_enum(
+        "GameActionMessage",
+        game_action_types,
+        "gameactions",
+        game_action_enum,
+    ));
 
     // Generate GameEventMessage enum (for OrderedGameEvent sub-messages)
-    out.push_str(&generate_message_enum("GameEventMessage", game_event_types, "gameevents", game_event_enum));
+    out.push_str(&generate_message_enum(
+        "GameEventMessage",
+        game_event_types,
+        "gameevents",
+        game_event_enum,
+    ));
 
     // Generate C2SMessage enum with variants containing message data
     out.push_str(&generate_c2s_message_enum(c2s_types, c2s_enum));
@@ -117,7 +126,9 @@ fn generate_c2s_message_enum(
     out.push_str("    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {\n");
     out.push_str("        let opcode = read_u32(reader)?;\n");
     out.push_str("        let opcode_enum = crate::enums::C2SMessage::try_from(opcode)\n");
-    out.push_str("            .map_err(|_| format!(\"Unknown C2SMessage opcode: 0x{:04X}\", opcode))?;\n\n");
+    out.push_str(
+        "            .map_err(|_| format!(\"Unknown C2SMessage opcode: 0x{:04X}\", opcode))?;\n\n",
+    );
     out.push_str("        match opcode_enum {\n");
 
     if let Some(protocol_enum) = opcode_enum {
@@ -126,7 +137,9 @@ fn generate_c2s_message_enum(
                 let type_name = &protocol_type.name;
                 let type_name_no_underscores = type_name.replace('_', "");
 
-                if let Some(_enum_value) = protocol_enum.values.iter().find(|v| v.name == *type_name) {
+                if let Some(_enum_value) =
+                    protocol_enum.values.iter().find(|v| v.name == *type_name)
+                {
                     out.push_str(&format!(
                         "            crate::enums::C2SMessage::{} => Ok(C2SMessage::{}(c2s::{}::read(reader)?)),\n",
                         type_name_no_underscores, type_name_no_underscores, type_name_no_underscores
@@ -147,11 +160,11 @@ fn generate_c2s_message_enum(
 
     out.push_str("        }\n");
     out.push_str("    }\n\n");
-    
+
     // Generate queue method
     out.push_str("    pub fn queue(&self) -> Option<MessageQueue> {\n");
     out.push_str("        match self {\n");
-    
+
     for t in message_types {
         if let Some(ref queue) = t.queue {
             let type_name = &t.name;
@@ -173,15 +186,14 @@ fn generate_c2s_message_enum(
             ));
         }
     }
-    
+
     out.push_str("            C2SMessage::OrderedGameAction { action, .. } => action.queue(),\n");
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");
-    
-    out
-    }
 
+    out
+}
 
 /// Generate S2CMessage enum with special handling for OrderedGameEvent
 fn generate_s2c_message_enum(
@@ -221,7 +233,9 @@ fn generate_s2c_message_enum(
     out.push_str("    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {\n");
     out.push_str("        let opcode = read_u32(reader)?;\n");
     out.push_str("        let opcode_enum = crate::enums::S2CMessage::try_from(opcode)\n");
-    out.push_str("            .map_err(|_| format!(\"Unknown S2CMessage opcode: 0x{:04X}\", opcode))?;\n\n");
+    out.push_str(
+        "            .map_err(|_| format!(\"Unknown S2CMessage opcode: 0x{:04X}\", opcode))?;\n\n",
+    );
     out.push_str("        match opcode_enum {\n");
 
     if let Some(protocol_enum) = opcode_enum {
@@ -230,7 +244,9 @@ fn generate_s2c_message_enum(
                 let type_name = &protocol_type.name;
                 let type_name_no_underscores = type_name.replace('_', "");
 
-                if let Some(_enum_value) = protocol_enum.values.iter().find(|v| v.name == *type_name) {
+                if let Some(_enum_value) =
+                    protocol_enum.values.iter().find(|v| v.name == *type_name)
+                {
                     out.push_str(&format!(
                         "            crate::enums::S2CMessage::{} => Ok(S2CMessage::{}(s2c::{}::read(reader)?)),\n",
                         type_name_no_underscores, type_name_no_underscores, type_name_no_underscores
@@ -244,7 +260,9 @@ fn generate_s2c_message_enum(
         out.push_str("                let object_id = read_u32(reader)?;\n");
         out.push_str("                let sequence = read_u32(reader)?;\n");
         out.push_str("                let event = GameEventMessage::read(reader)?;\n");
-        out.push_str("                Ok(S2CMessage::OrderedGameEvent { object_id, sequence, event })\n");
+        out.push_str(
+            "                Ok(S2CMessage::OrderedGameEvent { object_id, sequence, event })\n",
+        );
         out.push_str("            }\n");
 
         out.push_str("            other => Err(format!(\"Unhandled S2CMessage variant: {:?}\", other).into()),\n");
@@ -252,11 +270,11 @@ fn generate_s2c_message_enum(
 
     out.push_str("        }\n");
     out.push_str("    }\n\n");
-    
+
     // Generate queue method
     out.push_str("    pub fn queue(&self) -> Option<MessageQueue> {\n");
     out.push_str("        match self {\n");
-    
+
     for t in message_types {
         if let Some(ref queue) = t.queue {
             let type_name = &t.name;
@@ -278,7 +296,7 @@ fn generate_s2c_message_enum(
             ));
         }
     }
-    
+
     out.push_str("            S2CMessage::OrderedGameEvent { event, .. } => event.queue(),\n");
     out.push_str("        }\n");
     out.push_str("    }\n");
@@ -310,9 +328,7 @@ fn generate_message_enum(
             // Add variant with message data
             out.push_str(&format!(
                 "    {}({}::{}),\n",
-                type_name_no_underscores,
-                module_prefix,
-                type_name_no_underscores
+                type_name_no_underscores, module_prefix, type_name_no_underscores
             ));
         }
     }
@@ -333,8 +349,14 @@ fn generate_message_enum(
     };
 
     out.push_str("        let opcode = read_u32(reader)?;\n");
-    out.push_str(&format!("        let opcode_enum = crate::enums::{}::try_from(opcode)\n", enum_type_name));
-    out.push_str(&format!("            .map_err(|_| format!(\"Unknown {} opcode: 0x{{:04X}}\", opcode))?;\n\n", enum_name));
+    out.push_str(&format!(
+        "        let opcode_enum = crate::enums::{}::try_from(opcode)\n",
+        enum_type_name
+    ));
+    out.push_str(&format!(
+        "            .map_err(|_| format!(\"Unknown {} opcode: 0x{{:04X}}\", opcode))?;\n\n",
+        enum_name
+    ));
     out.push_str("        match opcode_enum {\n");
 
     // If we have the opcode enum, use it to generate match arms
@@ -345,7 +367,9 @@ fn generate_message_enum(
                 let type_name_no_underscores = type_name.replace('_', "");
 
                 // Find the corresponding enum value
-                if let Some(_enum_value) = protocol_enum.values.iter().find(|v| v.name == *type_name) {
+                if let Some(_enum_value) =
+                    protocol_enum.values.iter().find(|v| v.name == *type_name)
+                {
                     out.push_str(&format!(
                         "            crate::enums::{}::{} => Ok({}::{}({}::{}::read(reader)?)),\n",
                         enum_type_name,
@@ -369,11 +393,13 @@ fn generate_message_enum(
 
     out.push_str("        }\n");
     out.push_str("    }\n\n");
-    
+
     // Generate queue method
-    out.push_str(&format!("    pub fn queue(&self) -> Option<MessageQueue> {{\n"));
+    out.push_str(&format!(
+        "    pub fn queue(&self) -> Option<MessageQueue> {{\n"
+    ));
     out.push_str("        match self {\n");
-    
+
     for protocol_type in message_types {
         if !protocol_type.is_primitive {
             if let Some(ref queue) = protocol_type.queue {
@@ -386,7 +412,9 @@ fn generate_message_enum(
                         let mut chars = s.chars();
                         match chars.next() {
                             None => String::new(),
-                            Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                            Some(first) => {
+                                first.to_uppercase().collect::<String>() + chars.as_str()
+                            }
                         }
                     })
                     .collect::<String>();
@@ -397,7 +425,7 @@ fn generate_message_enum(
             }
         }
     }
-    
+
     out.push_str("        }\n");
     out.push_str("    }\n");
     out.push_str("}\n\n");

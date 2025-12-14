@@ -108,7 +108,11 @@ pub fn generate_conditional_read_call(
 }
 
 /// Helper function that generates base read call without optional field handling
-pub fn generate_read_base_logic(ctx: &ReaderContext, field: &Field, all_fields: &[Field]) -> String {
+pub fn generate_read_base_logic(
+    ctx: &ReaderContext,
+    field: &Field,
+    all_fields: &[Field],
+) -> String {
     let field_type = &field.field_type;
 
     // Handle alignment padding fields first

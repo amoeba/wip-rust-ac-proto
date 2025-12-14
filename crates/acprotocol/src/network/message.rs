@@ -1,9 +1,9 @@
 use super::reader::BinaryReader;
-use serde::Serialize;
-use std::io::{self, Cursor};
-use crate::unified::{Direction, MessageKind};
 use crate::enums::MessageQueue;
 use crate::readers::ACReader;
+use crate::unified::{Direction, MessageKind};
+use serde::Serialize;
+use std::io::{self, Cursor};
 
 /// A parsed message extracted from assembled fragments
 #[derive(Debug, Clone, Serialize)]
@@ -126,7 +126,7 @@ impl ParsedMessage {
 
         let message_type = message.message_type_name();
         let direction = message.direction().to_string();
-        
+
         // Try to parse and get queue from the actual message
         let mut cursor = Cursor::new(&message.data);
         let queue = MessageKind::read(&mut cursor, message.determine_direction_enum())

@@ -184,7 +184,7 @@ impl<'a> BinaryReader<'a> {
         let bytes = self.read_bytes(len)?;
 
         // Calculate alignment padding (align to 4-byte boundary)
-        let bytes_read = 2 + len;  // u16 + string bytes
+        let bytes_read = 2 + len; // u16 + string bytes
         let padding = (4 - (bytes_read % 4)) % 4;
 
         // Skip padding bytes
@@ -193,9 +193,8 @@ impl<'a> BinaryReader<'a> {
         }
 
         // Convert to string
-        String::from_utf8(bytes).map_err(|e| {
-            std::io::Error::new(std::io::ErrorKind::InvalidData, e)
-        })
+        String::from_utf8(bytes)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
     }
 }
 

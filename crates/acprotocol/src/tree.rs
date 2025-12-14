@@ -16,10 +16,8 @@ impl TreeNode {
         let (value_str, children) = match value {
             Value::Object(obj) => {
                 let val = format!("{{...}}");
-                let children: Vec<TreeNode> = obj
-                    .iter()
-                    .map(|(k, v)| TreeNode::from_json(k, v))
-                    .collect();
+                let children: Vec<TreeNode> =
+                    obj.iter().map(|(k, v)| TreeNode::from_json(k, v)).collect();
                 (val, children)
             }
             Value::Array(arr) => {
@@ -71,7 +69,11 @@ impl TreeNode {
 
         if expanded && !self.children.is_empty() {
             for child in &self.children {
-                lines.extend(child.get_display_lines(depth + 1, expanded_set, current_path.clone()));
+                lines.extend(child.get_display_lines(
+                    depth + 1,
+                    expanded_set,
+                    current_path.clone(),
+                ));
             }
         }
 
@@ -80,11 +82,7 @@ impl TreeNode {
 }
 
 /// Collect all paths that have child nodes (expandable paths)
-pub fn collect_all_expandable_paths(
-    node: &TreeNode,
-    path: String,
-    expanded: &mut HashSet<String>,
-) {
+pub fn collect_all_expandable_paths(node: &TreeNode, path: String, expanded: &mut HashSet<String>) {
     let current_path = if path.is_empty() {
         node.key.clone()
     } else {

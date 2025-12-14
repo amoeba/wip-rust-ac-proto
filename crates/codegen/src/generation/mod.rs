@@ -342,8 +342,14 @@ pub fn generate_with_source(
     }
 
     // Generate mod.rs files for all modules using helper function
-    files.push(helpers::generate_module_file(&c2s_modules, "messages/c2s/mod.rs"));
-    files.push(helpers::generate_module_file(&s2c_modules, "messages/s2c/mod.rs"));
+    files.push(helpers::generate_module_file(
+        &c2s_modules,
+        "messages/c2s/mod.rs",
+    ));
+    files.push(helpers::generate_module_file(
+        &s2c_modules,
+        "messages/s2c/mod.rs",
+    ));
 
     // Generate mod.rs for messages parent module
     let messages_mod = "pub mod c2s;\npub mod s2c;\n";
@@ -352,22 +358,33 @@ pub fn generate_with_source(
         content: messages_mod.to_string(),
     });
 
-    files.push(helpers::generate_module_file(&game_action_modules, "gameactions/mod.rs"));
-    files.push(helpers::generate_module_file(&game_event_modules, "gameevents/mod.rs"));
-    files.push(helpers::generate_module_file(&packet_modules, "packets/mod.rs"));
-    files.push(helpers::generate_module_file(&network_modules, "network/mod.rs"));
+    files.push(helpers::generate_module_file(
+        &game_action_modules,
+        "gameactions/mod.rs",
+    ));
+    files.push(helpers::generate_module_file(
+        &game_event_modules,
+        "gameevents/mod.rs",
+    ));
+    files.push(helpers::generate_module_file(
+        &packet_modules,
+        "packets/mod.rs",
+    ));
+    files.push(helpers::generate_module_file(
+        &network_modules,
+        "network/mod.rs",
+    ));
 
     // Generate unified message types (only for protocol.xml, not network.xml)
     if source == GenerateSource::Protocol {
         // Generate unified message types
-        let unified_message_content =
-            unified_message_generation::generate_unified_message_types(
-                &rectified_c2s_types,
-                &rectified_s2c_types,
-                &game_action_types,
-                &game_event_types,
-                &enum_types
-            );
+        let unified_message_content = unified_message_generation::generate_unified_message_types(
+            &rectified_c2s_types,
+            &rectified_s2c_types,
+            &game_action_types,
+            &game_event_types,
+            &enum_types,
+        );
         files.push(GeneratedFile {
             path: "unified.rs".to_string(),
             content: unified_message_content,

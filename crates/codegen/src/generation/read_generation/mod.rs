@@ -9,8 +9,8 @@ pub use collection_readers::{
 };
 pub use expression_readers::convert_length_expression;
 pub use primitive_readers::{
-    convert_condition_expression, generate_conditional_read_call, generate_read_call,
-    generate_read_base_logic,
+    convert_condition_expression, generate_conditional_read_call, generate_read_base_logic,
+    generate_read_call,
 };
 
 use crate::{
@@ -212,10 +212,7 @@ pub fn generate_field_group_reads(
                     // For fields that exist in both branches, read directly without wrapping in Some
                     // since the struct field is not Option<T> for these (they're always present)
                     let read_call = primitive_readers::generate_read_call(ctx, field, all_fields);
-                    out.push_str(&format!(
-                        "            {} = {}?;\n",
-                        field_name, read_call
-                    ));
+                    out.push_str(&format!("            {} = {}?;\n", field_name, read_call));
                 }
 
                 out.push_str("        }\n");
@@ -283,7 +280,10 @@ pub fn generate_field_group_reads(
                 // For maskmap fields: we read the raw value and wrap it in Some(),
                 // since the variable was initialized as None (making it Option<T>)
                 let read_call = primitive_readers::generate_read_base_logic(ctx, field, all_fields);
-                out.push_str(&format!("            {} = Some({}?);\n", field_name, read_call));
+                out.push_str(&format!(
+                    "            {} = Some({}?);\n",
+                    field_name, read_call
+                ));
             }
             out.push_str("        }\n");
         }

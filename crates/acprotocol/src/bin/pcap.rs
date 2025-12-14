@@ -1,15 +1,15 @@
+use acprotocol::constants::{PACKET_HEADER_SIZE, UDP_DEST_PORT_OFFSET};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use acprotocol::constants::{PACKET_HEADER_SIZE, UDP_DEST_PORT_OFFSET};
 
 // Border height in terminal UI (top and bottom borders)
 const BORDER_HEIGHT: usize = 2;
 
 mod read {
+    use crate::PACKET_HEADER_SIZE;
     use anyhow::Result;
     use std::path::Path;
-    use crate::PACKET_HEADER_SIZE;
 
     pub fn run(path: &Path, message_index: Option<usize>) -> Result<()> {
         use acprotocol::network::{FragmentAssembler, pcap};
@@ -49,7 +49,10 @@ mod read {
         }
 
         if message_index.is_some() {
-            eprintln!("Message index out of range. Total messages: {}", message_count);
+            eprintln!(
+                "Message index out of range. Total messages: {}",
+                message_count
+            );
         }
 
         Ok(())
@@ -60,26 +63,29 @@ mod tui {
     use anyhow::Result;
     use std::path::Path;
 
+    use crate::{BORDER_HEIGHT, PACKET_HEADER_SIZE, UDP_DEST_PORT_OFFSET};
+    use acprotocol::enums::PacketHeaderFlags;
+    use acprotocol::packet_flags::format_packet_flags;
+    use acprotocol::tree::{TreeNode, collect_all_expandable_paths};
     use crossterm::{
-        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers, MouseEvent, MouseEventKind},
+        event::{
+            self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyModifiers,
+            MouseEvent, MouseEventKind,
+        },
         execute,
-        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+        terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     };
     use ratatui::{
+        Terminal,
         backend::CrosstermBackend,
         layout::{Constraint, Direction, Layout},
         prelude::Stylize,
         style::{Color, Modifier, Style},
         text::Span,
         widgets::{Block, Borders, Paragraph, Row, Table},
-        Terminal,
     };
     use serde_json::Value;
     use std::io;
-    use acprotocol::enums::PacketHeaderFlags;
-    use acprotocol::packet_flags::format_packet_flags;
-    use acprotocol::tree::{TreeNode, collect_all_expandable_paths};
-    use crate::{PACKET_HEADER_SIZE, UDP_DEST_PORT_OFFSET, BORDER_HEIGHT};
 
     pub fn run(path: &Path) -> Result<()> {
         // Setup terminal
@@ -94,7 +100,7 @@ mod tui {
 
         // Create app state
         let mut app = App::new(packets);
-        
+
         // Apply initial sort by Id ascending
         app.apply_sort();
 
@@ -132,8 +138,6 @@ mod tui {
         raw_json: String,
     }
 
-
-
     struct App {
         packets: Vec<PacketInfo>,
         selected: usize,
@@ -144,9 +148,9 @@ mod tui {
         focused_pane: FocusedPane,
         sort_column: SortColumn,
         sort_ascending: bool,
-        selected_column: usize,  // Index of the column header being selected (0-10)
-        column_rects: Vec<(u16, u16, SortColumn)>,  // (start, end, column)
-        list_pane_right: u16,  // Right boundary of list pane
+        selected_column: usize, // Index of the column header being selected (0-10)
+        column_rects: Vec<(u16, u16, SortColumn)>, // (start, end, column)
+        list_pane_right: u16,   // Right boundary of list pane
     }
 
     enum FocusedPane {
@@ -249,7 +253,8 @@ mod tui {
                 self.tree_focused_line += 1;
                 // Auto-scroll to keep focused line visible
                 if self.tree_focused_line >= self.tree_scroll_offset + visible_rows {
-                    self.tree_scroll_offset = self.tree_focused_line.saturating_sub(visible_rows - 1);
+                    self.tree_scroll_offset =
+                        self.tree_focused_line.saturating_sub(visible_rows - 1);
                 }
             }
         }
@@ -279,7 +284,11 @@ mod tui {
                     SortColumn::Iteration => a.iteration.cmp(&b.iteration),
                     SortColumn::Port => a.port.cmp(&b.port),
                 };
-                if self.sort_ascending { cmp } else { cmp.reverse() }
+                if self.sort_ascending {
+                    cmp
+                } else {
+                    cmp.reverse()
+                }
             });
         }
 
@@ -290,7 +299,8 @@ mod tui {
         }
 
         fn move_column_right(&mut self) {
-            if self.selected_column < 10 {  // 11 columns total (0-10)
+            if self.selected_column < 10 {
+                // 11 columns total (0-10)
                 self.selected_column += 1;
             }
         }
@@ -309,7 +319,7 @@ mod tui {
                 SortColumn::Iteration,
                 SortColumn::Port,
             ];
-            
+
             if self.selected_column < columns.len() {
                 let col = columns[self.selected_column];
                 if self.sort_column == col {
@@ -325,7 +335,10 @@ mod tui {
         }
     }
 
-    fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App) -> io::Result<()> {
+    fn run_app(
+        terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
+        app: &mut App,
+    ) -> io::Result<()> {
         loop {
             // Get detail lines before drawing (for Enter key handling)
             let detail_lines = if !app.packets.is_empty() {
@@ -352,7 +365,9 @@ mod tui {
                         let visible_rows = 15;
                         match key.code {
                             KeyCode::Char('q') | KeyCode::Esc => return Ok(()),
-                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => return Ok(()),
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                return Ok(());
+                            }
                             KeyCode::Tab => {
                                 // Switch between panes
                                 app.focused_pane = match app.focused_pane {
@@ -360,21 +375,17 @@ mod tui {
                                     FocusedPane::Details => FocusedPane::List,
                                 };
                             }
-                            KeyCode::Char('j') | KeyCode::Down => {
-                                match app.focused_pane {
-                                    FocusedPane::List => app.next(visible_rows),
-                                    FocusedPane::Details => {
-                                        let total_lines = detail_lines.len();
-                                        app.tree_line_down(total_lines, visible_rows);
-                                    }
+                            KeyCode::Char('j') | KeyCode::Down => match app.focused_pane {
+                                FocusedPane::List => app.next(visible_rows),
+                                FocusedPane::Details => {
+                                    let total_lines = detail_lines.len();
+                                    app.tree_line_down(total_lines, visible_rows);
                                 }
-                            }
-                            KeyCode::Char('k') | KeyCode::Up => {
-                                match app.focused_pane {
-                                    FocusedPane::List => app.prev(visible_rows),
-                                    FocusedPane::Details => app.tree_line_up(),
-                                }
-                            }
+                            },
+                            KeyCode::Char('k') | KeyCode::Up => match app.focused_pane {
+                                FocusedPane::List => app.prev(visible_rows),
+                                FocusedPane::Details => app.tree_line_up(),
+                            },
                             KeyCode::Left => app.move_column_left(),
                             KeyCode::Right => app.move_column_right(),
                             KeyCode::Char(' ') => app.sort_by_selected_column(),
@@ -396,11 +407,14 @@ mod tui {
                                 // Only expand/collapse in details pane
                                 if matches!(app.focused_pane, FocusedPane::Details) {
                                     // Enter: toggle current node
-                                    let focused_global_line = app.tree_scroll_offset + app.tree_focused_line;
+                                    let focused_global_line =
+                                        app.tree_scroll_offset + app.tree_focused_line;
                                     if focused_global_line < detail_lines.len() {
                                         let (line, path) = &detail_lines[focused_global_line];
                                         // Only toggle if line contains expand/collapse markers
-                                        if (line.contains("▶") || line.contains("▼")) && !path.is_empty() {
+                                        if (line.contains("▶") || line.contains("▼"))
+                                            && !path.is_empty()
+                                        {
                                             app.toggle_tree_node(path.clone());
                                         }
                                     }
@@ -434,9 +448,15 @@ mod tui {
                                 if matches!(app.focused_pane, FocusedPane::Details) {
                                     if !app.packets.is_empty() {
                                         let packet = &app.packets[app.selected];
-                                        if let Ok(json_val) = serde_json::from_str::<Value>(&packet.raw_json) {
+                                        if let Ok(json_val) =
+                                            serde_json::from_str::<Value>(&packet.raw_json)
+                                        {
                                             let root = TreeNode::from_json("root", &json_val);
-                                            collect_all_expandable_paths(&root, String::new(), &mut app.tree_expanded);
+                                            collect_all_expandable_paths(
+                                                &root,
+                                                String::new(),
+                                                &mut app.tree_expanded,
+                                            );
                                         }
                                     }
                                 }
@@ -458,9 +478,9 @@ mod tui {
     fn handle_mouse_click(mouse: MouseEvent, app: &mut App) {
         // Only handle clicks in the left pane (list)
         if mouse.column >= app.list_pane_right {
-            return;  // Click is in the details pane, ignore
+            return; // Click is in the details pane, ignore
         }
-        
+
         // Check if click is in the header row (typically row 1 after title/border)
         if mouse.row == 1 {
             // Header row click - sort by column
@@ -508,57 +528,73 @@ mod tui {
     fn ui(f: &mut ratatui::Frame, app: &mut App) {
         let outer_chunks = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Min(10),
-                Constraint::Length(2),
-            ])
+            .constraints([Constraint::Min(10), Constraint::Length(2)])
             .split(f.area());
 
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage(66),
-                Constraint::Percentage(34),
-            ])
+            .constraints([Constraint::Percentage(66), Constraint::Percentage(34)])
             .split(outer_chunks[0]);
-        
+
         // Store the right boundary of the list pane for mouse click detection
         app.list_pane_right = chunks[0].right();
 
         // Table header with sort indicators and column selection
         let arrow = if app.sort_ascending { "▲" } else { "▼" };
-        let col_names = ["#", "Dir", "Timestamp", "Flags", "Message Type", "Size", "OpCode", "Seq", "Queue", "Iter", "Port"];
-        
-        let header_cells: Vec<Span> = col_names.iter().enumerate().map(|(idx, name)| {
-            let has_sort = match idx {
-                0 => app.sort_column == SortColumn::Id,
-                1 => app.sort_column == SortColumn::Direction,
-                2 => app.sort_column == SortColumn::Timestamp,
-                3 => app.sort_column == SortColumn::Flags,
-                4 => app.sort_column == SortColumn::MessageType,
-                5 => app.sort_column == SortColumn::Size,
-                6 => app.sort_column == SortColumn::OpCode,
-                7 => app.sort_column == SortColumn::Sequence,
-                8 => app.sort_column == SortColumn::Queue,
-                9 => app.sort_column == SortColumn::Iteration,
-                10 => app.sort_column == SortColumn::Port,
-                _ => false,
-            };
-            
-            let text = if has_sort { 
-                format!("{}{}", name, arrow) 
-            } else { 
-                name.to_string() 
-            };
-            
-            // Highlight selected column with black background and white text
-            if idx == app.selected_column {
-                Span::styled(text, Style::default().bg(Color::Black).fg(Color::White).add_modifier(Modifier::BOLD))
-            } else {
-                Span::raw(text)
-            }
-        }).collect();
-        
+        let col_names = [
+            "#",
+            "Dir",
+            "Timestamp",
+            "Flags",
+            "Message Type",
+            "Size",
+            "OpCode",
+            "Seq",
+            "Queue",
+            "Iter",
+            "Port",
+        ];
+
+        let header_cells: Vec<Span> = col_names
+            .iter()
+            .enumerate()
+            .map(|(idx, name)| {
+                let has_sort = match idx {
+                    0 => app.sort_column == SortColumn::Id,
+                    1 => app.sort_column == SortColumn::Direction,
+                    2 => app.sort_column == SortColumn::Timestamp,
+                    3 => app.sort_column == SortColumn::Flags,
+                    4 => app.sort_column == SortColumn::MessageType,
+                    5 => app.sort_column == SortColumn::Size,
+                    6 => app.sort_column == SortColumn::OpCode,
+                    7 => app.sort_column == SortColumn::Sequence,
+                    8 => app.sort_column == SortColumn::Queue,
+                    9 => app.sort_column == SortColumn::Iteration,
+                    10 => app.sort_column == SortColumn::Port,
+                    _ => false,
+                };
+
+                let text = if has_sort {
+                    format!("{}{}", name, arrow)
+                } else {
+                    name.to_string()
+                };
+
+                // Highlight selected column with black background and white text
+                if idx == app.selected_column {
+                    Span::styled(
+                        text,
+                        Style::default()
+                            .bg(Color::Black)
+                            .fg(Color::White)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                } else {
+                    Span::raw(text)
+                }
+            })
+            .collect();
+
         let header = Row::new(header_cells)
             .style(Style::default().bg(Color::DarkGray).bold())
             .bottom_margin(0);
@@ -610,29 +646,30 @@ mod tui {
             SortColumn::Iteration,
             SortColumn::Port,
         ];
-        
+
         app.column_rects.clear();
         let mut col_start = 2; // Account for left border + padding
         for (width, col) in col_widths.iter().zip(col_headers.iter()) {
             let col_end = col_start + width;
-            app.column_rects.push((col_start as u16, col_end as u16, *col));
+            app.column_rects
+                .push((col_start as u16, col_end as u16, *col));
             col_start = col_end + 1; // Add 1 for spacing between columns
         }
 
         let table = Table::new(
             rows,
             [
-                Constraint::Length(4),           // #
-                Constraint::Length(4),           // Dir
-                Constraint::Length(11),          // Timestamp
-                Constraint::Length(8),           // Flags
-                Constraint::Min(15),             // Message Type (expandable)
-                Constraint::Length(5),           // Size
-                Constraint::Length(6),           // OpCode
-                Constraint::Length(4),           // Seq
-                Constraint::Length(7),           // Queue
-                Constraint::Length(3),           // Iter
-                Constraint::Length(4),           // Port
+                Constraint::Length(4),  // #
+                Constraint::Length(4),  // Dir
+                Constraint::Length(11), // Timestamp
+                Constraint::Length(8),  // Flags
+                Constraint::Min(15),    // Message Type (expandable)
+                Constraint::Length(5),  // Size
+                Constraint::Length(6),  // OpCode
+                Constraint::Length(4),  // Seq
+                Constraint::Length(7),  // Queue
+                Constraint::Length(3),  // Iter
+                Constraint::Length(4),  // Port
             ],
         )
         .header(header)
@@ -655,14 +692,16 @@ mod tui {
 
         if !app.packets.is_empty() {
             let packet = &app.packets[app.selected];
-            
+
             // Parse JSON and build tree
             let detail_lines = match serde_json::from_str::<Value>(&packet.raw_json) {
                 Ok(mut json_val) => {
                     // Format header_flags if present
                     if let Some(flags_val) = json_val.get("header_flags") {
                         if let Some(flags_num) = flags_val.as_u64() {
-                            let formatted_flags = format_packet_flags(PacketHeaderFlags::from_bits_retain(flags_num as u32));
+                            let formatted_flags = format_packet_flags(
+                                PacketHeaderFlags::from_bits_retain(flags_num as u32),
+                            );
                             json_val["header_flags"] = Value::String(formatted_flags);
                         }
                     }
@@ -679,37 +718,43 @@ mod tui {
                     root.get_display_lines(0, &expanded, String::new())
                 }
                 Err(e) => {
-                    vec![(format!("Failed to parse JSON: {}\n\nRaw:\n{}", e, &packet.raw_json), String::new())]
+                    vec![(
+                        format!("Failed to parse JSON: {}\n\nRaw:\n{}", e, &packet.raw_json),
+                        String::new(),
+                    )]
                 }
             };
-            
+
             let visible_rows = chunks[1].height.saturating_sub(BORDER_HEIGHT as u16) as usize;
-            
+
             // Build styled lines with focused line highlighted
             let mut styled_lines = Vec::new();
             for (i, (line, _path)) in detail_lines.iter().enumerate() {
                 if i >= app.tree_scroll_offset && i < app.tree_scroll_offset + visible_rows {
                     let display_idx = i - app.tree_scroll_offset;
                     let style = get_focused_style(
-                        display_idx == app.tree_focused_line && matches!(app.focused_pane, FocusedPane::Details),
+                        display_idx == app.tree_focused_line
+                            && matches!(app.focused_pane, FocusedPane::Details),
                         matches!(app.focused_pane, FocusedPane::Details),
                     );
-                    styled_lines.push(ratatui::text::Line::from(ratatui::text::Span::styled(line.clone(), style)));
+                    styled_lines.push(ratatui::text::Line::from(ratatui::text::Span::styled(
+                        line.clone(),
+                        style,
+                    )));
                 }
             }
-            
-            let detail_para = Paragraph::new(styled_lines)
-                .block({
-                    let style = if matches!(app.focused_pane, FocusedPane::Details) {
-                        Style::default().add_modifier(Modifier::BOLD)
-                    } else {
-                        Style::default()
-                    };
-                    Block::default()
-                        .title(detail_title)
-                        .borders(Borders::ALL)
-                        .style(style)
-                });
+
+            let detail_para = Paragraph::new(styled_lines).block({
+                let style = if matches!(app.focused_pane, FocusedPane::Details) {
+                    Style::default().add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+                Block::default()
+                    .title(detail_title)
+                    .borders(Borders::ALL)
+                    .style(style)
+            });
             f.render_widget(detail_para, chunks[1]);
         } else {
             let text_style = if matches!(app.focused_pane, FocusedPane::Details) {
@@ -717,7 +762,7 @@ mod tui {
             } else {
                 Style::default().add_modifier(Modifier::DIM)
             };
-            
+
             let detail_para = Paragraph::new("No packets loaded")
                 .block({
                     let style = if matches!(app.focused_pane, FocusedPane::Details) {
@@ -736,8 +781,7 @@ mod tui {
 
         // Footer with controls
         let controls_text = "q/Esc: Quit | Tab: Switch pane | ↑/↓: Navigate | Enter: Expand/collapse | Ctrl+a: Expand all";
-        let controls = Paragraph::new(controls_text)
-            .block(Block::default().borders(Borders::TOP));
+        let controls = Paragraph::new(controls_text).block(Block::default().borders(Borders::TOP));
         f.render_widget(controls, outer_chunks[1]);
     }
 
@@ -762,7 +806,10 @@ mod tui {
 
             // Extract port info from UDP header (before stripping headers)
             let dest_port = if packet.data.len() > UDP_DEST_PORT_OFFSET + 1 {
-                u16::from_be_bytes([packet.data[UDP_DEST_PORT_OFFSET], packet.data[UDP_DEST_PORT_OFFSET + 1]])
+                u16::from_be_bytes([
+                    packet.data[UDP_DEST_PORT_OFFSET],
+                    packet.data[UDP_DEST_PORT_OFFSET + 1],
+                ])
             } else {
                 0
             };
@@ -784,11 +831,7 @@ mod tui {
                             if let Ok(json_val) = serde_json::from_str::<Value>(&json_str) {
                                 packet_num += 1;
                                 let info = extract_packet_info(
-                                    packet_num,
-                                    &json_val,
-                                    &json_str,
-                                    &timestamp,
-                                    dest_port,
+                                    packet_num, &json_val, &json_str, &timestamp, dest_port,
                                 );
                                 packets.push(info);
                             }
@@ -809,8 +852,6 @@ mod tui {
         format!("{}.{:03}", ts_sec, millis)
     }
 
-
-
     fn extract_packet_info(
         id: u32,
         json_val: &Value,
@@ -823,10 +864,7 @@ mod tui {
             .and_then(|v| v.as_str())
             .unwrap_or("Unknown")
             .to_string();
-        let opcode = json_val
-            .get("opcode")
-            .and_then(|v| v.as_u64())
-            .unwrap_or(0) as u32;
+        let opcode = json_val.get("opcode").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         let sequence = json_val
             .get("sequence")
             .and_then(|v| v.as_u64())

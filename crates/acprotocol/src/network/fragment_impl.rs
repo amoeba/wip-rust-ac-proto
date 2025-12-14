@@ -9,7 +9,7 @@ pub struct FragmentMetadata {
     pub size: u16,
     pub group: u16,
     pub received_chunks: usize,
-    pub total_length: usize,  // Track actual data length like C# implementation
+    pub total_length: usize, // Track actual data length like C# implementation
     pub chunks: Vec<bool>,
 }
 
@@ -172,11 +172,11 @@ mod tests {
 
         // Verify data - returns full buffer like C# implementation
         let data = fragment.get_data();
-        assert_eq!(data.len(), 2 * FRAGMENT_CHUNK_SIZE);  // Full allocated buffer
-        assert_eq!(data[0], 0xAA);   // First chunk starts here
-        assert_eq!(data[99], 0xAA);   // First chunk ends at 99
-        assert_eq!(data[FRAGMENT_CHUNK_SIZE], 0xBB);  // Second chunk starts at 448
-        assert_eq!(data[FRAGMENT_CHUNK_SIZE + 199], 0xBB);  // Second chunk ends at 647
+        assert_eq!(data.len(), 2 * FRAGMENT_CHUNK_SIZE); // Full allocated buffer
+        assert_eq!(data[0], 0xAA); // First chunk starts here
+        assert_eq!(data[99], 0xAA); // First chunk ends at 99
+        assert_eq!(data[FRAGMENT_CHUNK_SIZE], 0xBB); // Second chunk starts at 448
+        assert_eq!(data[FRAGMENT_CHUNK_SIZE + 199], 0xBB); // Second chunk ends at 647
 
         // Cleanup
         fragment.cleanup();
@@ -240,7 +240,7 @@ mod tests {
         fragment.add_chunk(&test_data, 0, test_data.len());
 
         let data = fragment.get_data();
-        assert_eq!(data.len(), FRAGMENT_CHUNK_SIZE);  // Returns full buffer like C#
+        assert_eq!(data.len(), FRAGMENT_CHUNK_SIZE); // Returns full buffer like C#
         assert_eq!(data[0], 0x12);
         assert_eq!(data[1], 0x34);
         assert_eq!(data[2], 0x56);
