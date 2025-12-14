@@ -33,7 +33,7 @@ impl CharacterCharGenVerificationResponseType1 {
         let character_id = ObjectId::read(reader)?;
         let name = read_string(reader)?;
         let seconds_until_deletion = read_u32(reader)?;
-        let __alignment_marker_align_dword = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             character_id,
