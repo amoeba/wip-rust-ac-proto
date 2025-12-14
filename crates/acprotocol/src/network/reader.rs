@@ -73,6 +73,130 @@ impl<'a> BinaryReader<'a> {
         self.position += len;
         Ok(result)
     }
+
+    pub fn read_i32(&mut self) -> std::io::Result<i32> {
+        if self.position + 4 > self.data.len() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "Not enough data",
+            ));
+        }
+        let val = i32::from_le_bytes([
+            self.data[self.position],
+            self.data[self.position + 1],
+            self.data[self.position + 2],
+            self.data[self.position + 3],
+        ]);
+        self.position += 4;
+        Ok(val)
+    }
+
+    pub fn read_i64(&mut self) -> std::io::Result<i64> {
+        if self.position + 8 > self.data.len() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "Not enough data",
+            ));
+        }
+        let val = i64::from_le_bytes([
+            self.data[self.position],
+            self.data[self.position + 1],
+            self.data[self.position + 2],
+            self.data[self.position + 3],
+            self.data[self.position + 4],
+            self.data[self.position + 5],
+            self.data[self.position + 6],
+            self.data[self.position + 7],
+        ]);
+        self.position += 8;
+        Ok(val)
+    }
+
+    pub fn read_f32(&mut self) -> std::io::Result<f32> {
+        if self.position + 4 > self.data.len() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "Not enough data",
+            ));
+        }
+        let val = f32::from_le_bytes([
+            self.data[self.position],
+            self.data[self.position + 1],
+            self.data[self.position + 2],
+            self.data[self.position + 3],
+        ]);
+        self.position += 4;
+        Ok(val)
+    }
+
+    pub fn read_f64(&mut self) -> std::io::Result<f64> {
+        if self.position + 8 > self.data.len() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "Not enough data",
+            ));
+        }
+        let val = f64::from_le_bytes([
+            self.data[self.position],
+            self.data[self.position + 1],
+            self.data[self.position + 2],
+            self.data[self.position + 3],
+            self.data[self.position + 4],
+            self.data[self.position + 5],
+            self.data[self.position + 6],
+            self.data[self.position + 7],
+        ]);
+        self.position += 8;
+        Ok(val)
+    }
+
+    pub fn read_bool(&mut self) -> std::io::Result<bool> {
+        let val = self.read_u32()?;
+        Ok(val != 0)
+    }
+
+    pub fn read_u64(&mut self) -> std::io::Result<u64> {
+        if self.position + 8 > self.data.len() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "Not enough data",
+            ));
+        }
+        let val = u64::from_le_bytes([
+            self.data[self.position],
+            self.data[self.position + 1],
+            self.data[self.position + 2],
+            self.data[self.position + 3],
+            self.data[self.position + 4],
+            self.data[self.position + 5],
+            self.data[self.position + 6],
+            self.data[self.position + 7],
+        ]);
+        self.position += 8;
+        Ok(val)
+    }
+
+    pub fn read_string16l(&mut self) -> std::io::Result<String> {
+        // Read length prefix (u16)
+        let len = self.read_u16()? as usize;
+
+        // Read string bytes
+        let bytes = self.read_bytes(len)?;
+
+        // Calculate alignment padding (align to 4-byte boundary)
+        let bytes_read = 2 + len;  // u16 + string bytes
+        let padding = (4 - (bytes_read % 4)) % 4;
+
+        // Skip padding bytes
+        if padding > 0 {
+            self.read_bytes(padding)?;
+        }
+
+        // Convert to string
+        String::from_utf8(bytes).map_err(|e| {
+            std::io::Error::new(std::io::ErrorKind::InvalidData, e)
+        })
+    }
 }
 
 #[cfg(test)]

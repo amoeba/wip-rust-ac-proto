@@ -1,8 +1,9 @@
 use super::reader::BinaryReader;
+use serde::Serialize;
 use std::io;
 
 bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
     pub struct PacketHeaderFlags: u32 {
         const NONE = 0x00000000;
         const RETRANSMISSION = 0x00000001;
@@ -30,7 +31,7 @@ bitflags::bitflags! {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct PacketHeader {
     pub sequence: u32,
     pub flags: PacketHeaderFlags,
