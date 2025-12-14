@@ -15,22 +15,10 @@ fn main() {
         println!("cargo:rerun-if-changed={}", network_path.display());
     }
 
-    // Read FILTER_TYPES env var - comma-separated list of types to generate readers for
-    let filter_types = env::var("FILTER_TYPES")
-        .unwrap_or_default()
-        .split(',')
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>();
-
-    if !filter_types.is_empty() {
-        println!(
-            "cargo:warning=Generating readers for types: {:?}",
-            filter_types
-        );
-    }
+    // Generate readers for all types
+    println!("cargo:warning=Generating readers for all types");
 
     // Use shared code generation workflow
-    codegen::codegen::generate_and_write(workspace_root, &generated_dir, &filter_types)
+    codegen::codegen::generate_and_write(workspace_root, &generated_dir)
         .expect("Code generation failed");
 }
