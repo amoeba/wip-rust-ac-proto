@@ -21,24 +21,19 @@ pub enum GenerateSource {
     Network,
 }
 
-pub fn generate(xml: &str, filter_types: &[String]) -> GeneratedCode {
-    generate_with_source(xml, filter_types, GenerateSource::Protocol)
+pub fn generate(xml: &str) -> GeneratedCode {
+    generate_with_source(xml, GenerateSource::Protocol)
 }
 
 /// Helper function to perform code generation with files merging from multiple sources
 /// This is used by both build.rs and xtask generate to ensure consistent code generation
-pub fn generate_and_merge(
-    protocol_xml: &str,
-    network_xml: Option<&str>,
-    filter_types: &[String],
-) -> GeneratedCode {
+pub fn generate_and_merge(protocol_xml: &str, network_xml: Option<&str>) -> GeneratedCode {
     // Generate from protocol.xml
-    let mut generated_code =
-        generate_with_source(protocol_xml, filter_types, GenerateSource::Protocol);
+    let mut generated_code = generate_with_source(protocol_xml, GenerateSource::Protocol);
 
     // Generate from network.xml if provided and merge results
     if let Some(network_xml) = network_xml {
-        let network_code = generate_with_source(network_xml, filter_types, GenerateSource::Network);
+        let network_code = generate_with_source(network_xml, GenerateSource::Network);
 
         // Merge files from network.xml into generated_code
         for network_file in network_code.files {
@@ -88,13 +83,7 @@ pub fn generate_and_merge(
 }
 
 /// Generate code from protocol XML, with source indication for packets section
-pub fn generate_with_source(
-    xml: &str,
-    filter_types: &[String],
-    source: GenerateSource,
-) -> GeneratedCode {
-    let ctx = context::GenerationContext::new(filter_types.to_vec());
-
+pub fn generate_with_source(xml: &str, source: GenerateSource) -> GeneratedCode {
     // Parse XML content using the xml_parser module
     let crate::xml_parser::ParseResult {
         enums,
@@ -204,12 +193,10 @@ pub fn generate_with_source(
 
     // Add reader implementations to common types
     for protocol_type in &rectified_common_types {
-        if ctx.should_generate_reader(&protocol_type.name) {
-            common_types_out.push_str(&reader_generation::generate_reader_impl(
-                &reader_ctx,
-                protocol_type,
-            ));
-        }
+        common_types_out.push_str(&reader_generation::generate_reader_impl(
+            &reader_ctx,
+            protocol_type,
+        ));
     }
 
     // Generate individual files for each type
@@ -240,7 +227,7 @@ pub fn generate_with_source(
             let module_name = to_snake_case(&type_name_no_underscores);
             c2s_modules.push(module_name.clone());
             let content =
-                reader_generation::generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+                reader_generation::generate_type_and_reader_file(&reader_ctx, protocol_type);
             files.push(GeneratedFile {
                 path: format!("messages/c2s/{}.rs", module_name),
                 content,
@@ -257,7 +244,7 @@ pub fn generate_with_source(
             let module_name = to_snake_case(&type_name_no_underscores);
             s2c_modules.push(module_name.clone());
             let content =
-                reader_generation::generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+                reader_generation::generate_type_and_reader_file(&reader_ctx, protocol_type);
             files.push(GeneratedFile {
                 path: format!("messages/s2c/{}.rs", module_name),
                 content,
@@ -279,7 +266,7 @@ pub fn generate_with_source(
             let module_name = to_snake_case(&type_name_no_underscores);
             game_action_modules.push(module_name.clone());
             let content =
-                reader_generation::generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+                reader_generation::generate_type_and_reader_file(&reader_ctx, protocol_type);
             files.push(GeneratedFile {
                 path: format!("gameactions/{}.rs", module_name),
                 content,
@@ -295,7 +282,7 @@ pub fn generate_with_source(
             let module_name = to_snake_case(&type_name_no_underscores);
             game_event_modules.push(module_name.clone());
             let content =
-                reader_generation::generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+                reader_generation::generate_type_and_reader_file(&reader_ctx, protocol_type);
             files.push(GeneratedFile {
                 path: format!("gameevents/{}.rs", module_name),
                 content,
@@ -312,7 +299,7 @@ pub fn generate_with_source(
             let module_name = to_snake_case(&type_name_no_underscores);
             packet_modules.push(module_name.clone());
             let content =
-                reader_generation::generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+                reader_generation::generate_type_and_reader_file(&reader_ctx, protocol_type);
             files.push(GeneratedFile {
                 path: format!("packets/{}.rs", module_name),
                 content,
@@ -329,7 +316,7 @@ pub fn generate_with_source(
             let module_name = to_snake_case(&type_name_no_underscores);
             network_modules.push(module_name.clone());
             let content =
-                reader_generation::generate_type_and_reader_file(&ctx, &reader_ctx, protocol_type);
+                reader_generation::generate_type_and_reader_file(&reader_ctx, protocol_type);
             files.push(GeneratedFile {
                 path: format!("network/{}.rs", module_name),
                 content,

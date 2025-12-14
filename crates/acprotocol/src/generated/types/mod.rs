@@ -2866,7 +2866,7 @@ impl crate::readers::ACDataType for ReferralHeader {
         let cookie = read_u64(reader)?;
         let address = SocketAddress::read(reader)?;
         let id_server = read_u16(reader)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
         let unknown = DWORD::read(reader)?;
 
         Ok(Self {
@@ -4438,7 +4438,7 @@ impl crate::readers::ACDataType for GameplayOptions {
         let unknown200_2 = read_u8(reader)?;
         let option_property_count = read_u8(reader)?;
         let option_properties = read_vec::<OptionProperty>(reader, option_property_count as usize)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             size,
@@ -4768,7 +4768,7 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         let icon = PackedDWORD::read(reader)?;
         let type_ = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
         let behavior = Ok::<_, Box<dyn std::error::Error>>(ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?))?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
         let mut header2 = None;
         if (behavior.bits() & 0x04000000) != 0 {
             header2 = Some(read_u32(reader)?);
@@ -4917,7 +4917,7 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         if (header2.unwrap_or(0) & 0x00000008) != 0 {
             pet_owner_id = Some(ObjectId::read(reader)?);
         }
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             header,
@@ -5119,7 +5119,7 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
         if (header & 0x80000000) != 0 {
             material = Some(MaterialType::try_from(read_u32(reader)?)?);
         }
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             header,
@@ -5192,7 +5192,7 @@ impl crate::readers::ACDataType for JumpPack {
         let object_server_control_sequence = read_u16(reader)?;
         let object_teleport_sequence = read_u16(reader)?;
         let object_force_position_sequence = read_u16(reader)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             extent,
@@ -5214,7 +5214,7 @@ impl crate::readers::ACDataType for MoveToStatePack {
         let object_teleport_sequence = read_u16(reader)?;
         let object_force_position_sequence = read_u16(reader)?;
         let contact = read_u8(reader)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             raw_motion_state,
@@ -5322,7 +5322,7 @@ impl crate::readers::ACDataType for AutonomousPositionPack {
         let object_teleport_sequence = read_u16(reader)?;
         let object_force_position_sequence = read_u16(reader)?;
         let contact = read_u8(reader)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             position,
@@ -5554,7 +5554,7 @@ impl crate::readers::ACDataType for InterpretedMotionState {
             turn_speed = Some(read_f32(reader)?);
         }
         let commands = read_vec::<PackedMotionCommand>(reader, command_list_length as usize)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             flags,
@@ -5637,7 +5637,7 @@ impl crate::readers::ACDataType for ObjDesc {
         let subpalettes = read_vec::<Subpalette>(reader, palette_count as usize)?;
         let tm_changes = read_vec::<TextureMapChange>(reader, texture_count as usize)?;
         let ap_changes = read_vec::<AnimPartChange>(reader, model_count as usize)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             version,
@@ -5783,7 +5783,7 @@ impl crate::readers::ACDataType for CharacterIdentity {
         let character_id = ObjectId::read(reader)?;
         let name = read_string(reader)?;
         let seconds_greyed_out = read_u32(reader)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             character_id,
@@ -5894,7 +5894,7 @@ impl crate::readers::ACDataType for PhysicsDesc {
         let object_force_position_sequence = read_u16(reader)?;
         let object_visual_desc_sequence = read_u16(reader)?;
         let object_instance_sequence = read_u16(reader)?;
-        let _ = align_dword(reader)?;
+        align_dword(reader)?;
 
         Ok(Self {
             flags,
