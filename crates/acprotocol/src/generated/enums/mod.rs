@@ -1523,8 +1523,8 @@ impl std::fmt::Display for WeenieType {
     }
 }
 
-/// Flags that dictate what property tables are included with the ACBaseQuali
 bitflags::bitflags! {
+    /// Flags that dictate what property tables are included with the ACBaseQuali
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ACBaseQualitiesFlags: u32 {
         const NONE = 0x0;
@@ -2618,8 +2618,8 @@ impl std::fmt::Display for WeenieError {
     }
 }
 
-/// The PositionFlags value defines the fields present in the Position structure.
 bitflags::bitflags! {
+    /// The PositionFlags value defines the fields present in the Position structure.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct PositionFlags: u32 {
         const HAS_VELOCITY = 0x1;
@@ -2745,8 +2745,8 @@ impl std::fmt::Display for AttackType {
     }
 }
 
-/// The objects type information
 bitflags::bitflags! {
+    /// The objects type information
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ItemType: u32 {
         const MELEE_WEAPON = 0x1;
@@ -3503,8 +3503,8 @@ impl std::fmt::Display for EmoteCategory {
     }
 }
 
-/// The CharacterOptions1 word contains character options.
 bitflags::bitflags! {
+    /// The CharacterOptions1 word contains character options.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct CharacterOptions1: u32 {
         const AUTO_REPEAT_ATTACK = 0x2;
@@ -3548,8 +3548,8 @@ impl crate::readers::ACDataType for CharacterOptions1 {
     }
 }
 
-/// The CharacterOptions2 word contains additional character options.
 bitflags::bitflags! {
+    /// The CharacterOptions2 word contains additional character options.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct CharacterOptions2: u32 {
         const PERSISTENT_AT_DAY = 0x1;
@@ -3588,8 +3588,8 @@ impl crate::readers::ACDataType for CharacterOptions2 {
     }
 }
 
-/// The various options for filtering the spellbook
 bitflags::bitflags! {
+    /// The various options for filtering the spellbook
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct SpellBookFilterOptions: u32 {
         const NONE = 0x0;
@@ -3617,8 +3617,8 @@ impl crate::readers::ACDataType for SpellBookFilterOptions {
     }
 }
 
-/// The EquipMask value describes the equipment slots an item uses.
 bitflags::bitflags! {
+    /// The EquipMask value describes the equipment slots an item uses.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct EquipMask: u32 {
         const HEAD = 0x1;
@@ -3656,8 +3656,8 @@ impl crate::readers::ACDataType for EquipMask {
     }
 }
 
-/// The type of the friend change event.
 bitflags::bitflags! {
+    /// The type of the friend change event.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct FriendsUpdateType: u32 {
         const FULL = 0x0;
@@ -3853,8 +3853,8 @@ impl std::fmt::Display for CurVitalId {
     }
 }
 
-/// The combat mode for a character or monster.
 bitflags::bitflags! {
+    /// The combat mode for a character or monster.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct CombatMode: u32 {
         const NON_COMBAT = 0x1;
@@ -4407,8 +4407,8 @@ impl std::fmt::Display for ChatFragmentType {
     }
 }
 
-/// Flags related to the use of the item.
 bitflags::bitflags! {
+    /// Flags related to the use of the item.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ObjectDescriptionFlag: u32 {
         const OPENABLE = 0x1;
@@ -4451,8 +4451,8 @@ impl crate::readers::ACDataType for ObjectDescriptionFlag {
     }
 }
 
-/// The AmmoType value describes the type of ammunition a missile weapon uses.
 bitflags::bitflags! {
+    /// The AmmoType value describes the type of ammunition a missile weapon uses.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct AmmoType: u16 {
         const THROWN_WEAPON = 0x0;
@@ -4469,8 +4469,8 @@ impl crate::readers::ACDataType for AmmoType {
     }
 }
 
-/// The useablilty flags of the object
 bitflags::bitflags! {
+    /// The useablilty flags of the object
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct Usable: u32 {
         const SOURCE_UNUSABLE = 0x1;
@@ -4499,8 +4499,8 @@ impl crate::readers::ACDataType for Usable {
     }
 }
 
-/// The CoverageMask value describes what parts of the body an item protects.
 bitflags::bitflags! {
+    /// The CoverageMask value describes what parts of the body an item protects.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct CoverageMask: u32 {
         const UPPER_LEGS_UNDERWEAR = 0x2;
@@ -4528,8 +4528,8 @@ impl crate::readers::ACDataType for CoverageMask {
     }
 }
 
-/// The HookType identifies the types of dwelling hooks.
 bitflags::bitflags! {
+    /// The HookType identifies the types of dwelling hooks.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct HookType: u16 {
         const FLOOR = 0x1;
@@ -5936,8 +5936,8 @@ impl std::fmt::Display for CharacterErrorType {
     }
 }
 
-/// The state flags for an object
 bitflags::bitflags! {
+    /// The state flags for an object
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct PhysicsState: u32 {
         const NONE = 0x0;
@@ -6056,8 +6056,8 @@ impl std::fmt::Display for CompressionType {
     }
 }
 
-/// The AttributeMask selects which creature attributes highlighting is applied to.
 bitflags::bitflags! {
+    /// The AttributeMask selects which creature attributes highlighting is applied to.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct AttributeMask: u16 {
         const STRENGTH = 0x1;
@@ -6079,8 +6079,8 @@ impl crate::readers::ACDataType for AttributeMask {
     }
 }
 
-/// The DamageType identifies the type of damage.
 bitflags::bitflags! {
+    /// The DamageType identifies the type of damage.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct DamageType: u32 {
         const SLASHING = 0x1;
@@ -6100,8 +6100,8 @@ impl crate::readers::ACDataType for DamageType {
     }
 }
 
-/// The HookAppraisalFlags identifies various properties for an item hooked.
 bitflags::bitflags! {
+    /// The HookAppraisalFlags identifies various properties for an item hooked.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct HookAppraisalFlags: u32 {
         const INSCRIBABLE = 0x1;
@@ -6117,8 +6117,8 @@ impl crate::readers::ACDataType for HookAppraisalFlags {
     }
 }
 
-/// The ArmorHighlightMask selects which armor attributes highlighting is applied to.
 bitflags::bitflags! {
+    /// The ArmorHighlightMask selects which armor attributes highlighting is applied to.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ArmorHighlightMask: u16 {
         const ARMOR_LEVEL = 0x1;
@@ -6139,8 +6139,8 @@ impl crate::readers::ACDataType for ArmorHighlightMask {
     }
 }
 
-/// The ResistHighlightMask selects which wand attributes highlighting is applied to.
 bitflags::bitflags! {
+    /// The ResistHighlightMask selects which wand attributes highlighting is applied to.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ResistHighlightMask: u16 {
         const RESIST_SLASH = 0x1;
@@ -6168,8 +6168,8 @@ impl crate::readers::ACDataType for ResistHighlightMask {
     }
 }
 
-/// The WeaponHighlightMask selects which weapon attributes highlighting is applied to.
 bitflags::bitflags! {
+    /// The WeaponHighlightMask selects which weapon attributes highlighting is applied to.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct WeaponHighlightMask: u16 {
         const ATTACK_SKILL = 0x1;
@@ -6188,8 +6188,8 @@ impl crate::readers::ACDataType for WeaponHighlightMask {
     }
 }
 
-/// Additional attack information
 bitflags::bitflags! {
+    /// Additional attack information
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct AttackConditionsMask: u32 {
         const CRITICAL_PROTECTION_AUGMENTATION = 0x1;
@@ -6865,8 +6865,8 @@ impl crate::readers::ACDataType for CombatStyle {
     }
 }
 
-/// Indicates what data is present in the ACQualities data
 bitflags::bitflags! {
+    /// Indicates what data is present in the ACQualities data
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ACQualitiesFlags: u32 {
         const ATTRIBUTES = 0x1;
@@ -10635,8 +10635,8 @@ impl std::fmt::Display for PropertyFloat {
     }
 }
 
-/// Chat channels
 bitflags::bitflags! {
+    /// Chat channels
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct Channel: u32 {
         const UNDEF = 0x0;
@@ -11031,8 +11031,8 @@ impl std::fmt::Display for RadarColor {
     }
 }
 
-/// Flags that determine what data is contained in the EnchantmentRegistry
 bitflags::bitflags! {
+    /// Flags that determine what data is contained in the EnchantmentRegistry
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct EnchantmentRegistryFlags: u32 {
         const LIFE_SPELLS = 0x1;
@@ -12576,8 +12576,8 @@ impl std::fmt::Display for HeritageGroup {
     }
 }
 
-/// the type of highlight (outline) applied to the object's icon
 bitflags::bitflags! {
+    /// the type of highlight (outline) applied to the object's icon
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct IconHighlight: u32 {
         const INVALID = 0x0;

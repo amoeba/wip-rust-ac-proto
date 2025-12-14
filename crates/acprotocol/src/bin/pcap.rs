@@ -785,6 +785,7 @@ mod tui {
         f.render_widget(controls, outer_chunks[1]);
     }
 
+    #[allow(dead_code)]
     fn truncate_json(json: &str, max_len: usize) -> String {
         if json.len() > max_len {
             format!("{}...", &json[..max_len])

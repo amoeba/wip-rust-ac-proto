@@ -1,8 +1,12 @@
 use serde::{Serialize, Deserialize};
 use crate::readers::ACReader;
+#[allow(unused_imports)]
 use crate::readers::*;
+#[allow(unused_imports)]
 use crate::types::*;
+#[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
 use super::*;
 
 // Seems to be a legacy friends command, /friends old, for when Jan 2006 event changed the friends list

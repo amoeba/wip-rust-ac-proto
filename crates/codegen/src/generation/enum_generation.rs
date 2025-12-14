@@ -12,10 +12,6 @@ pub fn generate_bitflags(protocol_enum: &ProtocolEnum) -> String {
     let enum_name = &protocol_enum.name;
     let mut out = String::new();
 
-    if let Some(text_str) = &protocol_enum.text {
-        out.push_str(&format!("/// {text_str}\n"));
-    }
-
     // Get the underlying type for the bitflags
     let repr_type = if !protocol_enum.parent.is_empty() {
         get_rust_type(&protocol_enum.parent)
@@ -25,6 +21,11 @@ pub fn generate_bitflags(protocol_enum: &ProtocolEnum) -> String {
 
     // Generate bitflags! macro invocation
     out.push_str("bitflags::bitflags! {\n");
+    
+    if let Some(text_str) = &protocol_enum.text {
+        out.push_str(&format!("    /// {text_str}\n"));
+    }
+    
     out.push_str("    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]\n");
     out.push_str(&format!("    pub struct {}: {} {{\n", enum_name, repr_type));
 

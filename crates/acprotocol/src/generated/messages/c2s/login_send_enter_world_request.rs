@@ -1,8 +1,12 @@
 use serde::{Serialize, Deserialize};
 use crate::readers::ACReader;
+#[allow(unused_imports)]
 use crate::readers::*;
+#[allow(unused_imports)]
 use crate::types::*;
+#[allow(unused_imports)]
 use crate::enums::*;
+#[allow(unused_imports)]
 use super::*;
 
 // The user has clicked 'Enter'. This message does not contain the Id of the character logging on; that comes later.

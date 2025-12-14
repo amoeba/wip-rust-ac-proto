@@ -232,6 +232,7 @@ impl FragmentAssembler {
 
     /// Parse a single fragment from the reader
     /// Returns Some(ParsedMessage) if the fragment completes a message, None otherwise
+    #[allow(dead_code)]
     fn parse_fragment(&mut self, reader: &mut BinaryReader) -> io::Result<Option<ParsedMessage>> {
         self.parse_fragment_internal(reader, None, None)
     }
