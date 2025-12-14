@@ -1,9 +1,5 @@
-use std::collections::BTreeMap;
 
-use crate::{
-    identifiers::{IdentifierType, safe_identifier},
-    type_utils::get_rust_type,
-};
+use crate::type_utils::get_rust_type;
 
 use crate::generation::context::ReaderContext;
 

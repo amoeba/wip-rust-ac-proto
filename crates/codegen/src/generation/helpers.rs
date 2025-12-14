@@ -1,11 +1,5 @@
-use std::collections::BTreeMap;
 
-use crate::{
-    field_gen::get_allow_unused_directive,
-    identifiers::{IdentifierType, safe_identifier, to_snake_case},
-    type_utils::get_rust_type,
-    types::{Field, FieldSet, IfBranch},
-};
+use crate::type_utils::get_rust_type;
 
 use super::types::GeneratedFile;
 

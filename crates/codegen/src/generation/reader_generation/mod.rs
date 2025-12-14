@@ -2,11 +2,9 @@ pub mod struct_readers;
 pub mod variant_readers;
 
 use crate::{
-    field_gen::get_allow_unused_directive,
-    identifiers::{IdentifierType, safe_identifier, to_snake_case},
+    identifiers::{IdentifierType, safe_identifier},
     type_utils::get_rust_type,
-    types::{Field, FieldSet, ProtocolType},
-    util::format_hex_value,
+    types::ProtocolType,
 };
 
 /// Generate a single file containing both type definition and reader implementation

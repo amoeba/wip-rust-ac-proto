@@ -1,8 +1,6 @@
 use crate::{
-    field_gen::get_allow_unused_directive,
     identifiers::{IdentifierType, safe_identifier},
-    type_utils::get_rust_type,
-    types::{Field, FieldSet, ProtocolType},
+    types::{FieldSet, ProtocolType},
 };
 
 use crate::{generation::context::ReaderContext, generation::helpers};

@@ -2,9 +2,9 @@ use std::collections::BTreeMap;
 
 use crate::{
     field_gen::get_allow_unused_directive,
-    identifiers::{IdentifierType, safe_identifier, to_snake_case},
+    identifiers::{IdentifierType, safe_identifier},
     type_utils::get_rust_type,
-    types::{Field, FieldSet, NestedSwitch, ProtocolType},
+    types::{Field, FieldSet, NestedSwitch},
     util::format_hex_value,
 };
 

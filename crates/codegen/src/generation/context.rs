@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashSet};
 
-use crate::types::{ProtocolCategory, ProtocolEnum, ProtocolType};
+use crate::types::{ProtocolEnum, ProtocolType};
 
 /// Context for code generation, controlling what gets generated
 #[derive(Debug, Clone)]

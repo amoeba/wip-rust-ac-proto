@@ -1,11 +1,10 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    field_gen::{build_derive_string, get_allow_unused_directive},
-    identifiers::{IdentifierType, safe_identifier, to_snake_case},
+    field_gen::build_derive_string,
+    identifiers::{IdentifierType, safe_identifier},
     type_utils::{get_rust_type, should_be_newtype_struct},
-    types::{Field, FieldSet, ProtocolType},
-    util::format_hex_value,
+    types::ProtocolType,
 };
 
 pub fn generate_type(protocol_type: &ProtocolType) -> String {

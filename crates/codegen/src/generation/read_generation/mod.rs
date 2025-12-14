@@ -18,7 +18,7 @@ use crate::{
     generation::context::ReaderContext,
     identifiers::{IdentifierType, safe_identifier},
     type_utils::get_rust_type,
-    types::{Field, FieldSet, IfBranch},
+    types::{Field, IfBranch},
 };
 
 /// A group of consecutive fields with the same condition
