@@ -445,7 +445,9 @@ mod tui {
                             }
                             KeyCode::Char('a') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                                 // Ctrl+a: expand all nodes (when Shift+Enter doesn't work)
-                                if matches!(app.focused_pane, FocusedPane::Details) && !app.packets.is_empty() {
+                                if matches!(app.focused_pane, FocusedPane::Details)
+                                    && !app.packets.is_empty()
+                                {
                                     let packet = &app.packets[app.selected];
                                     if let Ok(json_val) =
                                         serde_json::from_str::<Value>(&packet.raw_json)
