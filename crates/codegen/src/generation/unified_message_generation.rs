@@ -35,17 +35,17 @@ pub fn generate_unified_message_types(
     out.push_str("#[derive(Debug, Serialize, Deserialize)]\n");
     out.push_str("pub enum MessageKind {\n");
     out.push_str("    /// Client to Server messages\n");
-    out.push_str("    C2S(C2SMessage),\n");
+    out.push_str("    C2S(Box<C2SMessage>),\n");
     out.push_str("    /// Server to Client messages\n");
-    out.push_str("    S2C(S2CMessage),\n");
+    out.push_str("    S2C(Box<S2CMessage>),\n");
     out.push_str("}\n\n");
 
     // Generate MessageKind::read implementation
     out.push_str("impl MessageKind {\n");
     out.push_str("    pub fn read(reader: &mut dyn ACReader, direction: Direction) -> Result<Self, Box<dyn std::error::Error>> {\n");
     out.push_str("        match direction {\n");
-    out.push_str("            Direction::ClientToServer => Ok(MessageKind::C2S(C2SMessage::read(reader)?)),\n");
-    out.push_str("            Direction::ServerToClient => Ok(MessageKind::S2C(S2CMessage::read(reader)?)),\n");
+    out.push_str("            Direction::ClientToServer => Ok(MessageKind::C2S(Box::new(C2SMessage::read(reader)?))),\n");
+    out.push_str("            Direction::ServerToClient => Ok(MessageKind::S2C(Box::new(S2CMessage::read(reader)?))),\n");
     out.push_str("        }\n");
     out.push_str("    }\n\n");
     out.push_str("    pub fn queue(&self) -> Option<MessageQueue> {\n");
@@ -219,7 +219,7 @@ fn generate_s2c_message_enum(
     out.push_str("    OrderedGameEvent {\n");
     out.push_str("        object_id: u32,\n");
     out.push_str("        sequence: u32,\n");
-    out.push_str("        event: GameEventMessage,\n");
+    out.push_str("        event: Box<GameEventMessage>,\n");
     out.push_str("    },\n");
 
     out.push_str("}\n\n");
@@ -255,7 +255,7 @@ fn generate_s2c_message_enum(
         out.push_str("            crate::enums::S2CMessage::OrderedGameEvent => {\n");
         out.push_str("                let object_id = read_u32(reader)?;\n");
         out.push_str("                let sequence = read_u32(reader)?;\n");
-        out.push_str("                let event = GameEventMessage::read(reader)?;\n");
+        out.push_str("                let event = Box::new(GameEventMessage::read(reader)?);\n");
         out.push_str(
             "                Ok(S2CMessage::OrderedGameEvent { object_id, sequence, event })\n",
         );
@@ -313,20 +313,41 @@ fn generate_message_enum(
     out.push_str("#[derive(Debug, Serialize, Deserialize)]\n");
     out.push_str(&format!("pub enum {} {{\n", enum_name));
 
+    // Collect names of large types to box based on known sizes from the protocol
+    let large_types = match enum_name {
+        "GameEventMessage" => vec!["Login_PlayerDescription", "Item_SetAppraiseInfo"],
+        "GameActionMessage" => vec!["Character_CharacterOptionsEvent"],
+        _ => vec![],
+    };
+
     for protocol_type in message_types {
         if !protocol_type.is_primitive {
             let type_name = &protocol_type.name;
             let type_name_no_underscores = type_name.replace('_', "");
 
-            // Add variant with message data
-            out.push_str(&format!(
-                "    {}({}::{}),\n",
-                type_name_no_underscores, module_prefix, type_name_no_underscores
-            ));
+            // Add variant with message data, boxing large variants
+            if large_types.contains(&type_name.as_str()) {
+                out.push_str(&format!(
+                    "    {}(Box<{}::{}>),\n",
+                    type_name_no_underscores, module_prefix, type_name_no_underscores
+                ));
+            } else {
+                out.push_str(&format!(
+                    "    {}({}::{}),\n",
+                    type_name_no_underscores, module_prefix, type_name_no_underscores
+                ));
+            }
         }
     }
 
     out.push_str("}\n\n");
+
+    // Collect names of large types to box (same as above)
+    let large_types = match enum_name {
+        "GameEventMessage" => vec!["Login_PlayerDescription", "Item_SetAppraiseInfo"],
+        "GameActionMessage" => vec!["Character_CharacterOptionsEvent"],
+        _ => vec![],
+    };
 
     // Generate read implementation using the opcode enum
     out.push_str(&format!("impl {} {{\n", enum_name));
@@ -363,15 +384,28 @@ fn generate_message_enum(
                 if let Some(_enum_value) =
                     protocol_enum.values.iter().find(|v| v.name == *type_name)
                 {
-                    out.push_str(&format!(
-                        "            crate::enums::{}::{} => Ok({}::{}({}::{}::read(reader)?)),\n",
-                        enum_type_name,
-                        type_name_no_underscores,
-                        enum_name,
-                        type_name_no_underscores,
-                        module_prefix,
-                        type_name_no_underscores
-                    ));
+                    // Check if this variant should be boxed
+                    if large_types.contains(&type_name.as_str()) {
+                        out.push_str(&format!(
+                            "            crate::enums::{}::{} => Ok({}::{}(Box::new({}::{}::read(reader)?))),\n",
+                            enum_type_name,
+                            type_name_no_underscores,
+                            enum_name,
+                            type_name_no_underscores,
+                            module_prefix,
+                            type_name_no_underscores
+                        ));
+                    } else {
+                        out.push_str(&format!(
+                            "            crate::enums::{}::{} => Ok({}::{}({}::{}::read(reader)?)),\n",
+                            enum_type_name,
+                            type_name_no_underscores,
+                            enum_name,
+                            type_name_no_underscores,
+                            module_prefix,
+                            type_name_no_underscores
+                        ));
+                    }
                 }
             }
         }

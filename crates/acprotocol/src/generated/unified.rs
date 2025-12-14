@@ -17,16 +17,16 @@ pub enum Direction {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum MessageKind {
     /// Client to Server messages
-    C2S(C2SMessage),
+    C2S(Box<C2SMessage>),
     /// Server to Client messages
-    S2C(S2CMessage),
+    S2C(Box<S2CMessage>),
 }
 
 impl MessageKind {
     pub fn read(reader: &mut dyn ACReader, direction: Direction) -> Result<Self, Box<dyn std::error::Error>> {
         match direction {
-            Direction::ClientToServer => Ok(MessageKind::C2S(C2SMessage::read(reader)?)),
-            Direction::ServerToClient => Ok(MessageKind::S2C(S2CMessage::read(reader)?)),
+            Direction::ClientToServer => Ok(MessageKind::C2S(Box::new(C2SMessage::read(reader)?))),
+            Direction::ServerToClient => Ok(MessageKind::S2C(Box::new(S2CMessage::read(reader)?))),
         }
     }
 
@@ -115,7 +115,7 @@ pub enum GameActionMessage {
     InventoryStackableSplitToWield(gameactions::InventoryStackableSplitToWield),
     CharacterAddShortCut(gameactions::CharacterAddShortCut),
     CharacterRemoveShortCut(gameactions::CharacterRemoveShortCut),
-    CharacterCharacterOptionsEvent(gameactions::CharacterCharacterOptionsEvent),
+    CharacterCharacterOptionsEvent(Box<gameactions::CharacterCharacterOptionsEvent>),
     MagicRemoveSpell(gameactions::MagicRemoveSpell),
     CombatCancelAttack(gameactions::CombatCancelAttack),
     CombatQueryHealth(gameactions::CombatQueryHealth),
@@ -280,7 +280,7 @@ impl GameActionMessage {
             crate::enums::GameAction::InventoryStackableSplitToWield => Ok(GameActionMessage::InventoryStackableSplitToWield(gameactions::InventoryStackableSplitToWield::read(reader)?)),
             crate::enums::GameAction::CharacterAddShortCut => Ok(GameActionMessage::CharacterAddShortCut(gameactions::CharacterAddShortCut::read(reader)?)),
             crate::enums::GameAction::CharacterRemoveShortCut => Ok(GameActionMessage::CharacterRemoveShortCut(gameactions::CharacterRemoveShortCut::read(reader)?)),
-            crate::enums::GameAction::CharacterCharacterOptionsEvent => Ok(GameActionMessage::CharacterCharacterOptionsEvent(gameactions::CharacterCharacterOptionsEvent::read(reader)?)),
+            crate::enums::GameAction::CharacterCharacterOptionsEvent => Ok(GameActionMessage::CharacterCharacterOptionsEvent(Box::new(gameactions::CharacterCharacterOptionsEvent::read(reader)?))),
             crate::enums::GameAction::MagicRemoveSpell => Ok(GameActionMessage::MagicRemoveSpell(gameactions::MagicRemoveSpell::read(reader)?)),
             crate::enums::GameAction::CombatCancelAttack => Ok(GameActionMessage::CombatCancelAttack(gameactions::CombatCancelAttack::read(reader)?)),
             crate::enums::GameAction::CombatQueryHealth => Ok(GameActionMessage::CombatQueryHealth(gameactions::CombatQueryHealth::read(reader)?)),
@@ -532,7 +532,7 @@ impl GameActionMessage {
 pub enum GameEventMessage {
     AllegianceAllegianceUpdateAborted(gameevents::AllegianceAllegianceUpdateAborted),
     CommunicationPopUpString(gameevents::CommunicationPopUpString),
-    LoginPlayerDescription(gameevents::LoginPlayerDescription),
+    LoginPlayerDescription(Box<gameevents::LoginPlayerDescription>),
     AllegianceAllegianceUpdate(gameevents::AllegianceAllegianceUpdate),
     SocialFriendsUpdate(gameevents::SocialFriendsUpdate),
     ItemServerSaysContainId(gameevents::ItemServerSaysContainId),
@@ -549,7 +549,7 @@ pub enum GameEventMessage {
     WritingBookDeletePageResponse(gameevents::WritingBookDeletePageResponse),
     WritingBookPageDataResponse(gameevents::WritingBookPageDataResponse),
     ItemGetInscriptionResponse(gameevents::ItemGetInscriptionResponse),
-    ItemSetAppraiseInfo(gameevents::ItemSetAppraiseInfo),
+    ItemSetAppraiseInfo(Box<gameevents::ItemSetAppraiseInfo>),
     CommunicationChannelBroadcast(gameevents::CommunicationChannelBroadcast),
     CommunicationChannelList(gameevents::CommunicationChannelList),
     CommunicationChannelIndex(gameevents::CommunicationChannelIndex),
@@ -641,7 +641,7 @@ impl GameEventMessage {
         match opcode_enum {
             crate::enums::GameEvent::AllegianceAllegianceUpdateAborted => Ok(GameEventMessage::AllegianceAllegianceUpdateAborted(gameevents::AllegianceAllegianceUpdateAborted::read(reader)?)),
             crate::enums::GameEvent::CommunicationPopUpString => Ok(GameEventMessage::CommunicationPopUpString(gameevents::CommunicationPopUpString::read(reader)?)),
-            crate::enums::GameEvent::LoginPlayerDescription => Ok(GameEventMessage::LoginPlayerDescription(gameevents::LoginPlayerDescription::read(reader)?)),
+            crate::enums::GameEvent::LoginPlayerDescription => Ok(GameEventMessage::LoginPlayerDescription(Box::new(gameevents::LoginPlayerDescription::read(reader)?))),
             crate::enums::GameEvent::AllegianceAllegianceUpdate => Ok(GameEventMessage::AllegianceAllegianceUpdate(gameevents::AllegianceAllegianceUpdate::read(reader)?)),
             crate::enums::GameEvent::SocialFriendsUpdate => Ok(GameEventMessage::SocialFriendsUpdate(gameevents::SocialFriendsUpdate::read(reader)?)),
             crate::enums::GameEvent::ItemServerSaysContainId => Ok(GameEventMessage::ItemServerSaysContainId(gameevents::ItemServerSaysContainId::read(reader)?)),
@@ -658,7 +658,7 @@ impl GameEventMessage {
             crate::enums::GameEvent::WritingBookDeletePageResponse => Ok(GameEventMessage::WritingBookDeletePageResponse(gameevents::WritingBookDeletePageResponse::read(reader)?)),
             crate::enums::GameEvent::WritingBookPageDataResponse => Ok(GameEventMessage::WritingBookPageDataResponse(gameevents::WritingBookPageDataResponse::read(reader)?)),
             crate::enums::GameEvent::ItemGetInscriptionResponse => Ok(GameEventMessage::ItemGetInscriptionResponse(gameevents::ItemGetInscriptionResponse::read(reader)?)),
-            crate::enums::GameEvent::ItemSetAppraiseInfo => Ok(GameEventMessage::ItemSetAppraiseInfo(gameevents::ItemSetAppraiseInfo::read(reader)?)),
+            crate::enums::GameEvent::ItemSetAppraiseInfo => Ok(GameEventMessage::ItemSetAppraiseInfo(Box::new(gameevents::ItemSetAppraiseInfo::read(reader)?))),
             crate::enums::GameEvent::CommunicationChannelBroadcast => Ok(GameEventMessage::CommunicationChannelBroadcast(gameevents::CommunicationChannelBroadcast::read(reader)?)),
             crate::enums::GameEvent::CommunicationChannelList => Ok(GameEventMessage::CommunicationChannelList(gameevents::CommunicationChannelList::read(reader)?)),
             crate::enums::GameEvent::CommunicationChannelIndex => Ok(GameEventMessage::CommunicationChannelIndex(gameevents::CommunicationChannelIndex::read(reader)?)),
@@ -1018,7 +1018,7 @@ pub enum S2CMessage {
     OrderedGameEvent {
         object_id: u32,
         sequence: u32,
-        event: GameEventMessage,
+        event: Box<GameEventMessage>,
     },
 }
 
@@ -1123,7 +1123,7 @@ impl S2CMessage {
             crate::enums::S2CMessage::OrderedGameEvent => {
                 let object_id = read_u32(reader)?;
                 let sequence = read_u32(reader)?;
-                let event = GameEventMessage::read(reader)?;
+                let event = Box::new(GameEventMessage::read(reader)?);
                 Ok(S2CMessage::OrderedGameEvent { object_id, sequence, event })
             }
         }
