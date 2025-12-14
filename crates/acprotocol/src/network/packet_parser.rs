@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io;
 
-use crate::generated::network::{Fragment, FragmentHeader};
+use crate::generated::network::Fragment;
 
 use super::message::ParsedMessage;
 use super::packet::{PacketHeader, PacketHeaderFlags};
