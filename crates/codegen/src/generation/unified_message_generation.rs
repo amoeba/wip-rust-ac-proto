@@ -319,7 +319,6 @@ fn generate_message_enum(
         if !protocol_type.is_primitive {
             let type_name = &protocol_type.name;
             let type_name_no_underscores = type_name.replace('_', "");
-            let module_name = to_snake_case(&type_name_no_underscores);
 
             // Add variant with message data
             out.push_str(&format!(

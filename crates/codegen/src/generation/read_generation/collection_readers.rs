@@ -1,4 +1,3 @@
-
 use crate::type_utils::get_rust_type;
 
 use crate::generation::context::ReaderContext;
@@ -38,7 +37,7 @@ pub fn generate_packable_list_read(element_type: &str) -> String {
 pub fn generate_packable_hash_table_read(
     key_type: &str,
     value_type: &str,
-    ctx: &ReaderContext,
+    _ctx: &ReaderContext,
 ) -> String {
     // Use the simpler generic function if available
     let key_rust_type = get_rust_type(key_type);
