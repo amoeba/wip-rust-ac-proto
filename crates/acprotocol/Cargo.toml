@@ -34,5 +34,5 @@ codegen = { path = "../codegen" }
 env_logger = { workspace = true }
 
 [features]
-default = ["cli"]
+default = []
 cli = ["clap", "ratatui", "crossterm"]
