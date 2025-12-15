@@ -12928,11 +12928,11 @@ impl std::fmt::Display for Placement {
 /// Message queue types from protocol.xml
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum MessageQueue {
-    ClCache,
+    CLCache,
     Control,
     Logon,
     SmartBox,
-    UiQueue,
+    UIQueue,
     Weenie,
 }
 

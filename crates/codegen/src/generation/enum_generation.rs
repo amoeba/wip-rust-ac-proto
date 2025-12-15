@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     field_gen::{DEFAULT_ENUM_DERIVES, build_derive_string},
-    identifiers::{safe_enum_variant_name, to_snake_case},
+    identifiers::{ProtocolIdentifier, safe_enum_variant_name},
     type_utils::get_rust_type,
     types::ProtocolEnum,
     util::format_hex_value,
@@ -109,19 +109,8 @@ pub fn generate_message_queue_enum(
 
     for queue in &queue_list {
         // Convert queue name to valid Rust identifier
-        let snake_case = to_snake_case(queue);
-        let pascal_case = snake_case
-            .split('_')
-            .map(|s| {
-                let mut chars = s.chars();
-                match chars.next() {
-                    None => String::new(),
-                    Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-                }
-            })
-            .collect::<String>();
-
-        out.push_str(&format!("    {},\n", pascal_case));
+        let name = ProtocolIdentifier::new(queue);
+        out.push_str(&format!("    {},\n", name.pascal_case()));
     }
 
     out.push_str("}\n\n");

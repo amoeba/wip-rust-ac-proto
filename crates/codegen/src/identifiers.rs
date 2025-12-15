@@ -110,6 +110,51 @@ pub fn safe_enum_variant_name(name: &str) -> SafeIdentifier {
     safe_identifier(name, IdentifierType::EnumVariant)
 }
 
+/// A protocol identifier that caches different case transformations
+/// for efficient reuse during code generation
+pub struct ProtocolIdentifier {
+    original: String,
+    pascal_case: std::cell::OnceCell<String>,
+    snake_case: std::cell::OnceCell<String>,
+    no_underscores: std::cell::OnceCell<String>,
+}
+
+impl ProtocolIdentifier {
+    /// Create a new protocol identifier from the original name
+    pub fn new(original: impl Into<String>) -> Self {
+        Self {
+            original: original.into(),
+            pascal_case: std::cell::OnceCell::new(),
+            snake_case: std::cell::OnceCell::new(),
+            no_underscores: std::cell::OnceCell::new(),
+        }
+    }
+
+    /// Get the original name as provided
+    pub fn original(&self) -> &str {
+        &self.original
+    }
+
+    /// Get the PascalCase version (cached after first call)
+    pub fn pascal_case(&self) -> &str {
+        self.pascal_case
+            .get_or_init(|| to_pascal_case(&self.original))
+    }
+
+    /// Get the snake_case version (cached after first call)
+    pub fn snake_case(&self) -> &str {
+        self.snake_case
+            .get_or_init(|| to_snake_case(&self.original))
+    }
+
+    /// Get the version without underscores (cached after first call)
+    /// This is commonly used for removing underscores from protocol names
+    pub fn no_underscores(&self) -> &str {
+        self.no_underscores
+            .get_or_init(|| self.original.replace('_', ""))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

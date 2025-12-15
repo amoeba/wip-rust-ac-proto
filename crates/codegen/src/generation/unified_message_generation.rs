@@ -1,6 +1,6 @@
 /// Generate unified message types: Message, MessageKind, C2SMessage, S2CMessage
 /// with improved enum structure that contains message data as variants
-use crate::identifiers::to_snake_case;
+use crate::identifiers::ProtocolIdentifier;
 use crate::types::{ProtocolEnum, ProtocolType};
 
 /// Generate the unified message module with Message, MessageKind, C2SMessage, S2CMessage enums
@@ -101,12 +101,12 @@ fn generate_c2s_message_enum(
 
     for protocol_type in message_types {
         if !protocol_type.is_primitive {
-            let type_name = &protocol_type.name;
-            let type_name_no_underscores = type_name.replace('_', "");
+            let name = ProtocolIdentifier::new(&protocol_type.name);
 
             out.push_str(&format!(
                 "    {}(c2s::{}),\n",
-                type_name_no_underscores, type_name_no_underscores
+                name.no_underscores(),
+                name.no_underscores()
             ));
         }
     }
@@ -132,15 +132,16 @@ fn generate_c2s_message_enum(
     if let Some(protocol_enum) = opcode_enum {
         for protocol_type in message_types {
             if !protocol_type.is_primitive {
-                let type_name = &protocol_type.name;
-                let type_name_no_underscores = type_name.replace('_', "");
+                let name = ProtocolIdentifier::new(&protocol_type.name);
 
-                if let Some(_enum_value) =
-                    protocol_enum.values.iter().find(|v| v.name == *type_name)
+                if let Some(_enum_value) = protocol_enum
+                    .values
+                    .iter()
+                    .find(|v| v.name == name.original())
                 {
                     out.push_str(&format!(
                         "            crate::enums::C2SMessage::{} => Ok(C2SMessage::{}(c2s::{}::read(reader)?)),\n",
-                        type_name_no_underscores, type_name_no_underscores, type_name_no_underscores
+                        name.no_underscores(), name.no_underscores(), name.no_underscores()
                     ));
                 }
             }
@@ -163,22 +164,12 @@ fn generate_c2s_message_enum(
 
     for t in message_types {
         if let Some(ref queue) = t.queue {
-            let type_name = &t.name;
-            let type_name_no_underscores = type_name.replace('_', "");
-            let snake_case = to_snake_case(queue);
-            let pascal_case = snake_case
-                .split('_')
-                .map(|s| {
-                    let mut chars = s.chars();
-                    match chars.next() {
-                        None => String::new(),
-                        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-                    }
-                })
-                .collect::<String>();
+            let name = ProtocolIdentifier::new(&t.name);
+            let queue_name = ProtocolIdentifier::new(queue);
             out.push_str(&format!(
                 "            C2SMessage::{}(_) => Some(MessageQueue::{}),\n",
-                type_name_no_underscores, pascal_case
+                name.no_underscores(),
+                queue_name.pascal_case()
             ));
         }
     }
@@ -205,12 +196,12 @@ fn generate_s2c_message_enum(
 
     for protocol_type in message_types {
         if !protocol_type.is_primitive {
-            let type_name = &protocol_type.name;
-            let type_name_no_underscores = type_name.replace('_', "");
+            let name = ProtocolIdentifier::new(&protocol_type.name);
 
             out.push_str(&format!(
                 "    {}(s2c::{}),\n",
-                type_name_no_underscores, type_name_no_underscores
+                name.no_underscores(),
+                name.no_underscores()
             ));
         }
     }
@@ -237,15 +228,16 @@ fn generate_s2c_message_enum(
     if let Some(protocol_enum) = opcode_enum {
         for protocol_type in message_types {
             if !protocol_type.is_primitive {
-                let type_name = &protocol_type.name;
-                let type_name_no_underscores = type_name.replace('_', "");
+                let name = ProtocolIdentifier::new(&protocol_type.name);
 
-                if let Some(_enum_value) =
-                    protocol_enum.values.iter().find(|v| v.name == *type_name)
+                if let Some(_enum_value) = protocol_enum
+                    .values
+                    .iter()
+                    .find(|v| v.name == name.original())
                 {
                     out.push_str(&format!(
                         "            crate::enums::S2CMessage::{} => Ok(S2CMessage::{}(s2c::{}::read(reader)?)),\n",
-                        type_name_no_underscores, type_name_no_underscores, type_name_no_underscores
+                        name.no_underscores(), name.no_underscores(), name.no_underscores()
                     ));
                 }
             }
@@ -271,22 +263,12 @@ fn generate_s2c_message_enum(
 
     for t in message_types {
         if let Some(ref queue) = t.queue {
-            let type_name = &t.name;
-            let type_name_no_underscores = type_name.replace('_', "");
-            let snake_case = to_snake_case(queue);
-            let pascal_case = snake_case
-                .split('_')
-                .map(|s| {
-                    let mut chars = s.chars();
-                    match chars.next() {
-                        None => String::new(),
-                        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-                    }
-                })
-                .collect::<String>();
+            let name = ProtocolIdentifier::new(&t.name);
+            let queue_name = ProtocolIdentifier::new(queue);
             out.push_str(&format!(
                 "            S2CMessage::{}(_) => Some(MessageQueue::{}),\n",
-                type_name_no_underscores, pascal_case
+                name.no_underscores(),
+                queue_name.pascal_case()
             ));
         }
     }
@@ -313,7 +295,8 @@ fn generate_message_enum(
     out.push_str("#[derive(Debug, Serialize, Deserialize)]\n");
     out.push_str(&format!("pub enum {} {{\n", enum_name));
 
-    // Collect names of large types to box based on known sizes from the protocol
+    // Box large types to avoid stack overflow (>= 512 bytes on stack)
+    // These types are determined by running: FILTER_TYPES="..." cargo build
     let large_types = match enum_name {
         "GameEventMessage" => vec!["Login_PlayerDescription", "Item_SetAppraiseInfo"],
         "GameActionMessage" => vec!["Character_CharacterOptionsEvent"],
@@ -322,32 +305,28 @@ fn generate_message_enum(
 
     for protocol_type in message_types {
         if !protocol_type.is_primitive {
-            let type_name = &protocol_type.name;
-            let type_name_no_underscores = type_name.replace('_', "");
+            let name = ProtocolIdentifier::new(&protocol_type.name);
 
             // Add variant with message data, boxing large variants
-            if large_types.contains(&type_name.as_str()) {
+            if large_types.contains(&name.original()) {
                 out.push_str(&format!(
                     "    {}(Box<{}::{}>),\n",
-                    type_name_no_underscores, module_prefix, type_name_no_underscores
+                    name.no_underscores(),
+                    module_prefix,
+                    name.no_underscores()
                 ));
             } else {
                 out.push_str(&format!(
                     "    {}({}::{}),\n",
-                    type_name_no_underscores, module_prefix, type_name_no_underscores
+                    name.no_underscores(),
+                    module_prefix,
+                    name.no_underscores()
                 ));
             }
         }
     }
 
     out.push_str("}\n\n");
-
-    // Collect names of large types to box (same as above)
-    let large_types = match enum_name {
-        "GameEventMessage" => vec!["Login_PlayerDescription", "Item_SetAppraiseInfo"],
-        "GameActionMessage" => vec!["Character_CharacterOptionsEvent"],
-        _ => vec![],
-    };
 
     // Generate read implementation using the opcode enum
     out.push_str(&format!("impl {} {{\n", enum_name));
@@ -377,33 +356,34 @@ fn generate_message_enum(
     if let Some(protocol_enum) = opcode_enum {
         for protocol_type in message_types {
             if !protocol_type.is_primitive {
-                let type_name = &protocol_type.name;
-                let type_name_no_underscores = type_name.replace('_', "");
+                let name = ProtocolIdentifier::new(&protocol_type.name);
 
                 // Find the corresponding enum value
-                if let Some(_enum_value) =
-                    protocol_enum.values.iter().find(|v| v.name == *type_name)
+                if let Some(_enum_value) = protocol_enum
+                    .values
+                    .iter()
+                    .find(|v| v.name == name.original())
                 {
                     // Check if this variant should be boxed
-                    if large_types.contains(&type_name.as_str()) {
+                    if large_types.contains(&name.original()) {
                         out.push_str(&format!(
                             "            crate::enums::{}::{} => Ok({}::{}(Box::new({}::{}::read(reader)?))),\n",
                             enum_type_name,
-                            type_name_no_underscores,
+                            name.no_underscores(),
                             enum_name,
-                            type_name_no_underscores,
+                            name.no_underscores(),
                             module_prefix,
-                            type_name_no_underscores
+                            name.no_underscores()
                         ));
                     } else {
                         out.push_str(&format!(
                             "            crate::enums::{}::{} => Ok({}::{}({}::{}::read(reader)?)),\n",
                             enum_type_name,
-                            type_name_no_underscores,
+                            name.no_underscores(),
                             enum_name,
-                            type_name_no_underscores,
+                            name.no_underscores(),
                             module_prefix,
-                            type_name_no_underscores
+                            name.no_underscores()
                         ));
                     }
                 }
@@ -422,22 +402,13 @@ fn generate_message_enum(
         if !protocol_type.is_primitive
             && let Some(ref queue) = protocol_type.queue
         {
-            let type_name = &protocol_type.name;
-            let type_name_no_underscores = type_name.replace('_', "");
-            let snake_case = to_snake_case(queue);
-            let pascal_case = snake_case
-                .split('_')
-                .map(|s| {
-                    let mut chars = s.chars();
-                    match chars.next() {
-                        None => String::new(),
-                        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-                    }
-                })
-                .collect::<String>();
+            let name = ProtocolIdentifier::new(&protocol_type.name);
+            let queue_name = ProtocolIdentifier::new(queue);
             out.push_str(&format!(
                 "            {}::{}(_) => Some(MessageQueue::{}),\n",
-                enum_name, type_name_no_underscores, pascal_case
+                enum_name,
+                name.no_underscores(),
+                queue_name.pascal_case()
             ));
         }
     }
