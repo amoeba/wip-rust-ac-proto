@@ -5,8 +5,10 @@ use std::error::Error;
 use std::hash::Hash;
 
 pub mod alignment;
+pub mod tracked_reader;
 pub mod traits;
 pub use alignment::{align, align_dword, align_qword, align_word};
+pub use tracked_reader::TrackedReader;
 pub use traits::{ACDataType, ACReader};
 
 /// Read an item of type T from the reader
@@ -169,9 +171,16 @@ pub fn read_string(reader: &mut dyn ACReader) -> Result<String, Box<dyn Error>> 
     let len = if len_i16 == -1 {
         // Special case: -1 means read a 32-bit length
         read_i32(reader)? as usize
+    } else if len_i16 < 0 {
+        return Err(format!("Invalid string length: {} (negative value other than -1)", len_i16).into());
     } else {
         len_i16 as usize
     };
+
+    // Sanity check: strings larger than 1MB are likely corrupted data
+    if len > 1_000_000 {
+        return Err(format!("String length {} is suspiciously large (len_i16={})", len, len_i16).into());
+    }
 
     let mut buf = vec![0u8; len];
     reader.read_exact(&mut buf)?;
@@ -212,6 +221,11 @@ pub fn read_wstring(reader: &mut dyn ACReader) -> Result<String, Box<dyn Error>>
         // Single byte length
         first_byte as usize
     };
+
+    // Sanity check: wstrings larger than 500K characters are likely corrupted data
+    if length > 500_000 {
+        return Err(format!("Wstring length {} is suspiciously large (first_byte={})", length, first_byte).into());
+    }
 
     // Read UTF-16 bytes (2 bytes per character)
     let byte_count = length * 2;
