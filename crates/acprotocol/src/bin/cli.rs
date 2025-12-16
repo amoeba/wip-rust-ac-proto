@@ -1,10 +1,10 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 use std::collections::HashMap;
-use std::fs::File;
 
-use acprotocol::network::ParsedMessage;
-use acprotocol::filter;
+use acprotocol::network::{ParsedMessage, FragmentAssembler};
+use acprotocol::network::pcap;
+use acprotocol::network::packet::PacketPayloadParser;
 
 #[derive(Parser)]
 #[command(name = "ac-pcap-parser")]
@@ -137,11 +137,7 @@ fn output_messages(
                 return false;
             }
             if let Some(oc) = opcode_filter {
-                if let Some(msg_opcode) = filter::opcode_str_to_u32(&m.opcode) {
-                    if msg_opcode != oc {
-                        return false;
-                    }
-                } else {
+                if m.opcode != oc {
                     return false;
                 }
             }
@@ -190,7 +186,7 @@ fn output_messages(
             println!("{}", "-".repeat(70));
             for msg in filtered {
                 println!(
-                    "{:>6}  {:40}  {:>6}  {:>10}",
+                    "{:>6}  {:40}  {:>6}  {:#06x}",
                     msg.id,
                     truncate(&msg.message_type, 40),
                     msg.direction,
@@ -201,78 +197,7 @@ fn output_messages(
     }
 }
 
-fn output_fragments(
-    packets: &[ParsedPacket],
-    direction: Option<DirectionFilter>,
-    sort: FragmentSortField,
-    reverse: bool,
-    limit: Option<usize>,
-    output: OutputFormat,
-) {
-    let mut filtered: Vec<&ParsedPacket> = packets
-        .iter()
-        .filter(|p| {
-            if let Some(d) = direction {
-                match d {
-                    DirectionFilter::Send => {
-                        if p.direction != "Send" {
-                            return false;
-                        }
-                    }
-                    DirectionFilter::Recv => {
-                        if p.direction != "Recv" {
-                            return false;
-                        }
-                    }
-                }
-            }
-            true
-        })
-        .collect();
 
-    filtered.sort_by(|a, b| {
-        let cmp = match sort {
-            FragmentSortField::Id => a.id.cmp(&b.id),
-            FragmentSortField::Sequence => a.header.sequence.cmp(&b.header.sequence),
-            FragmentSortField::Direction => {
-                format!("{:?}", a.direction).cmp(&format!("{:?}", b.direction))
-            }
-        };
-        if reverse { cmp.reverse() } else { cmp }
-    });
-
-    if let Some(lim) = limit {
-        filtered.truncate(lim);
-    }
-
-    match output {
-        OutputFormat::Jsonl => {
-            for pkt in filtered {
-                println!("{}", serde_json::to_string(&pkt).unwrap());
-            }
-        }
-        OutputFormat::Json => {
-            println!("{}", serde_json::to_string_pretty(&filtered).unwrap());
-        }
-        OutputFormat::Table => {
-            println!(
-                "{:>6}  {:>10}  {:>6}  {:>12}  {:>6}",
-                "ID", "Seq", "Dir", "Flags", "Size"
-            );
-            println!("{}", "-".repeat(50));
-            for pkt in filtered {
-                println!(
-                    "{:>6}  {:>10}  {:>6}  {:>12}  {:>6}",
-                    pkt.id,
-                    pkt.header.sequence,
-                    format!("{:?}", pkt.direction),
-                    format!("{:08X}", pkt.header.flags.bits()),
-                    pkt.header.size
-                );
-            }
-        }
-    }
-}
 
 fn truncate(s: &str, max_len: usize) -> String {
     if s.len() <= max_len {
@@ -285,23 +210,21 @@ fn truncate(s: &str, max_len: usize) -> String {
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let mut parser = PacketParser::new();
-
     let file_path = cli
         .file
         .unwrap_or_else(|| "pkt_2025-11-18_1763490291_log.pcap".to_string());
     eprintln!("Parsing PCAP file: {}", file_path);
 
-    let file = File::open(&file_path).context("Failed to open pcap file")?;
-    let (packets, messages) = parser
-        .parse_pcap(file)
-        .context("Failed to parse pcap file")?;
+    // Load PCAP file and parse packets
+    let mut assembler = FragmentAssembler::new();
+    let mut messages = Vec::new();
 
-    eprintln!(
-        "Found {} packets, {} messages",
-        packets.len(),
-        messages.len(),
-    );
+    let pcap_iter = pcap::open(&file_path)?;
+    for packet_result in pcap_iter {
+        let packet = packet_result?;
+        let parsed_messages = assembler.parse_packet_payload(&packet.data)?;
+        messages.extend(parsed_messages);
+    }
 
     match cli.command {
         Some(Commands::Messages {
@@ -324,26 +247,14 @@ fn main() -> Result<()> {
                 output,
             );
         }
-        Some(Commands::Fragments {
-            direction,
-            sort,
-            reverse,
-            limit,
-            output,
-        }) => {
-            output_fragments(&packets, direction, sort, reverse, limit, output);
-        }
         Some(Commands::Summary) => {
-            print_summary(&packets, &messages);
+            print_summary(&messages);
         }
         Some(Commands::Tui) => {
             eprintln!("TUI not yet ported from ac-pcap-parser. Use the tui binary instead.");
         }
         None => {
-            // Default: output messages as JSONL
-            for message in &messages {
-                println!("{}", serde_json::to_string(&message)?);
-            }
+            eprintln!("Use --help for available commands");
         }
     }
 

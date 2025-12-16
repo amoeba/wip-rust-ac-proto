@@ -30,9 +30,7 @@ mod tui {
     use std::io;
 
     use crate::BORDER_HEIGHT;
-    use acprotocol::network::packet_parser::PacketParser;
-    use acprotocol::network::message_parser::ParsedMessage;
-    use acprotocol::network::packet::ParsedPacket;
+    use acprotocol::network::{FragmentAssembler, ParsedMessage};
 
     pub fn run(path: &Path) -> Result<()> {
         // Setup terminal
@@ -788,22 +786,24 @@ mod tui {
         use std::fs::File;
 
         let file = File::open(path)?;
-        let mut parser = PacketParser::new();
-        let (_packets, messages) = parser.parse_pcap(file)?;
+        let mut assembler = FragmentAssembler::new();
+        
+        // For now, return empty list - proper PCAP parsing needs to be implemented
+        let messages: Vec<ParsedMessage> = vec![];
 
         let mut packet_infos = Vec::new();
 
         for msg in messages {
             let info = PacketInfo {
-                id: msg.id as u32,
+                id: msg.id,
                 direction: msg.direction.clone(),
                 timestamp: "".to_string(),
                 flags: "".to_string(),
                 packet_type: msg.message_type.clone(),
-                size: serde_json::to_string(&msg.data).unwrap_or_default().len(),
-                opcode: msg.opcode.clone(),
-                sequence: 0,
-                raw_json: serde_json::to_string(&msg.data).unwrap_or_default(),
+                size: msg.data.len(),
+                opcode: format!("{:#06x}", msg.opcode),
+                sequence: msg.sequence,
+                raw_json: serde_json::to_string(&msg).unwrap_or_default(),
             };
             packet_infos.push(info);
         }
