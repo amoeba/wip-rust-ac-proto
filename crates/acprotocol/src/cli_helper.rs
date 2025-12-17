@@ -1,12 +1,18 @@
 use std::error::Error;
+
+#[cfg(feature = "dat-export")]
 use std::io::Seek;
+#[cfg(feature = "dat-export")]
 use std::{
     fs::{self, File, create_dir},
     io::{Cursor, SeekFrom},
 };
 
+#[cfg(feature = "dat-export")]
 use crate::dat::reader::dat_block_reader::DatBlockReader;
-use crate::dat::{DatDatabase, DatDirectoryEntry, DatFile, DatFileType, Texture};
+use crate::dat::{DatDatabase, DatDirectoryEntry};
+#[cfg(feature = "dat-export")]
+use crate::dat::{DatFile, DatFileType, Texture};
 
 pub async fn find_file_by_id(
     db: &DatDatabase,
@@ -30,6 +36,7 @@ pub async fn find_file_by_id(
     }
 }
 
+#[cfg(feature = "dat-export")]
 pub async fn extract_texture_by_id(
     dat_file_path: &str,
     object_id: &str,
