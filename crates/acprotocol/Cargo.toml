@@ -11,12 +11,12 @@ path = "src/lib.rs"
 
 [[bin]]
 name = "pcap"
-path = "src/bin/pcap.rs"
+path = "src/bin/cmd_pcap.rs"
 required-features = ["cli"]
 
 [[bin]]
 name = "dat"
-path = "src/bin/dat.rs"
+path = "src/bin/cmd_dat.rs"
 required-features = ["dat-tokio"]
 
 [dependencies]
