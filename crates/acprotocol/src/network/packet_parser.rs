@@ -3,9 +3,9 @@ use std::io;
 
 use crate::generated::network::Fragment;
 
-use super::raw_message::RawMessage;
 use super::packet::{PacketHeader, PacketHeaderFlags};
 use super::packet_reader::PacketReader;
+use super::raw_message::RawMessage;
 
 /// Information about a fragment extracted from a packet
 #[derive(Debug, Clone)]

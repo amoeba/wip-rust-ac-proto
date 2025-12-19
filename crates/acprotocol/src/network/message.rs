@@ -1,8 +1,8 @@
 use serde::Serialize;
 use std::io::{self, Cursor};
 
-use crate::readers::ACReader;
 use crate::message::{Direction, MessageKind};
+use crate::readers::ACReader;
 
 /// A fully-parsed message
 #[derive(Debug, Serialize)]
