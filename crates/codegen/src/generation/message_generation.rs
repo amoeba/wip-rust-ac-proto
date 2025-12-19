@@ -1,10 +1,10 @@
-/// Generate unified message types: Message, MessageKind, C2SMessage, S2CMessage
+/// Generate message types: Message, MessageKind, C2SMessage, S2CMessage
 /// with improved enum structure that contains message data as variants
 use crate::identifiers::ProtocolIdentifier;
 use crate::types::{ProtocolEnum, ProtocolType};
 
-/// Generate the unified message module with Message, MessageKind, C2SMessage, S2CMessage enums
-pub fn generate_unified_message_types(
+/// Generate the message module with Message, MessageKind, C2SMessage, S2CMessage enums
+pub fn generate_message_types(
     c2s_types: &[ProtocolType],
     s2c_types: &[ProtocolType],
     game_action_types: &[ProtocolType],

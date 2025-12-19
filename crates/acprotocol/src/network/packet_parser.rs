@@ -3,7 +3,7 @@ use std::io;
 
 use crate::generated::network::Fragment;
 
-use super::message::ParsedMessage;
+use super::raw_message::RawMessage;
 use super::packet::{PacketHeader, PacketHeaderFlags};
 use super::packet_reader::PacketReader;
 
@@ -33,7 +33,7 @@ impl FragmentAssembler {
     }
 
     /// Parse a network packet's payload and extract fragments, returning any completed messages
-    pub fn parse_packet_payload(&mut self, payload: &[u8]) -> io::Result<Vec<ParsedMessage>> {
+    pub fn parse_packet_payload(&mut self, payload: &[u8]) -> io::Result<Vec<RawMessage>> {
         // PCAP packets include the full network stack: Ethernet (14) + IP (20) + UDP (8) = 42 bytes
         // We need to skip these headers to get to the AC protocol payload
         let ac_payload = if payload.len() > 42 {
@@ -178,13 +178,13 @@ impl FragmentAssembler {
     }
 
     /// Parse a single fragment from the reader
-    /// Returns Some(ParsedMessage) if the fragment completes a message, None otherwise
+    /// Returns Some(RawMessage) if the fragment completes a message, None otherwise
     fn parse_fragment_internal(
         &mut self,
         reader: &mut PacketReader,
         packet_iteration: Option<u16>,
         header_flags: Option<u32>,
-    ) -> io::Result<Option<ParsedMessage>> {
+    ) -> io::Result<Option<RawMessage>> {
         let sequence = reader.read_u32()?;
         let id = reader.read_u32()?;
         let count = reader.read_u16()?;
@@ -225,7 +225,7 @@ impl FragmentAssembler {
             let msg_id = self.next_message_id;
             self.next_message_id += 1;
 
-            let parsed_msg = ParsedMessage::from_fragment_with_iteration(
+            let parsed_msg = RawMessage::from_fragment_with_iteration(
                 assembled_data,
                 sequence,
                 msg_id,
@@ -239,9 +239,9 @@ impl FragmentAssembler {
     }
 
     /// Parse a single fragment from the reader
-    /// Returns Some(ParsedMessage) if the fragment completes a message, None otherwise
+    /// Returns Some(RawMessage) if the fragment completes a message, None otherwise
     #[allow(dead_code)]
-    fn parse_fragment(&mut self, reader: &mut PacketReader) -> io::Result<Option<ParsedMessage>> {
+    fn parse_fragment(&mut self, reader: &mut PacketReader) -> io::Result<Option<RawMessage>> {
         self.parse_fragment_internal(reader, None, None)
     }
 }

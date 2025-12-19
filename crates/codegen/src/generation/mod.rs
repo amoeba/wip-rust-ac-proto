@@ -1,11 +1,11 @@
 pub mod context;
 pub mod enum_generation;
 pub mod helpers;
+pub mod message_generation;
 pub mod read_generation;
 pub mod reader_generation;
 pub mod type_generation;
 pub mod types;
-pub mod unified_message_generation;
 
 use std::collections::BTreeMap;
 
@@ -358,10 +358,10 @@ pub fn generate_with_source(xml: &str, source: GenerateSource) -> GeneratedCode 
         "network/mod.rs",
     ));
 
-    // Generate unified message types (only for protocol.xml, not network.xml)
+    // Generate message types (only for protocol.xml, not network.xml)
     if source == GenerateSource::Protocol {
-        // Generate unified message types
-        let unified_message_content = unified_message_generation::generate_unified_message_types(
+        // Generate message types
+        let message_content = message_generation::generate_message_types(
             &rectified_c2s_types,
             &rectified_s2c_types,
             &game_action_types,
@@ -369,13 +369,13 @@ pub fn generate_with_source(xml: &str, source: GenerateSource) -> GeneratedCode 
             &enum_types,
         );
         files.push(GeneratedFile {
-            path: "unified.rs".to_string(),
-            content: unified_message_content,
+            path: "message.rs".to_string(),
+            content: message_content,
         });
     }
 
     // Generate root mod.rs for generated
-    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\npub mod unified;\n";
+    let generated_mod = "pub mod enums;\npub mod types;\npub mod messages;\npub mod gameactions;\npub mod gameevents;\npub mod packets;\npub mod network;\npub mod message;\n";
     files.push(GeneratedFile {
         path: "mod.rs".to_string(),
         content: generated_mod.to_string(),

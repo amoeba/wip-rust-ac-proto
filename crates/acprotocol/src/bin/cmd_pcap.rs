@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use acprotocol::cli::tui;
 use acprotocol::cli_helper::parse_opcode_filter;
 use acprotocol::network::pcap;
-use acprotocol::network::{FragmentAssembler, ParsedMessage};
+use acprotocol::network::{FragmentAssembler, RawMessage};
 
 #[derive(Parser)]
 #[command(name = "pcap")]
@@ -84,7 +84,7 @@ pub enum OutputFormat {
     Table,
 }
 
-fn print_summary(messages: &[ParsedMessage]) {
+fn print_summary(messages: &[RawMessage]) {
     println!("=== PCAP Summary ===\n");
 
     println!("Messages: {}", messages.len());
@@ -115,7 +115,7 @@ fn print_summary(messages: &[ParsedMessage]) {
 
 #[allow(clippy::too_many_arguments)]
 fn output_messages(
-    messages: &[ParsedMessage],
+    messages: &[RawMessage],
     filter_type: Option<&str>,
     filter_opcode: Option<&str>,
     direction: Option<DirectionFilter>,
@@ -127,7 +127,7 @@ fn output_messages(
     // Parse opcode filter if provided
     let opcode_filter: Option<u32> = filter_opcode.and_then(|s| parse_opcode_filter(s).ok());
 
-    let mut filtered: Vec<&ParsedMessage> = messages
+    let mut filtered: Vec<&RawMessage> = messages
         .iter()
         .filter(|m| {
             if let Some(ft) = filter_type

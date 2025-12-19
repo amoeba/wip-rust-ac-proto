@@ -21,7 +21,7 @@ use ratatui::{
 use serde_json::Value;
 use std::io;
 
-use crate::network::{FragmentAssembler, ParsedMessage};
+use crate::network::{FragmentAssembler, RawMessage};
 
 // Border height in terminal UI (top and bottom borders)
 const BORDER_HEIGHT: usize = 2;
@@ -777,7 +777,7 @@ fn load_packets(path: &Path) -> Result<Vec<PacketInfo>> {
     use crate::network::pcap;
 
     let mut assembler = FragmentAssembler::new();
-    let mut messages: Vec<ParsedMessage> = vec![];
+    let mut messages: Vec<RawMessage> = vec![];
 
     let pcap_iter = pcap::open(path)?;
     for packet_result in pcap_iter {
