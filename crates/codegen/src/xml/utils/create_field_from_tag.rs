@@ -15,6 +15,7 @@ pub fn create_field_from_tag(
     let mut generic_key = None;
     let mut generic_value = None;
     let mut generic_type = None;
+    let mut param = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -23,6 +24,7 @@ pub fn create_field_from_tag(
             b"genericKey" => generic_key = Some(attr.unescape_value().unwrap().into_owned()),
             b"genericValue" => generic_value = Some(attr.unescape_value().unwrap().into_owned()),
             b"genericType" => generic_type = Some(attr.unescape_value().unwrap().into_owned()),
+            b"param" => param = Some(attr.unescape_value().unwrap().into_owned()),
             _ => {}
         }
     }
@@ -74,6 +76,7 @@ pub fn create_field_from_tag(
             if_false_branch_type: None,
             subfields: Vec::new(),
             nested_field_set: None,
+            param,
         })
     } else {
         None

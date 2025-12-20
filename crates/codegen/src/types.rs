@@ -70,6 +70,8 @@ pub struct Field {
     /// For fields with nested switches (switch following this field)
     #[allow(dead_code)]
     pub(crate) nested_field_set: Option<Box<FieldSet>>,
+    /// For DataId fields, the param attribute (e.g., "0x04000000") indicating PackedDWORD encoding
+    pub(crate) param: Option<String>,
 }
 
 /// Tracks which branch of an if/true/false block a field belongs to

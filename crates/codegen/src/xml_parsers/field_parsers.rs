@@ -13,6 +13,7 @@ pub fn create_field_from_tag(e: &quick_xml::events::BytesStart, ctx: &FieldConte
     let mut generic_key = None;
     let mut generic_value = None;
     let mut generic_type = None;
+    let mut param = None;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
@@ -21,6 +22,7 @@ pub fn create_field_from_tag(e: &quick_xml::events::BytesStart, ctx: &FieldConte
             b"genericKey" => generic_key = Some(attr.unescape_value().unwrap().into_owned()),
             b"genericValue" => generic_value = Some(attr.unescape_value().unwrap().into_owned()),
             b"genericType" => generic_type = Some(attr.unescape_value().unwrap().into_owned()),
+            b"param" => param = Some(attr.unescape_value().unwrap().into_owned()),
             _ => {}
         }
     }
@@ -72,6 +74,7 @@ pub fn create_field_from_tag(e: &quick_xml::events::BytesStart, ctx: &FieldConte
             if_false_branch_type: None,
             subfields: Vec::new(),
             nested_field_set: None,
+            param,
         })
     } else {
         None
@@ -217,6 +220,7 @@ pub fn process_vector_tag(
             if_false_branch_type: None,
             subfields: Vec::new(),
             nested_field_set: None,
+            param: None,
         };
 
         // If we're in an <if> block, collect fields separately
@@ -313,6 +317,7 @@ pub fn process_table_tag(
             if_false_branch_type: None,
             subfields: Vec::new(),
             nested_field_set: None,
+            param: None,
         };
 
         // If we're in an <if> block, collect fields separately

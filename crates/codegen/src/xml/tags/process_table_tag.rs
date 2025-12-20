@@ -67,6 +67,7 @@ pub fn process_table_tag(
             if_false_branch_type: None,
             subfields: Vec::new(),
             nested_field_set: None,
+            param: None,
         };
 
         // If we're in an <if> block, collect fields separately

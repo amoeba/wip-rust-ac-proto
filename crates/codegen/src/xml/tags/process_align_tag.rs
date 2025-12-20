@@ -28,6 +28,7 @@ pub fn process_align_tag(e: &quick_xml::events::BytesStart) -> Option<Field> {
             if_false_branch_type: None,
             subfields: Vec::new(),
             nested_field_set: None,
+            param: None,
         })
     } else {
         None
