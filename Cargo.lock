@@ -12,6 +12,7 @@ dependencies = [
  "clap",
  "codegen",
  "crossterm",
+ "encoding_rs",
  "env_logger",
  "futures",
  "futures-util",
