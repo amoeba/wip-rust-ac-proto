@@ -480,15 +480,9 @@ where
     let packed_size = u32::from_le_bytes(packed_size_buf);
     let count = (packed_size & 0xFFFFFF) as usize;
 
-    // Upper byte should be reasonable (typically used for flags/metadata)
-    let upper_byte = (packed_size >> 24) & 0xFF;
-    if upper_byte > 0x7F {
-        return Err(format!(
-            "PHashTable packed_size has invalid upper byte: 0x{:02X}",
-            upper_byte
-        )
-        .into());
-    }
+    // C# reference implementation does not validate upper byte
+    // Upper byte may contain flags or metadata and can legitimately exceed 0x7F
+    let _upper_byte = (packed_size >> 24) & 0xFF;
 
     let mut table = HashMap::with_capacity(count);
     for _ in 0..count {
@@ -507,15 +501,9 @@ pub fn read_phash_table<K: ACDataType + Eq + Hash, V: ACDataType>(
     let packed_size = read_u32(reader)?;
     let count = (packed_size & 0xFFFFFF) as usize;
 
-    // Upper byte should be reasonable (typically used for flags/metadata)
-    let upper_byte = (packed_size >> 24) & 0xFF;
-    if upper_byte > 0x7F {
-        return Err(format!(
-            "PHashTable packed_size has invalid upper byte: 0x{:02X}",
-            upper_byte
-        )
-        .into());
-    }
+    // C# reference implementation does not validate upper byte
+    // Upper byte may contain flags or metadata and can legitimately exceed 0x7F
+    let _upper_byte = (packed_size >> 24) & 0xFF;
 
     let mut table = HashMap::with_capacity(count);
     for _ in 0..count {

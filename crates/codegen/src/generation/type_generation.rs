@@ -74,7 +74,7 @@ pub fn generate_type(protocol_type: &ProtocolType) -> String {
                 out.push_str("#[derive(serde::Serialize, serde::Deserialize)]\n");
                 out.push_str("#[serde(transparent)]\n");
                 out.push_str(&format!("pub struct {type_name}(pub {rust_type});\n\n"));
-                
+
                 // Generate impl block for DataId to support reading from binary
                 if type_name == "DataId" {
                     out.push_str("impl DataId {\n");

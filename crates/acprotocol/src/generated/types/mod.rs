@@ -1,7 +1,7 @@
-use crate::enums::*;
+use serde::{Serialize, Deserialize};
 use crate::readers::ACReader;
 use crate::readers::*;
-use serde::{Deserialize, Serialize};
+use crate::enums::*;
 
 #[allow(non_camel_case_types)]
 pub type byte = u8;
@@ -33,9 +33,8 @@ pub type double = f64;
 #[allow(non_camel_case_types)]
 pub type string = String;
 
-#[derive(
-    Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct WString(pub String);
 
@@ -46,31 +45,42 @@ pub type WORD = u16;
 pub type DWORD = u32;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PackedWORD(pub i16);
+pub struct PackedWORD {}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PackedDWORD(pub u32);
+pub struct PackedDWORD {}
 
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct ObjectId(pub u32);
 
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct LandcellId(pub u32);
 
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct SpellId(pub u16);
 
-#[allow(non_camel_case_types)]
-pub type DataId = PackedDWORD;
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct DataId(pub u32);
+
+impl DataId {
+    pub fn read(reader: &mut dyn crate::readers::ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self(crate::readers::read_u32(reader)?))
+    }
+}
+
+impl crate::readers::ACDataType for DataId {
+    fn read(reader: &mut dyn crate::readers::ACReader) -> Result<Self, Box<dyn std::error::Error>> {
+        DataId::read(reader)
+    }
+}
 
 // Full spell Id combining the spell id with the spell layer.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Hash, Eq)]
@@ -2187,10 +2197,7 @@ pub struct PhysicsDesc {
     pub omega: Option<Vector3>,
     #[serde(rename = "DefaultScript", skip_serializing_if = "Option::is_none")]
     pub default_script: Option<u32>,
-    #[serde(
-        rename = "DefaultScriptIntensity",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "DefaultScriptIntensity", skip_serializing_if = "Option::is_none")]
     pub default_script_intensity: Option<f32>,
     #[serde(rename = "ObjectPositionSequence")]
     pub object_position_sequence: u16,
@@ -2616,16 +2623,8 @@ impl crate::readers::ACDataType for WString {
 
 impl PackedWORD {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let first_byte = read_u8(reader)?;
-
-        let value = if (first_byte & 0x80) != 0 {
-            // High bit set: take lower 7 bits, shift left 8, OR with next byte
-            (((first_byte & 0x7f) as i16) << 8) | (read_u8(reader)? as i16)
-        } else {
-            first_byte as i16
-        };
-
-        Ok(Self(value))
+        crate::readers::read_packed_word(reader)?;
+        Ok(Self {})
     }
 }
 
@@ -2637,17 +2636,8 @@ impl crate::readers::ACDataType for PackedWORD {
 
 impl PackedDWORD {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let first_i16 = read_i16(reader)?;
-
-        let value = if (first_i16 as u16 & 0x8000) != 0 {
-            // High bit set: shift left 16, clear sign bit, OR with next i16
-            let second_i16 = read_i16(reader)? as u16 as u32;
-            (((first_i16 as u32) << 16) & 0x7FFFFFFF) | second_i16
-        } else {
-            first_i16 as u32
-        };
-
-        Ok(Self(value))
+        crate::readers::read_packed_dword(reader)?;
+        Ok(Self {})
     }
 }
 
@@ -2698,7 +2688,10 @@ impl crate::readers::ACDataType for LayeredSpellId {
         let id = SpellId::read(reader)?;
         let layer = read_u16(reader)?;
 
-        Ok(Self { id, layer })
+        Ok(Self {
+            id,
+            layer,
+        })
     }
 }
 
@@ -2708,7 +2701,11 @@ impl crate::readers::ACDataType for Vector3 {
         let y = read_f32(reader)?;
         let z = read_f32(reader)?;
 
-        Ok(Self { x, y, z })
+        Ok(Self {
+            x,
+            y,
+            z,
+        })
     }
 }
 
@@ -2719,7 +2716,12 @@ impl crate::readers::ACDataType for Quaternion {
         let y = read_f32(reader)?;
         let z = read_f32(reader)?;
 
-        Ok(Self { w, x, y, z })
+        Ok(Self {
+            w,
+            x,
+            y,
+            z,
+        })
     }
 }
 
@@ -2728,7 +2730,10 @@ impl crate::readers::ACDataType for Origin {
         let landcell = LandcellId::read(reader)?;
         let location = Vector3::read(reader)?;
 
-        Ok(Self { landcell, location })
+        Ok(Self {
+            landcell,
+            location,
+        })
     }
 }
 
@@ -2737,7 +2742,10 @@ impl crate::readers::ACDataType for Position {
         let landcell = LandcellId::read(reader)?;
         let frame = Frame::read(reader)?;
 
-        Ok(Self { landcell, frame })
+        Ok(Self {
+            landcell,
+            frame,
+        })
     }
 }
 
@@ -2758,7 +2766,10 @@ impl crate::readers::ACDataType for ServerSwitchHeader {
         let sequence = read_u32(reader)?;
         let type_ = ServerSwitchType::try_from(read_u32(reader)?)?;
 
-        Ok(Self { sequence, type_ })
+        Ok(Self {
+            sequence,
+            type_,
+        })
     }
 }
 
@@ -2767,7 +2778,10 @@ impl crate::readers::ACDataType for CICMDCommandHeader {
         let command = read_u32(reader)?;
         let parameter = read_u32(reader)?;
 
-        Ok(Self { command, parameter })
+        Ok(Self {
+            command,
+            parameter,
+        })
     }
 }
 
@@ -2776,7 +2790,10 @@ impl crate::readers::ACDataType for FlowHeader {
         let bytes = read_u32(reader)?;
         let interval = read_u16(reader)?;
 
-        Ok(Self { bytes, interval })
+        Ok(Self {
+            bytes,
+            interval,
+        })
     }
 }
 
@@ -2798,15 +2815,7 @@ impl crate::readers::ACDataType for SocketAddress {
 
 impl LoginRequestHeaderType2 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        client_version: string,
-        length: uint,
-        flags: AuthFlags,
-        sequence: uint,
-        account: string,
-        account_to_login_as: string,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, client_version: string, length: uint, flags: AuthFlags, sequence: uint, account: string, account_to_login_as: string) -> Result<Self, Box<dyn std::error::Error>> {
         let password = read_wstring(reader).map(WString)?;
 
         Ok(Self {
@@ -2823,15 +2832,7 @@ impl LoginRequestHeaderType2 {
 
 impl LoginRequestHeaderType40000002 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        client_version: string,
-        length: uint,
-        flags: AuthFlags,
-        sequence: uint,
-        account: string,
-        account_to_login_as: string,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, client_version: string, length: uint, flags: AuthFlags, sequence: uint, account: string, account_to_login_as: string) -> Result<Self, Box<dyn std::error::Error>> {
         let gls_ticket = read_string(reader)?;
 
         Ok(Self {
@@ -2858,29 +2859,13 @@ impl LoginRequestHeader {
 
         match auth_type {
             NetAuthType::AccountPassword => {
-                let variant_struct = LoginRequestHeaderType2::read(
-                    reader,
-                    client_version,
-                    length,
-                    flags,
-                    sequence,
-                    account,
-                    account_to_login_as,
-                )?;
+                let variant_struct = LoginRequestHeaderType2::read(reader, client_version, length, flags, sequence, account, account_to_login_as)?;
                 Ok(Self::Type2(variant_struct))
-            }
+            },
             NetAuthType::GlsTicket => {
-                let variant_struct = LoginRequestHeaderType40000002::read(
-                    reader,
-                    client_version,
-                    length,
-                    flags,
-                    sequence,
-                    account,
-                    account_to_login_as,
-                )?;
+                let variant_struct = LoginRequestHeaderType40000002::read(reader, client_version, length, flags, sequence, account, account_to_login_as)?;
                 Ok(Self::Type40000002(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "auth_type", auth_type).into()),
         }
     }
@@ -2955,9 +2940,7 @@ impl crate::readers::ACDataType for EchoResponseHeader {
 
 impl crate::readers::ACDataType for ACBaseQualities {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = Ok::<_, Box<dyn std::error::Error>>(ACBaseQualitiesFlags::from_bits_retain(
-            read_u32(reader)?,
-        ))?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(ACBaseQualitiesFlags::from_bits_retain(read_u32(reader)?))?;
         let weenie_type = WeenieType::try_from(read_u32(reader)?)?;
         let mut int_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INT.bits()) != 0 {
@@ -2985,15 +2968,11 @@ impl crate::readers::ACDataType for ACBaseQualities {
         }
         let mut instance_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_INSTANCE_ID.bits()) != 0 {
-            instance_properties = Some(read_packable_hash_table::<PropertyInstanceId, ObjectId>(
-                reader,
-            )?);
+            instance_properties = Some(read_packable_hash_table::<PropertyInstanceId, ObjectId>(reader)?);
         }
         let mut position_properties = None;
         if (flags.bits() & ACBaseQualitiesFlags::PROPERTY_POSITION.bits()) != 0 {
-            position_properties = Some(read_packable_hash_table::<PropertyPosition, Position>(
-                reader,
-            )?);
+            position_properties = Some(read_packable_hash_table::<PropertyPosition, Position>(reader)?);
         }
 
         Ok(Self {
@@ -3013,9 +2992,7 @@ impl crate::readers::ACDataType for ACBaseQualities {
 
 impl crate::readers::ACDataType for ACQualities {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = Ok::<_, Box<dyn std::error::Error>>(ACQualitiesFlags::from_bits_retain(
-            read_u32(reader)?,
-        ))?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(ACQualitiesFlags::from_bits_retain(read_u32(reader)?))?;
         let has_health = read_bool(reader)?;
         let mut attributes = None;
         if (flags.bits() & ACQualitiesFlags::ATTRIBUTES.bits()) != 0 {
@@ -3031,9 +3008,7 @@ impl crate::readers::ACDataType for ACQualities {
         }
         let mut spell_book = None;
         if (flags.bits() & ACQualitiesFlags::SPELL_BOOK.bits()) != 0 {
-            spell_book = Some(read_packable_hash_table::<LayeredSpellId, SpellBookPage>(
-                reader,
-            )?);
+            spell_book = Some(read_packable_hash_table::<LayeredSpellId, SpellBookPage>(reader)?);
         }
         let mut enchantments = None;
         if (flags.bits() & ACQualitiesFlags::ENCHANTMENTS.bits()) != 0 {
@@ -3161,7 +3136,10 @@ impl crate::readers::ACDataType for SecondaryAttributeInfo {
         let attribute = AttributeInfo::read(reader)?;
         let current = read_u32(reader)?;
 
-        Ok(Self { attribute, current })
+        Ok(Self {
+            attribute,
+            current,
+        })
     }
 }
 
@@ -3191,15 +3169,16 @@ impl crate::readers::ACDataType for Body {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let body_parts = read_packable_hash_table::<u32, BodyPart>(reader)?;
 
-        Ok(Self { body_parts })
+        Ok(Self {
+            body_parts,
+        })
     }
 }
 
 impl crate::readers::ACDataType for BodyPart {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let has_bpsd = read_i32(reader)?;
-        let damage_type =
-            Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
+        let damage_type = Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
         let damage_val = read_i32(reader)?;
         let damage_var = read_i32(reader)?;
         let armor_cache = ArmorCache::read(reader)?;
@@ -3285,16 +3264,8 @@ impl crate::readers::ACDataType for SpellBookPage {
         let mut casting_likelihood2 = None;
         let mut unknown = None;
         if casting_likelihood < 2.0 {
-            casting_likelihood2 = if casting_likelihood < 2.0 {
-                read_f32(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
-            unknown = if casting_likelihood < 2.0 {
-                read_i32(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            casting_likelihood2 = if casting_likelihood < 2.0 { read_f32(reader).map(Some) } else { Ok(None) }?;
+            unknown = if casting_likelihood < 2.0 { read_i32(reader).map(Some) } else { Ok(None) }?;
         }
 
         Ok(Self {
@@ -3307,9 +3278,7 @@ impl crate::readers::ACDataType for SpellBookPage {
 
 impl crate::readers::ACDataType for EnchantmentRegistry {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = Ok::<_, Box<dyn std::error::Error>>(
-            EnchantmentRegistryFlags::from_bits_retain(read_u32(reader)?),
-        )?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(EnchantmentRegistryFlags::from_bits_retain(read_u32(reader)?))?;
         let mut life_spells = None;
         if (flags.bits() & EnchantmentRegistryFlags::LIFE_SPELLS.bits()) != 0 {
             life_spells = Some(read_packable_list::<Enchantment>(reader)?);
@@ -3352,11 +3321,7 @@ impl crate::readers::ACDataType for Enchantment {
         let stat_mod = StatMod::read(reader)?;
         let mut equipment_set = None;
         if has_equipment_set > 0 {
-            equipment_set = if has_equipment_set > 0 {
-                EquipmentSet::try_from(read_u32(reader)?).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            equipment_set = if has_equipment_set > 0 { EquipmentSet::try_from(read_u32(reader)?).map(Some) } else { Ok(None) }?;
         }
 
         Ok(Self {
@@ -3378,13 +3343,15 @@ impl crate::readers::ACDataType for Enchantment {
 
 impl crate::readers::ACDataType for StatMod {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let type_ = Ok::<_, Box<dyn std::error::Error>>(EnchantmentTypeFlags::from_bits_retain(
-            read_u32(reader)?,
-        ))?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(EnchantmentTypeFlags::from_bits_retain(read_u32(reader)?))?;
         let key = read_u32(reader)?;
         let value = read_f32(reader)?;
 
-        Ok(Self { type_, key, value })
+        Ok(Self {
+            type_,
+            key,
+            value,
+        })
     }
 }
 
@@ -3392,7 +3359,9 @@ impl crate::readers::ACDataType for EventFilter {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let events = read_packable_list::<u32>(reader)?;
 
-        Ok(Self { events })
+        Ok(Self {
+            events,
+        })
     }
 }
 
@@ -3400,7 +3369,9 @@ impl crate::readers::ACDataType for EmoteTable {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let emotes = read_packable_hash_table::<EmoteCategory, EmoteSetList>(reader)?;
 
-        Ok(Self { emotes })
+        Ok(Self {
+            emotes,
+        })
     }
 }
 
@@ -3408,17 +3379,15 @@ impl crate::readers::ACDataType for EmoteSetList {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let emotes = read_packable_list::<EmoteSet>(reader)?;
 
-        Ok(Self { emotes })
+        Ok(Self {
+            emotes,
+        })
     }
 }
 
 impl EmoteSetType1 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        probability: float,
-        emotes: PackableList<Emote>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let class_id = read_u32(reader)?;
 
         Ok(Self {
@@ -3431,11 +3400,7 @@ impl EmoteSetType1 {
 
 impl EmoteSetType2 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        probability: float,
-        emotes: PackableList<Emote>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let vendor_type = read_u32(reader)?;
 
         Ok(Self {
@@ -3448,11 +3413,7 @@ impl EmoteSetType2 {
 
 impl EmoteSetType5 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        probability: float,
-        emotes: PackableList<Emote>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let style = read_u32(reader)?;
         let substyle = read_u32(reader)?;
 
@@ -3467,11 +3428,7 @@ impl EmoteSetType5 {
 
 impl EmoteSetTypeC {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        probability: float,
-        emotes: PackableList<Emote>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let quest = read_string(reader)?;
 
         Ok(Self {
@@ -3484,11 +3441,7 @@ impl EmoteSetTypeC {
 
 impl EmoteSetTypeF {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        probability: float,
-        emotes: PackableList<Emote>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, probability: float, emotes: PackableList<Emote>) -> Result<Self, Box<dyn std::error::Error>> {
         let min_health = read_f32(reader)?;
         let max_health = read_f32(reader)?;
 
@@ -3511,38 +3464,23 @@ impl EmoteSet {
             EmoteCategory::RefuseEmoteCategory | EmoteCategory::GiveEmoteCategory => {
                 let variant_struct = EmoteSetType1::read(reader, probability, emotes)?;
                 Ok(Self::Type1(variant_struct))
-            }
+            },
             EmoteCategory::VendorEmoteCategory => {
                 let variant_struct = EmoteSetType2::read(reader, probability, emotes)?;
                 Ok(Self::Type2(variant_struct))
-            }
+            },
             EmoteCategory::HeartBeatEmoteCategory => {
                 let variant_struct = EmoteSetType5::read(reader, probability, emotes)?;
                 Ok(Self::Type5(variant_struct))
-            }
-            EmoteCategory::QuestSuccessEmoteCategory
-            | EmoteCategory::QuestFailureEmoteCategory
-            | EmoteCategory::TestSuccessEmoteCategory
-            | EmoteCategory::TestFailureEmoteCategory
-            | EmoteCategory::EventSuccessEmoteCategory
-            | EmoteCategory::EventFailureEmoteCategory
-            | EmoteCategory::TestNoQualityEmoteCategory
-            | EmoteCategory::QuestNoFellowEmoteCategory
-            | EmoteCategory::TestNoFellowEmoteCategory
-            | EmoteCategory::GotoSetEmoteCategory
-            | EmoteCategory::NumFellowsSuccessEmoteCategory
-            | EmoteCategory::NumFellowsFailureEmoteCategory
-            | EmoteCategory::NumCharacterTitlesSuccessEmoteCategory
-            | EmoteCategory::NumCharacterTitlesFailureEmoteCategory
-            | EmoteCategory::ReceiveLocalSignalEmoteCategory
-            | EmoteCategory::ReceiveTalkDirectEmoteCategory => {
+            },
+            EmoteCategory::QuestSuccessEmoteCategory | EmoteCategory::QuestFailureEmoteCategory | EmoteCategory::TestSuccessEmoteCategory | EmoteCategory::TestFailureEmoteCategory | EmoteCategory::EventSuccessEmoteCategory | EmoteCategory::EventFailureEmoteCategory | EmoteCategory::TestNoQualityEmoteCategory | EmoteCategory::QuestNoFellowEmoteCategory | EmoteCategory::TestNoFellowEmoteCategory | EmoteCategory::GotoSetEmoteCategory | EmoteCategory::NumFellowsSuccessEmoteCategory | EmoteCategory::NumFellowsFailureEmoteCategory | EmoteCategory::NumCharacterTitlesSuccessEmoteCategory | EmoteCategory::NumCharacterTitlesFailureEmoteCategory | EmoteCategory::ReceiveLocalSignalEmoteCategory | EmoteCategory::ReceiveTalkDirectEmoteCategory => {
                 let variant_struct = EmoteSetTypeC::read(reader, probability, emotes)?;
                 Ok(Self::TypeC(variant_struct))
-            }
+            },
             EmoteCategory::WoundedTauntEmoteCategory => {
                 let variant_struct = EmoteSetTypeF::read(reader, probability, emotes)?;
                 Ok(Self::TypeF(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "category", category).into()),
         }
     }
@@ -3556,11 +3494,7 @@ impl crate::readers::ACDataType for EmoteSet {
 
 impl EmoteType1 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
 
         Ok(Self {
@@ -3573,11 +3507,7 @@ impl EmoteType1 {
 
 impl EmoteType2 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount64 = read_u64(reader)?;
         let hero_xp64 = read_u64(reader)?;
 
@@ -3592,11 +3522,7 @@ impl EmoteType2 {
 
 impl EmoteType3 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let c_profile = CreationProfile::read(reader)?;
 
         Ok(Self {
@@ -3609,11 +3535,7 @@ impl EmoteType3 {
 
 impl EmoteType4 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let frame = Frame::read(reader)?;
 
         Ok(Self {
@@ -3626,11 +3548,7 @@ impl EmoteType4 {
 
 impl EmoteType5 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let motion = read_u32(reader)?;
 
         Ok(Self {
@@ -3643,11 +3561,7 @@ impl EmoteType5 {
 
 impl EmoteType7 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let physics_script = read_u32(reader)?;
 
         Ok(Self {
@@ -3660,11 +3574,7 @@ impl EmoteType7 {
 
 impl EmoteType9 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let sound = read_u32(reader)?;
 
         Ok(Self {
@@ -3677,11 +3587,7 @@ impl EmoteType9 {
 
 impl EmoteTypeE {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let spell_id = read_u32(reader)?;
 
         Ok(Self {
@@ -3694,11 +3600,7 @@ impl EmoteTypeE {
 
 impl EmoteType1C {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount = read_u32(reader)?;
         let stat = read_u32(reader)?;
 
@@ -3713,11 +3615,7 @@ impl EmoteType1C {
 
 impl EmoteType1E {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let min = read_u32(reader)?;
         let max = read_u32(reader)?;
@@ -3734,11 +3632,7 @@ impl EmoteType1E {
 
 impl EmoteType20 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let amount = read_u32(reader)?;
 
@@ -3753,11 +3647,7 @@ impl EmoteType20 {
 
 impl EmoteType22 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount = read_u32(reader)?;
 
         Ok(Self {
@@ -3770,11 +3660,7 @@ impl EmoteType22 {
 
 impl EmoteType23 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let stat = read_u32(reader)?;
 
@@ -3789,11 +3675,7 @@ impl EmoteType23 {
 
 impl EmoteType24 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let min = read_u32(reader)?;
         let max = read_u32(reader)?;
@@ -3812,11 +3694,7 @@ impl EmoteType24 {
 
 impl EmoteType25 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let f_min = read_f64(reader)?;
         let f_max = read_f64(reader)?;
@@ -3835,11 +3713,7 @@ impl EmoteType25 {
 
 impl EmoteType26 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let test_string = read_string(reader)?;
         let stat = read_u32(reader)?;
@@ -3856,11 +3730,7 @@ impl EmoteType26 {
 
 impl EmoteType31 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let percent = read_f64(reader)?;
         let min64 = read_u64(reader)?;
         let max64 = read_u64(reader)?;
@@ -3877,11 +3747,7 @@ impl EmoteType31 {
 
 impl EmoteType32 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
         let percent = read_f64(reader)?;
         let min = read_u32(reader)?;
@@ -3902,11 +3768,7 @@ impl EmoteType32 {
 
 impl EmoteType35 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
         let amount = read_u32(reader)?;
 
@@ -3921,11 +3783,7 @@ impl EmoteType35 {
 
 impl EmoteType38 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let wealth_rating = read_i32(reader)?;
         let treasure_class = read_i32(reader)?;
         let treasure_type = read_i32(reader)?;
@@ -3942,11 +3800,7 @@ impl EmoteType38 {
 
 impl EmoteType3F {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let position = Position::read(reader)?;
 
         Ok(Self {
@@ -3959,11 +3813,7 @@ impl EmoteType3F {
 
 impl EmoteType4C {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let msg = read_string(reader)?;
         let c_profile = CreationProfile::read(reader)?;
 
@@ -3978,11 +3828,7 @@ impl EmoteType4C {
 
 impl EmoteType6E {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
 
         Ok(Self {
@@ -3995,11 +3841,7 @@ impl EmoteType6E {
 
 impl EmoteType70 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let amount64 = read_u64(reader)?;
 
         Ok(Self {
@@ -4012,11 +3854,7 @@ impl EmoteType70 {
 
 impl EmoteType72 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let message = read_string(reader)?;
         let min64 = read_u64(reader)?;
         let max64 = read_u64(reader)?;
@@ -4035,11 +3873,7 @@ impl EmoteType72 {
 
 impl EmoteType76 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        delay: float,
-        extent: float,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, delay: float, extent: float) -> Result<Self, Box<dyn std::error::Error>> {
         let stat = read_u32(reader)?;
         let percent = read_f64(reader)?;
 
@@ -4059,180 +3893,110 @@ impl Emote {
         let extent = read_f32(reader)?;
 
         match type_ {
-            EmoteType::ActEmoteType
-            | EmoteType::SayEmoteType
-            | EmoteType::TellEmoteType
-            | EmoteType::TextDirectEmoteType
-            | EmoteType::WorldBroadcastEmoteType
-            | EmoteType::LocalBroadcastEmoteType
-            | EmoteType::DirectBroadcastEmoteType
-            | EmoteType::UpdateQuestEmoteType
-            | EmoteType::InqQuestEmoteType
-            | EmoteType::StampQuestEmoteType
-            | EmoteType::StartEventEmoteType
-            | EmoteType::StopEventEmoteType
-            | EmoteType::BLogEmoteType
-            | EmoteType::AdminSpamEmoteType
-            | EmoteType::EraseQuestEmoteType
-            | EmoteType::InqEventEmoteType
-            | EmoteType::InqFellowQuestEmoteType
-            | EmoteType::UpdateFellowQuestEmoteType
-            | EmoteType::StampFellowQuestEmoteType
-            | EmoteType::TellFellowEmoteType
-            | EmoteType::FellowBroadcastEmoteType
-            | EmoteType::GotoEmoteType
-            | EmoteType::PopUpEmoteType
-            | EmoteType::UpdateMyQuestEmoteType
-            | EmoteType::InqMyQuestEmoteType
-            | EmoteType::StampMyQuestEmoteType
-            | EmoteType::EraseMyQuestEmoteType
-            | EmoteType::LocalSignalEmoteType
-            | EmoteType::InqContractsFullEmoteType => {
+            EmoteType::ActEmoteType | EmoteType::SayEmoteType | EmoteType::TellEmoteType | EmoteType::TextDirectEmoteType | EmoteType::WorldBroadcastEmoteType | EmoteType::LocalBroadcastEmoteType | EmoteType::DirectBroadcastEmoteType | EmoteType::UpdateQuestEmoteType | EmoteType::InqQuestEmoteType | EmoteType::StampQuestEmoteType | EmoteType::StartEventEmoteType | EmoteType::StopEventEmoteType | EmoteType::BLogEmoteType | EmoteType::AdminSpamEmoteType | EmoteType::EraseQuestEmoteType | EmoteType::InqEventEmoteType | EmoteType::InqFellowQuestEmoteType | EmoteType::UpdateFellowQuestEmoteType | EmoteType::StampFellowQuestEmoteType | EmoteType::TellFellowEmoteType | EmoteType::FellowBroadcastEmoteType | EmoteType::GotoEmoteType | EmoteType::PopUpEmoteType | EmoteType::UpdateMyQuestEmoteType | EmoteType::InqMyQuestEmoteType | EmoteType::StampMyQuestEmoteType | EmoteType::EraseMyQuestEmoteType | EmoteType::LocalSignalEmoteType | EmoteType::InqContractsFullEmoteType => {
                 let variant_struct = EmoteType1::read(reader, delay, extent)?;
                 Ok(Self::Type1(variant_struct))
-            }
+            },
             EmoteType::AwardXPEmoteType | EmoteType::AwardNoShareXPEmoteType => {
                 let variant_struct = EmoteType2::read(reader, delay, extent)?;
                 Ok(Self::Type2(variant_struct))
-            }
+            },
             EmoteType::GiveEmoteType | EmoteType::TakeItemsEmoteType => {
                 let variant_struct = EmoteType3::read(reader, delay, extent)?;
                 Ok(Self::Type3(variant_struct))
-            }
-            EmoteType::MoveHomeEmoteType
-            | EmoteType::MoveEmoteType
-            | EmoteType::TurnEmoteType
-            | EmoteType::MoveToPosEmoteType => {
+            },
+            EmoteType::MoveHomeEmoteType | EmoteType::MoveEmoteType | EmoteType::TurnEmoteType | EmoteType::MoveToPosEmoteType => {
                 let variant_struct = EmoteType4::read(reader, delay, extent)?;
                 Ok(Self::Type4(variant_struct))
-            }
+            },
             EmoteType::MotionEmoteType | EmoteType::ForceMotionEmoteType => {
                 let variant_struct = EmoteType5::read(reader, delay, extent)?;
                 Ok(Self::Type5(variant_struct))
-            }
+            },
             EmoteType::PhysScriptEmoteType => {
                 let variant_struct = EmoteType7::read(reader, delay, extent)?;
                 Ok(Self::Type7(variant_struct))
-            }
+            },
             EmoteType::SoundEmoteType => {
                 let variant_struct = EmoteType9::read(reader, delay, extent)?;
                 Ok(Self::Type9(variant_struct))
-            }
-            EmoteType::CastSpellEmoteType
-            | EmoteType::CastSpellInstantEmoteType
-            | EmoteType::TeachSpellEmoteType
-            | EmoteType::PetCastSpellOnOwnerEmoteType => {
+            },
+            EmoteType::CastSpellEmoteType | EmoteType::CastSpellInstantEmoteType | EmoteType::TeachSpellEmoteType | EmoteType::PetCastSpellOnOwnerEmoteType => {
                 let variant_struct = EmoteTypeE::read(reader, delay, extent)?;
                 Ok(Self::TypeE(variant_struct))
-            }
+            },
             EmoteType::AwardSkillXPEmoteType | EmoteType::AwardSkillPointsEmoteType => {
                 let variant_struct = EmoteType1C::read(reader, delay, extent)?;
                 Ok(Self::Type1C(variant_struct))
-            }
-            EmoteType::InqQuestSolvesEmoteType
-            | EmoteType::InqFellowNumEmoteType
-            | EmoteType::InqNumCharacterTitlesEmoteType
-            | EmoteType::InqMyQuestSolvesEmoteType => {
+            },
+            EmoteType::InqQuestSolvesEmoteType | EmoteType::InqFellowNumEmoteType | EmoteType::InqNumCharacterTitlesEmoteType | EmoteType::InqMyQuestSolvesEmoteType => {
                 let variant_struct = EmoteType1E::read(reader, delay, extent)?;
                 Ok(Self::Type1E(variant_struct))
-            }
-            EmoteType::DecrementQuestEmoteType
-            | EmoteType::IncrementQuestEmoteType
-            | EmoteType::SetQuestCompletionsEmoteType
-            | EmoteType::DecrementMyQuestEmoteType
-            | EmoteType::IncrementMyQuestEmoteType
-            | EmoteType::SetMyQuestCompletionsEmoteType
-            | EmoteType::InqPackSpaceEmoteType
-            | EmoteType::InqQuestBitsOnEmoteType
-            | EmoteType::InqQuestBitsOffEmoteType
-            | EmoteType::InqMyQuestBitsOnEmoteType
-            | EmoteType::InqMyQuestBitsOffEmoteType
-            | EmoteType::SetQuestBitsOnEmoteType
-            | EmoteType::SetQuestBitsOffEmoteType
-            | EmoteType::SetMyQuestBitsOnEmoteType
-            | EmoteType::SetMyQuestBitsOffEmoteType => {
+            },
+            EmoteType::DecrementQuestEmoteType | EmoteType::IncrementQuestEmoteType | EmoteType::SetQuestCompletionsEmoteType | EmoteType::DecrementMyQuestEmoteType | EmoteType::IncrementMyQuestEmoteType | EmoteType::SetMyQuestCompletionsEmoteType | EmoteType::InqPackSpaceEmoteType | EmoteType::InqQuestBitsOnEmoteType | EmoteType::InqQuestBitsOffEmoteType | EmoteType::InqMyQuestBitsOnEmoteType | EmoteType::InqMyQuestBitsOffEmoteType | EmoteType::SetQuestBitsOnEmoteType | EmoteType::SetQuestBitsOffEmoteType | EmoteType::SetMyQuestBitsOnEmoteType | EmoteType::SetMyQuestBitsOffEmoteType => {
                 let variant_struct = EmoteType20::read(reader, delay, extent)?;
                 Ok(Self::Type20(variant_struct))
-            }
-            EmoteType::AddCharacterTitleEmoteType
-            | EmoteType::AwardTrainingCreditsEmoteType
-            | EmoteType::InflictVitaePenaltyEmoteType
-            | EmoteType::RemoveVitaePenaltyEmoteType
-            | EmoteType::SetAltRacialSkillsEmoteType
-            | EmoteType::AddContractEmoteType
-            | EmoteType::RemoveContractEmoteType => {
+            },
+            EmoteType::AddCharacterTitleEmoteType | EmoteType::AwardTrainingCreditsEmoteType | EmoteType::InflictVitaePenaltyEmoteType | EmoteType::RemoveVitaePenaltyEmoteType | EmoteType::SetAltRacialSkillsEmoteType | EmoteType::AddContractEmoteType | EmoteType::RemoveContractEmoteType => {
                 let variant_struct = EmoteType22::read(reader, delay, extent)?;
                 Ok(Self::Type22(variant_struct))
-            }
-            EmoteType::InqBoolStatEmoteType
-            | EmoteType::InqSkillTrainedEmoteType
-            | EmoteType::InqSkillSpecializedEmoteType => {
+            },
+            EmoteType::InqBoolStatEmoteType | EmoteType::InqSkillTrainedEmoteType | EmoteType::InqSkillSpecializedEmoteType => {
                 let variant_struct = EmoteType23::read(reader, delay, extent)?;
                 Ok(Self::Type23(variant_struct))
-            }
-            EmoteType::InqIntStatEmoteType
-            | EmoteType::InqAttributeStatEmoteType
-            | EmoteType::InqRawAttributeStatEmoteType
-            | EmoteType::InqSecondaryAttributeStatEmoteType
-            | EmoteType::InqRawSecondaryAttributeStatEmoteType
-            | EmoteType::InqSkillStatEmoteType
-            | EmoteType::InqRawSkillStatEmoteType => {
+            },
+            EmoteType::InqIntStatEmoteType | EmoteType::InqAttributeStatEmoteType | EmoteType::InqRawAttributeStatEmoteType | EmoteType::InqSecondaryAttributeStatEmoteType | EmoteType::InqRawSecondaryAttributeStatEmoteType | EmoteType::InqSkillStatEmoteType | EmoteType::InqRawSkillStatEmoteType => {
                 let variant_struct = EmoteType24::read(reader, delay, extent)?;
                 Ok(Self::Type24(variant_struct))
-            }
+            },
             EmoteType::InqFloatStatEmoteType => {
                 let variant_struct = EmoteType25::read(reader, delay, extent)?;
                 Ok(Self::Type25(variant_struct))
-            }
+            },
             EmoteType::InqStringStatEmoteType | EmoteType::InqYesNoEmoteType => {
                 let variant_struct = EmoteType26::read(reader, delay, extent)?;
                 Ok(Self::Type26(variant_struct))
-            }
+            },
             EmoteType::AwardLevelProportionalXPEmoteType => {
                 let variant_struct = EmoteType31::read(reader, delay, extent)?;
                 Ok(Self::Type31(variant_struct))
-            }
+            },
             EmoteType::AwardLevelProportionalSkillXPEmoteType => {
                 let variant_struct = EmoteType32::read(reader, delay, extent)?;
                 Ok(Self::Type32(variant_struct))
-            }
-            EmoteType::SetIntStatEmoteType
-            | EmoteType::IncrementIntStatEmoteType
-            | EmoteType::DecrementIntStatEmoteType
-            | EmoteType::SetBoolStatEmoteType => {
+            },
+            EmoteType::SetIntStatEmoteType | EmoteType::IncrementIntStatEmoteType | EmoteType::DecrementIntStatEmoteType | EmoteType::SetBoolStatEmoteType => {
                 let variant_struct = EmoteType35::read(reader, delay, extent)?;
                 Ok(Self::Type35(variant_struct))
-            }
+            },
             EmoteType::CreateTreasureEmoteType => {
                 let variant_struct = EmoteType38::read(reader, delay, extent)?;
                 Ok(Self::Type38(variant_struct))
-            }
-            EmoteType::SetSanctuaryPositionEmoteType
-            | EmoteType::TeleportTargetEmoteType
-            | EmoteType::TeleportSelfEmoteType => {
+            },
+            EmoteType::SetSanctuaryPositionEmoteType | EmoteType::TeleportTargetEmoteType | EmoteType::TeleportSelfEmoteType => {
                 let variant_struct = EmoteType3F::read(reader, delay, extent)?;
                 Ok(Self::Type3F(variant_struct))
-            }
+            },
             EmoteType::InqOwnsItemsEmoteType => {
                 let variant_struct = EmoteType4C::read(reader, delay, extent)?;
                 Ok(Self::Type4C(variant_struct))
-            }
+            },
             EmoteType::UntrainSkillEmoteType | EmoteType::SetInt64StatEmoteType => {
                 let variant_struct = EmoteType6E::read(reader, delay, extent)?;
                 Ok(Self::Type6E(variant_struct))
-            }
+            },
             EmoteType::SpendLuminanceEmoteType | EmoteType::AwardLuminanceEmoteType => {
                 let variant_struct = EmoteType70::read(reader, delay, extent)?;
                 Ok(Self::Type70(variant_struct))
-            }
+            },
             EmoteType::InqInt64StatEmoteType => {
                 let variant_struct = EmoteType72::read(reader, delay, extent)?;
                 Ok(Self::Type72(variant_struct))
-            }
+            },
             EmoteType::SetFloatStatEmoteType => {
                 let variant_struct = EmoteType76::read(reader, delay, extent)?;
                 Ok(Self::Type76(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),
         }
     }
@@ -4288,11 +4052,7 @@ impl crate::readers::ACDataType for PageData {
         let ignore_author = read_bool(reader)?;
         let mut page_text = None;
         if text_included {
-            page_text = if text_included {
-                read_string(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            page_text = if text_included { read_string(reader).map(Some) } else { Ok(None) }?;
         }
 
         Ok(Self {
@@ -4334,7 +4094,9 @@ impl crate::readers::ACDataType for GeneratorTable {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let generators = read_packable_list::<GeneratorProfile>(reader)?;
 
-        Ok(Self { generators })
+        Ok(Self {
+            generators,
+        })
     }
 }
 
@@ -4374,7 +4136,9 @@ impl crate::readers::ACDataType for GeneratorRegistry {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let registry = read_packable_hash_table::<u32, GeneratorRegistryNode>(reader)?;
 
-        Ok(Self { registry })
+        Ok(Self {
+            registry,
+        })
     }
 }
 
@@ -4404,7 +4168,9 @@ impl crate::readers::ACDataType for GeneratorQueue {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let queue = read_packable_list::<GeneratorQueueNode>(reader)?;
 
-        Ok(Self { queue })
+        Ok(Self {
+            queue,
+        })
     }
 }
 
@@ -4413,7 +4179,10 @@ impl crate::readers::ACDataType for GeneratorQueueNode {
         let slot = read_u32(reader)?;
         let when = read_f64(reader)?;
 
-        Ok(Self { slot, when })
+        Ok(Self {
+            slot,
+            when,
+        })
     }
 }
 
@@ -4423,7 +4192,10 @@ impl WindowPropertyType1000007F {
         let unknown_j = read_u32(reader)?;
         let value_j = read_u64(reader)?;
 
-        Ok(Self { unknown_j, value_j })
+        Ok(Self {
+            unknown_j,
+            value_j,
+        })
     }
 }
 
@@ -4433,7 +4205,10 @@ impl WindowPropertyType10000086 {
         let unknown_i = read_u32(reader)?;
         let value_i = read_u32(reader)?;
 
-        Ok(Self { unknown_i, value_i })
+        Ok(Self {
+            unknown_i,
+            value_i,
+        })
     }
 }
 
@@ -4443,7 +4218,10 @@ impl WindowPropertyType10000087 {
         let unknown_h = read_u32(reader)?;
         let value_h = read_u32(reader)?;
 
-        Ok(Self { unknown_h, value_h })
+        Ok(Self {
+            unknown_h,
+            value_h,
+        })
     }
 }
 
@@ -4453,7 +4231,10 @@ impl WindowPropertyType10000088 {
         let unknown_f = read_u32(reader)?;
         let value_f = read_u32(reader)?;
 
-        Ok(Self { unknown_f, value_f })
+        Ok(Self {
+            unknown_f,
+            value_f,
+        })
     }
 }
 
@@ -4463,7 +4244,10 @@ impl WindowPropertyType10000089 {
         let unknown_e = read_u32(reader)?;
         let value_e = read_u32(reader)?;
 
-        Ok(Self { unknown_e, value_e })
+        Ok(Self {
+            unknown_e,
+            value_e,
+        })
     }
 }
 
@@ -4473,7 +4257,10 @@ impl WindowPropertyType1000008A {
         let unknown_d = read_u32(reader)?;
         let value_d = read_u8(reader)?;
 
-        Ok(Self { unknown_d, value_d })
+        Ok(Self {
+            unknown_d,
+            value_d,
+        })
     }
 }
 
@@ -4498,20 +4285,22 @@ impl WindowPropertyType1000008DTitleSourceVariant {
             0x00 => {
                 let string_id = read_u32(reader)?;
                 let file_id = read_u32(reader)?;
-                Ok(Self::Type0(
-                    WindowPropertyType1000008DTitleSourceVariantType0 { string_id, file_id },
-                ))
-            }
+                Ok(Self::Type0(WindowPropertyType1000008DTitleSourceVariantType0 {
+                    string_id,
+                    file_id,
+                }))
+            },
             0x01 => {
                 let value_a = read_wstring(reader).map(WString)?;
-                Ok(Self::Type1(
-                    WindowPropertyType1000008DTitleSourceVariantType1 { value_a },
-                ))
-            }
+                Ok(Self::Type1(WindowPropertyType1000008DTitleSourceVariantType1 {
+                    value_a,
+                }))
+            },
             _ => Err("Unknown nested switch value".into()),
         }
     }
 }
+
 
 impl WindowProperty {
     pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
@@ -4521,31 +4310,31 @@ impl WindowProperty {
             0x1000007F => {
                 let variant_struct = WindowPropertyType1000007F::read(reader)?;
                 Ok(Self::Type1000007F(variant_struct))
-            }
+            },
             0x10000086 => {
                 let variant_struct = WindowPropertyType10000086::read(reader)?;
                 Ok(Self::Type10000086(variant_struct))
-            }
+            },
             0x10000087 => {
                 let variant_struct = WindowPropertyType10000087::read(reader)?;
                 Ok(Self::Type10000087(variant_struct))
-            }
+            },
             0x10000088 => {
                 let variant_struct = WindowPropertyType10000088::read(reader)?;
                 Ok(Self::Type10000088(variant_struct))
-            }
+            },
             0x10000089 => {
                 let variant_struct = WindowPropertyType10000089::read(reader)?;
                 Ok(Self::Type10000089(variant_struct))
-            }
+            },
             0x1000008A => {
                 let variant_struct = WindowPropertyType1000008A::read(reader)?;
                 Ok(Self::Type1000008A(variant_struct))
-            }
+            },
             0x1000008D => {
                 let variant_struct = WindowPropertyType1000008D::read(reader)?;
                 Ok(Self::Type1000008D(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "key_a", key_a).into()),
         }
     }
@@ -4580,7 +4369,7 @@ impl WindowOption {
             0x1000008B => {
                 let variant_struct = WindowOptionType1000008B::read(reader)?;
                 Ok(Self::Type1000008B(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "type_a", type_a).into()),
         }
     }
@@ -4639,15 +4428,15 @@ impl OptionProperty {
             0x10000080 => {
                 let variant_struct = OptionPropertyType10000080::read(reader)?;
                 Ok(Self::Type10000080(variant_struct))
-            }
+            },
             0x10000081 => {
                 let variant_struct = OptionPropertyType10000081::read(reader)?;
                 Ok(Self::Type10000081(variant_struct))
-            }
+            },
             0x1000008C => {
                 let variant_struct = OptionPropertyType1000008C::read(reader)?;
                 Ok(Self::Type1000008C(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),
         }
     }
@@ -4679,9 +4468,7 @@ impl crate::readers::ACDataType for GameplayOptions {
 impl crate::readers::ACDataType for PlayerModule {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
-        let options = Ok::<_, Box<dyn std::error::Error>>(CharacterOptions1::from_bits_retain(
-            read_u32(reader)?,
-        ))?;
+        let options = Ok::<_, Box<dyn std::error::Error>>(CharacterOptions1::from_bits_retain(read_u32(reader)?))?;
         let mut shortcuts = None;
         if (flags & 0x00000001) != 0 {
             shortcuts = Some(read_packable_list::<ShortCutData>(reader)?);
@@ -4743,7 +4530,9 @@ impl crate::readers::ACDataType for ShortCutManager {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let shortcuts = read_packable_list::<ShortCutData>(reader)?;
 
-        Ok(Self { shortcuts })
+        Ok(Self {
+            shortcuts,
+        })
     }
 }
 
@@ -4765,7 +4554,9 @@ impl crate::readers::ACDataType for SpellTab {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let spells = read_packable_list::<LayeredSpellId>(reader)?;
 
-        Ok(Self { spells })
+        Ok(Self {
+            spells,
+        })
     }
 }
 
@@ -4784,10 +4575,8 @@ impl crate::readers::ACDataType for ContentProfile {
 impl crate::readers::ACDataType for InventoryPlacement {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
-        let location =
-            Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
-        let priority =
-            Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?;
+        let location = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
+        let priority = Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?;
 
         Ok(Self {
             object_id,
@@ -4843,11 +4632,7 @@ impl crate::readers::ACDataType for AllegianceHierarchy {
         let approved_vassal = read_i32(reader)?;
         let mut monarch_data = None;
         if record_count > 0 {
-            monarch_data = if record_count > 0 {
-                AllegianceData::read(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            monarch_data = if record_count > 0 { AllegianceData::read(reader).map(Some) } else { Ok(None) }?;
         }
         let records = read_vec::<AllegianceRecord>(reader, record_count as usize - 1)?;
 
@@ -4892,22 +4677,10 @@ impl crate::readers::ACDataType for AllegianceData {
         let mut allegiance_age = None;
         let time_online;
         if flags == 0x4 {
-            time_online = if flags == 0x4 {
-                read_u64(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            time_online = if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?;
         } else {
-            allegiance_age = if flags == 0x4 {
-                read_u32(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
-            time_online = if flags == 0x4 {
-                read_u64(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            allegiance_age = if flags == 0x4 { read_u32(reader).map(Some) } else { Ok(None) }?;
+            time_online = if flags == 0x4 { read_u64(reader).map(Some) } else { Ok(None) }?;
         }
         let name = read_string(reader)?;
 
@@ -4951,11 +4724,7 @@ impl crate::readers::ACDataType for FriendData {
 
 impl ItemProfileTypeNeg1 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        packed_amount: uint,
-        object_id: ObjectId,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, packed_amount: uint, object_id: ObjectId) -> Result<Self, Box<dyn std::error::Error>> {
         let weenie_description = PublicWeenieDesc::read(reader)?;
 
         Ok(Self {
@@ -4968,11 +4737,7 @@ impl ItemProfileTypeNeg1 {
 
 impl ItemProfileType1 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        packed_amount: uint,
-        object_id: ObjectId,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, packed_amount: uint, object_id: ObjectId) -> Result<Self, Box<dyn std::error::Error>> {
         let old_weenie_description = OldPublicWeenieDesc::read(reader)?;
 
         Ok(Self {
@@ -4995,11 +4760,11 @@ impl ItemProfile {
             -1 => {
                 let variant_struct = ItemProfileTypeNeg1::read(reader, packed_amount, object_id)?;
                 Ok(Self::TypeNeg1(variant_struct))
-            }
+            },
             0x01 => {
                 let variant_struct = ItemProfileType1::read(reader, packed_amount, object_id)?;
                 Ok(Self::Type1(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "pwd_type", pwd_type).into()),
         }
     }
@@ -5017,11 +4782,8 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         let name = read_string(reader)?;
         let weenie_class_id = PackedDWORD::read(reader)?;
         let icon = PackedDWORD::read(reader)?;
-        let type_ =
-            Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
-        let behavior = Ok::<_, Box<dyn std::error::Error>>(
-            ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?),
-        )?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
+        let behavior = Ok::<_, Box<dyn std::error::Error>>(ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?))?;
         align_dword(reader)?;
         let mut header2 = None;
         if (behavior.bits() & 0x04000000) != 0 {
@@ -5041,9 +4803,7 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         }
         let mut ammunition_type = None;
         if (header & 0x00000100) != 0 {
-            ammunition_type = Some(Ok::<_, Box<dyn std::error::Error>>(
-                AmmoType::from_bits_retain(read_u16(reader)?),
-            )?);
+            ammunition_type = Some(Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut value = None;
         if (header & 0x00000008) != 0 {
@@ -5051,9 +4811,7 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         }
         let mut useability = None;
         if (header & 0x00000010) != 0 {
-            useability = Some(Ok::<_, Box<dyn std::error::Error>>(
-                Usable::from_bits_retain(read_u32(reader)?),
-            )?);
+            useability = Some(Ok::<_, Box<dyn std::error::Error>>(Usable::from_bits_retain(read_u32(reader)?))?);
         }
         let mut use_radius = None;
         if (header & 0x00000020) != 0 {
@@ -5061,15 +4819,11 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         }
         let mut target_type = None;
         if (header & 0x00080000) != 0 {
-            target_type = Some(Ok::<_, Box<dyn std::error::Error>>(
-                ItemType::from_bits_retain(read_u32(reader)?),
-            )?);
+            target_type = Some(Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?);
         }
         let mut effects = None;
         if (header & 0x00000080) != 0 {
-            effects = Some(Ok::<_, Box<dyn std::error::Error>>(
-                IconHighlight::from_bits_retain(read_u32(reader)?),
-            )?);
+            effects = Some(Ok::<_, Box<dyn std::error::Error>>(IconHighlight::from_bits_retain(read_u32(reader)?))?);
         }
         let mut combat_use = None;
         if (header & 0x00000200) != 0 {
@@ -5101,21 +4855,15 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         }
         let mut valid_slots = None;
         if (header & 0x00010000) != 0 {
-            valid_slots = Some(Ok::<_, Box<dyn std::error::Error>>(
-                EquipMask::from_bits_retain(read_u32(reader)?),
-            )?);
+            valid_slots = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut slot = None;
         if (header & 0x00020000) != 0 {
-            slot = Some(Ok::<_, Box<dyn std::error::Error>>(
-                EquipMask::from_bits_retain(read_u32(reader)?),
-            )?);
+            slot = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut priority = None;
         if (header & 0x00040000) != 0 {
-            priority = Some(Ok::<_, Box<dyn std::error::Error>>(
-                CoverageMask::from_bits_retain(read_u32(reader)?),
-            )?);
+            priority = Some(Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut blip_color = None;
         if (header & 0x00100000) != 0 {
@@ -5151,9 +4899,7 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         }
         let mut hook_item_types = None;
         if (header & 0x20000000) != 0 {
-            hook_item_types = Some(Ok::<_, Box<dyn std::error::Error>>(
-                HookType::from_bits_retain(read_u16(reader)?),
-            )?);
+            hook_item_types = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut monarch_id = None;
         if (header & 0x00000040) != 0 {
@@ -5161,9 +4907,7 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         }
         let mut hook_type = None;
         if (header & 0x10000000) != 0 {
-            hook_type = Some(Ok::<_, Box<dyn std::error::Error>>(
-                HookType::from_bits_retain(read_u16(reader)?),
-            )?);
+            hook_type = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut icon_overlay = None;
         if (header & 0x40000000) != 0 {
@@ -5261,11 +5005,8 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
         let name = read_string(reader)?;
         let weenie_class_id = PackedDWORD::read(reader)?;
         let icon = PackedDWORD::read(reader)?;
-        let type_ =
-            Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
-        let bitfield = Ok::<_, Box<dyn std::error::Error>>(
-            ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?),
-        )?;
+        let type_ = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
+        let bitfield = Ok::<_, Box<dyn std::error::Error>>(ObjectDescriptionFlag::from_bits_retain(read_u32(reader)?))?;
         let mut plural_name = None;
         if (header & 0x00000001) != 0 {
             plural_name = Some(read_string(reader)?);
@@ -5284,9 +5025,7 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
         }
         let mut useability = None;
         if (header & 0x00000010) != 0 {
-            useability = Some(Ok::<_, Box<dyn std::error::Error>>(
-                Usable::from_bits_retain(read_u32(reader)?),
-            )?);
+            useability = Some(Ok::<_, Box<dyn std::error::Error>>(Usable::from_bits_retain(read_u32(reader)?))?);
         }
         let mut use_radius = None;
         if (header & 0x00000020) != 0 {
@@ -5294,21 +5033,15 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
         }
         let mut t_target_type = None;
         if (header & 0x00080000) != 0 {
-            t_target_type = Some(Ok::<_, Box<dyn std::error::Error>>(
-                ItemType::from_bits_retain(read_u32(reader)?),
-            )?);
+            t_target_type = Some(Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?);
         }
         let mut effects = None;
         if (header & 0x00000080) != 0 {
-            effects = Some(Ok::<_, Box<dyn std::error::Error>>(
-                IconHighlight::from_bits_retain(read_u32(reader)?),
-            )?);
+            effects = Some(Ok::<_, Box<dyn std::error::Error>>(IconHighlight::from_bits_retain(read_u32(reader)?))?);
         }
         let mut ammunition_type = None;
         if (header & 0x00000100) != 0 {
-            ammunition_type = Some(Ok::<_, Box<dyn std::error::Error>>(
-                AmmoType::from_bits_retain(read_u16(reader)?),
-            )?);
+            ammunition_type = Some(Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut combat_use = None;
         if (header & 0x00000200) != 0 {
@@ -5340,21 +5073,15 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
         }
         let mut valid_slots = None;
         if (header & 0x00010000) != 0 {
-            valid_slots = Some(Ok::<_, Box<dyn std::error::Error>>(
-                EquipMask::from_bits_retain(read_u32(reader)?),
-            )?);
+            valid_slots = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut slots = None;
         if (header & 0x00020000) != 0 {
-            slots = Some(Ok::<_, Box<dyn std::error::Error>>(
-                EquipMask::from_bits_retain(read_u32(reader)?),
-            )?);
+            slots = Some(Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut priority = None;
         if (header & 0x00040000) != 0 {
-            priority = Some(Ok::<_, Box<dyn std::error::Error>>(
-                CoverageMask::from_bits_retain(read_u32(reader)?),
-            )?);
+            priority = Some(Ok::<_, Box<dyn std::error::Error>>(CoverageMask::from_bits_retain(read_u32(reader)?))?);
         }
         let mut blip_color = None;
         if (header & 0x00100000) != 0 {
@@ -5390,15 +5117,11 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
         }
         let mut hook_type = None;
         if (header & 0x10000000) != 0 {
-            hook_type = Some(Ok::<_, Box<dyn std::error::Error>>(
-                HookType::from_bits_retain(read_u16(reader)?),
-            )?);
+            hook_type = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut hook_item_types = None;
         if (header & 0x20000000) != 0 {
-            hook_item_types = Some(Ok::<_, Box<dyn std::error::Error>>(
-                HookType::from_bits_retain(read_u16(reader)?),
-            )?);
+            hook_item_types = Some(Ok::<_, Box<dyn std::error::Error>>(HookType::from_bits_retain(read_u16(reader)?))?);
         }
         let mut monarch_id = None;
         if (header & 0x00000040) != 0 {
@@ -5630,9 +5353,7 @@ impl crate::readers::ACDataType for AutonomousPositionPack {
 
 impl crate::readers::ACDataType for PositionPack {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = Ok::<_, Box<dyn std::error::Error>>(PositionFlags::from_bits_retain(
-            read_u32(reader)?,
-        ))?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(PositionFlags::from_bits_retain(read_u32(reader)?))?;
         let origin = Origin::read(reader)?;
         let mut w_quat = None;
         if (flags.bits() & 0x00000008) != 0 {
@@ -5682,20 +5403,9 @@ impl crate::readers::ACDataType for PositionPack {
 
 impl MovementDataType0 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        object_movement_sequence: ushort,
-        object_server_control_sequence: ushort,
-        autonomous: ushort,
-        option_flags: MovementOption,
-        stance: StanceMode,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let state = InterpretedMotionState::read(reader)?;
-        let sticky_object = if (option_flags.clone() as u32 & 0x01) != 0 {
-            ObjectId::read(reader).map(Some)
-        } else {
-            Ok(None)
-        }?;
+        let sticky_object = if (option_flags.clone() as u32 & 0x01) != 0 { ObjectId::read(reader).map(Some) } else { Ok(None) }?;
 
         Ok(Self {
             object_movement_sequence,
@@ -5711,14 +5421,7 @@ impl MovementDataType0 {
 
 impl MovementDataType6 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        object_movement_sequence: ushort,
-        object_server_control_sequence: ushort,
-        autonomous: ushort,
-        option_flags: MovementOption,
-        stance: StanceMode,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let target = ObjectId::read(reader)?;
         let origin = Origin::read(reader)?;
         let move_to_params = MoveToMovementParameters::read(reader)?;
@@ -5740,14 +5443,7 @@ impl MovementDataType6 {
 
 impl MovementDataType7 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        object_movement_sequence: ushort,
-        object_server_control_sequence: ushort,
-        autonomous: ushort,
-        option_flags: MovementOption,
-        stance: StanceMode,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let origin = Origin::read(reader)?;
         let move_to_params = MoveToMovementParameters::read(reader)?;
         let my_run_rate = read_f32(reader)?;
@@ -5767,14 +5463,7 @@ impl MovementDataType7 {
 
 impl MovementDataType8 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        object_movement_sequence: ushort,
-        object_server_control_sequence: ushort,
-        autonomous: ushort,
-        option_flags: MovementOption,
-        stance: StanceMode,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let target_id = ObjectId::read(reader)?;
         let desired_heading = read_f32(reader)?;
         let turn_to_params = TurnToMovementParameters::read(reader)?;
@@ -5794,14 +5483,7 @@ impl MovementDataType8 {
 
 impl MovementDataType9 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        object_movement_sequence: ushort,
-        object_server_control_sequence: ushort,
-        autonomous: ushort,
-        option_flags: MovementOption,
-        stance: StanceMode,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, object_movement_sequence: ushort, object_server_control_sequence: ushort, autonomous: ushort, option_flags: MovementOption, stance: StanceMode) -> Result<Self, Box<dyn std::error::Error>> {
         let turn_to_params = TurnToMovementParameters::read(reader)?;
 
         Ok(Self {
@@ -5826,60 +5508,25 @@ impl MovementData {
 
         match movement_type {
             MovementType::InterpretedMotionState => {
-                let variant_struct = MovementDataType0::read(
-                    reader,
-                    object_movement_sequence,
-                    object_server_control_sequence,
-                    autonomous,
-                    option_flags,
-                    stance,
-                )?;
+                let variant_struct = MovementDataType0::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type0(variant_struct))
-            }
+            },
             MovementType::MoveToObject => {
-                let variant_struct = MovementDataType6::read(
-                    reader,
-                    object_movement_sequence,
-                    object_server_control_sequence,
-                    autonomous,
-                    option_flags,
-                    stance,
-                )?;
+                let variant_struct = MovementDataType6::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type6(variant_struct))
-            }
+            },
             MovementType::MoveToPosition => {
-                let variant_struct = MovementDataType7::read(
-                    reader,
-                    object_movement_sequence,
-                    object_server_control_sequence,
-                    autonomous,
-                    option_flags,
-                    stance,
-                )?;
+                let variant_struct = MovementDataType7::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type7(variant_struct))
-            }
+            },
             MovementType::TurnToObject => {
-                let variant_struct = MovementDataType8::read(
-                    reader,
-                    object_movement_sequence,
-                    object_server_control_sequence,
-                    autonomous,
-                    option_flags,
-                    stance,
-                )?;
+                let variant_struct = MovementDataType8::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type8(variant_struct))
-            }
+            },
             MovementType::TurnToPosition => {
-                let variant_struct = MovementDataType9::read(
-                    reader,
-                    object_movement_sequence,
-                    object_server_control_sequence,
-                    autonomous,
-                    option_flags,
-                    stance,
-                )?;
+                let variant_struct = MovementDataType9::read(reader, object_movement_sequence, object_server_control_sequence, autonomous, option_flags, stance)?;
                 Ok(Self::Type9(variant_struct))
-            }
+            },
         }
     }
 }
@@ -6001,11 +5648,7 @@ impl crate::readers::ACDataType for ObjDesc {
         let model_count = read_u8(reader)?;
         let mut palette = None;
         if palette_count > 0 {
-            palette = if palette_count > 0 {
-                DataId::read(reader).map(Some)
-            } else {
-                Ok(None)
-            }?;
+            palette = if palette_count > 0 { read_packed_dword(reader).map(DataId).map(Some) } else { Ok(None) }?;
         }
         let subpalettes = read_vec::<Subpalette>(reader, palette_count as usize)?;
         let tm_changes = read_vec::<TextureMapChange>(reader, texture_count as usize)?;
@@ -6027,7 +5670,7 @@ impl crate::readers::ACDataType for ObjDesc {
 
 impl crate::readers::ACDataType for Subpalette {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let palette = DataId::read(reader)?;
+        let palette = read_packed_dword(reader).map(DataId)?;
         let offset = read_u8(reader)?;
         let num_colors = read_u8(reader)?;
 
@@ -6042,8 +5685,8 @@ impl crate::readers::ACDataType for Subpalette {
 impl crate::readers::ACDataType for TextureMapChange {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let part_index = read_u8(reader)?;
-        let old_tex_id = DataId::read(reader)?;
-        let new_tex_id = DataId::read(reader)?;
+        let old_tex_id = read_packed_dword(reader).map(DataId)?;
+        let new_tex_id = read_packed_dword(reader).map(DataId)?;
 
         Ok(Self {
             part_index,
@@ -6056,7 +5699,7 @@ impl crate::readers::ACDataType for TextureMapChange {
 impl crate::readers::ACDataType for AnimPartChange {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let part_index = read_u8(reader)?;
-        let part_id = DataId::read(reader)?;
+        let part_id = read_packed_dword(reader).map(DataId)?;
 
         Ok(Self {
             part_index,
@@ -6169,18 +5812,19 @@ impl crate::readers::ACDataType for CharacterIdentity {
 impl crate::readers::ACDataType for EquipLocation {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let object_id = ObjectId::read(reader)?;
-        let slot =
-            Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
+        let slot = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
 
-        Ok(Self { object_id, slot })
+        Ok(Self {
+            object_id,
+            slot,
+        })
     }
 }
 
 impl crate::readers::ACDataType for PhysicsDesc {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let flags = read_u32(reader)?;
-        let state =
-            Ok::<_, Box<dyn std::error::Error>>(PhysicsState::from_bits_retain(read_u32(reader)?))?;
+        let state = Ok::<_, Box<dyn std::error::Error>>(PhysicsState::from_bits_retain(read_u32(reader)?))?;
         let mut movement_buffer = None;
         let mut autonomous = None;
         if (flags & 0x00010000) != 0 {
@@ -6321,14 +5965,16 @@ impl crate::readers::ACDataType for AdminPlayerData {
         let name = read_string(reader)?;
         let bookie_id = read_u32(reader)?;
 
-        Ok(Self { name, bookie_id })
+        Ok(Self {
+            name,
+            bookie_id,
+        })
     }
 }
 
 impl crate::readers::ACDataType for VendorProfile {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let categories =
-            Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
+        let categories = Ok::<_, Box<dyn std::error::Error>>(ItemType::from_bits_retain(read_u32(reader)?))?;
         let min_value = read_u32(reader)?;
         let max_value = read_u32(reader)?;
         let deals_magic = read_bool(reader)?;
@@ -6406,12 +6052,8 @@ impl crate::readers::ACDataType for CreatureAppraisalProfile {
         let mut attr_highlight = None;
         let mut attr_color = None;
         if (flags & 0x00000001) != 0 {
-            attr_highlight = Some(Ok::<_, Box<dyn std::error::Error>>(
-                AttributeMask::from_bits_retain(read_u16(reader)?),
-            )?);
-            attr_color = Some(Ok::<_, Box<dyn std::error::Error>>(
-                AttributeMask::from_bits_retain(read_u16(reader)?),
-            )?);
+            attr_highlight = Some(Ok::<_, Box<dyn std::error::Error>>(AttributeMask::from_bits_retain(read_u16(reader)?))?);
+            attr_color = Some(Ok::<_, Box<dyn std::error::Error>>(AttributeMask::from_bits_retain(read_u16(reader)?))?);
         }
 
         Ok(Self {
@@ -6436,8 +6078,7 @@ impl crate::readers::ACDataType for CreatureAppraisalProfile {
 
 impl crate::readers::ACDataType for WeaponProfile {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let damage_type =
-            Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
+        let damage_type = Ok::<_, Box<dyn std::error::Error>>(DamageType::from_bits_retain(read_u32(reader)?))?;
         let speed = read_u32(reader)?;
         let skill = SkillId::try_from(read_i32(reader)?)?;
         let damage = read_u32(reader)?;
@@ -6465,13 +6106,9 @@ impl crate::readers::ACDataType for WeaponProfile {
 
 impl crate::readers::ACDataType for HookAppraisalProfile {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
-        let flags = Ok::<_, Box<dyn std::error::Error>>(HookAppraisalFlags::from_bits_retain(
-            read_u32(reader)?,
-        ))?;
-        let valid_locations =
-            Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
-        let ammo_type =
-            Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?;
+        let flags = Ok::<_, Box<dyn std::error::Error>>(HookAppraisalFlags::from_bits_retain(read_u32(reader)?))?;
+        let valid_locations = Ok::<_, Box<dyn std::error::Error>>(EquipMask::from_bits_retain(read_u32(reader)?))?;
+        let ammo_type = Ok::<_, Box<dyn std::error::Error>>(AmmoType::from_bits_retain(read_u16(reader)?))?;
 
         Ok(Self {
             flags,
@@ -6613,11 +6250,7 @@ impl crate::readers::ACDataType for GuestInfo {
 
 impl GameMoveDataType4 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        player_id: ObjectId,
-        team: int,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, player_id: ObjectId, team: int) -> Result<Self, Box<dyn std::error::Error>> {
         let id_piece_to_move = read_i32(reader)?;
         let y_grid = read_i32(reader)?;
 
@@ -6632,11 +6265,7 @@ impl GameMoveDataType4 {
 
 impl GameMoveDataType5 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        player_id: ObjectId,
-        team: int,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, player_id: ObjectId, team: int) -> Result<Self, Box<dyn std::error::Error>> {
         let id_piece_to_move = read_i32(reader)?;
         let y_grid = read_i32(reader)?;
         let x_to = read_i32(reader)?;
@@ -6655,11 +6284,7 @@ impl GameMoveDataType5 {
 
 impl GameMoveDataType6 {
     #[allow(clippy::too_many_arguments)]
-    pub fn read(
-        reader: &mut dyn ACReader,
-        player_id: ObjectId,
-        team: int,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn read(reader: &mut dyn ACReader, player_id: ObjectId, team: int) -> Result<Self, Box<dyn std::error::Error>> {
         let id_piece_to_move = read_i32(reader)?;
 
         Ok(Self {
@@ -6680,15 +6305,15 @@ impl GameMoveData {
             0x04 => {
                 let variant_struct = GameMoveDataType4::read(reader, player_id, team)?;
                 Ok(Self::Type4(variant_struct))
-            }
+            },
             0x05 => {
                 let variant_struct = GameMoveDataType5::read(reader, player_id, team)?;
                 Ok(Self::Type5(variant_struct))
-            }
+            },
             0x06 => {
                 let variant_struct = GameMoveDataType6::read(reader, player_id, team)?;
                 Ok(Self::Type6(variant_struct))
-            }
+            },
             _ => Err(format!("Unknown {} value: {:?}", "type_", type_).into()),
         }
     }
@@ -6826,6 +6451,9 @@ impl crate::readers::ACDataType for ContractTrackerTable {
     fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {
         let contact_trackers = read_packable_hash_table::<u32, ContractTracker>(reader)?;
 
-        Ok(Self { contact_trackers })
+        Ok(Self {
+            contact_trackers,
+        })
     }
 }
+

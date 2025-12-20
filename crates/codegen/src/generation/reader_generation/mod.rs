@@ -110,14 +110,42 @@ pub fn generate_reader_impl(
 
     let Some(field_set) = &protocol_type.fields else {
         // Empty struct - no fields to read
-        let impl_code = format!(
-            "impl {} {{\n    pub fn read(_reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self {{}})\n    }}\n}}\n\n",
-            safe_type_name.name
-        );
-        let acdatatype_code = format!(
-            "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
-            safe_type_name.name, safe_type_name.name
-        );
+        // Special cases for variable-length packed types
+        let (impl_code, acdatatype_code) = match safe_type_name.name.as_str() {
+            "PackedDWORD" => {
+                let impl_code = format!(
+                    "impl {} {{\n    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        crate::readers::read_packed_dword(reader)?;\n        Ok(Self {{}})\n    }}\n}}\n\n",
+                    safe_type_name.name
+                );
+                let acdatatype_code = format!(
+                    "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+                    safe_type_name.name, safe_type_name.name
+                );
+                (impl_code, acdatatype_code)
+            }
+            "PackedWORD" => {
+                let impl_code = format!(
+                    "impl {} {{\n    pub fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        crate::readers::read_packed_word(reader)?;\n        Ok(Self {{}})\n    }}\n}}\n\n",
+                    safe_type_name.name
+                );
+                let acdatatype_code = format!(
+                    "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+                    safe_type_name.name, safe_type_name.name
+                );
+                (impl_code, acdatatype_code)
+            }
+            _ => {
+                let impl_code = format!(
+                    "impl {} {{\n    pub fn read(_reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        Ok(Self {{}})\n    }}\n}}\n\n",
+                    safe_type_name.name
+                );
+                let acdatatype_code = format!(
+                    "impl crate::readers::ACDataType for {} {{\n    fn read(reader: &mut dyn ACReader) -> Result<Self, Box<dyn std::error::Error>> {{\n        {}::read(reader)\n    }}\n}}\n\n",
+                    safe_type_name.name, safe_type_name.name
+                );
+                (impl_code, acdatatype_code)
+            }
+        };
         return format!("{}{}", impl_code, acdatatype_code);
     };
 

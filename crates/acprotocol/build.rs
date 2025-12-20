@@ -14,7 +14,6 @@ fn main() {
     if network_path.exists() {
         println!("cargo:rerun-if-changed={}", network_path.display());
     }
-
     // Use shared code generation workflow
     codegen::codegen::generate_and_write(workspace_root, &generated_dir)
         .expect("Code generation failed");
