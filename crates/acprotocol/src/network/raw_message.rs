@@ -53,9 +53,15 @@ where
         Err(e) => {
             // Serialize error information instead of panicking
             use serde::ser::SerializeMap;
-            let mut map = serializer.serialize_map(Some(2))?;
+            let mut map = serializer.serialize_map(Some(4))?;
             map.serialize_entry("error", &format!("{}", e))?;
             map.serialize_entry("opcode", &format!("0x{:04x}", opcode))?;
+
+            // Add debug info
+            let pos = cursor.position() as usize;
+            map.serialize_entry("buffer_position", &pos)?;
+            map.serialize_entry("total_size", &data.len())?;
+
             map.end()
         }
     }
