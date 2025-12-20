@@ -1,11 +1,30 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
+use serde::Serialize;
 use std::collections::HashMap;
 
 use acprotocol::cli::tui;
 use acprotocol::cli_helper::parse_opcode_filter;
 use acprotocol::network::pcap;
 use acprotocol::network::{FragmentAssembler, RawMessage};
+
+/// A simplified message representation showing only metadata and raw hex data
+#[derive(Serialize)]
+struct RawMessageOutput {
+    id: u32,
+    opcode: u32,
+    message_type: String,
+    direction: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    queue: Option<String>,
+    data_len: usize,
+    raw: String,
+    sequence: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    iteration: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    header_flags: Option<u32>,
+}
 
 #[derive(Parser)]
 #[command(name = "pcap")]
@@ -58,6 +77,10 @@ pub enum Commands {
         /// Show summary statistics
         #[arg(long)]
         summary: bool,
+
+        /// Print raw message data as hex instead of parsed content
+        #[arg(long)]
+        raw: bool,
     },
 
     /// Launch interactive TUI
@@ -128,6 +151,7 @@ fn output_messages(
     reverse: bool,
     limit: Option<usize>,
     output: OutputFormat,
+    raw: bool,
 ) {
     // Parse opcode filter if provided
     let opcode_filter: Option<u32> = filter_opcode.and_then(|s| parse_opcode_filter(s).ok());
@@ -181,26 +205,87 @@ fn output_messages(
         filtered.truncate(lim);
     }
 
-    match output {
-        OutputFormat::Jsonl => {
-            for msg in filtered {
-                println!("{}", serde_json::to_string(&msg).unwrap());
+    if raw {
+        match output {
+            OutputFormat::Jsonl => {
+                for msg in filtered {
+                    let raw_output = RawMessageOutput {
+                        id: msg.id,
+                        opcode: msg.opcode,
+                        message_type: msg.message_type.clone(),
+                        direction: msg.direction.clone(),
+                        queue: msg.queue.as_ref().map(|q| format!("{:?}", q)),
+                        data_len: msg.data.len(),
+                        raw: hex::encode(&msg.data),
+                        sequence: msg.sequence,
+                        iteration: msg.iteration,
+                        header_flags: msg.header_flags,
+                    };
+                    println!("{}", serde_json::to_string(&raw_output).unwrap());
+                }
+            }
+            OutputFormat::Json => {
+                let raw_outputs: Vec<_> = filtered
+                    .iter()
+                    .map(|msg| RawMessageOutput {
+                        id: msg.id,
+                        opcode: msg.opcode,
+                        message_type: msg.message_type.clone(),
+                        direction: msg.direction.clone(),
+                        queue: msg.queue.as_ref().map(|q| format!("{:?}", q)),
+                        data_len: msg.data.len(),
+                        raw: hex::encode(&msg.data),
+                        sequence: msg.sequence,
+                        iteration: msg.iteration,
+                        header_flags: msg.header_flags,
+                    })
+                    .collect();
+                println!("{}", serde_json::to_string_pretty(&raw_outputs).unwrap());
+            }
+            OutputFormat::Table => {
+                println!("{:>6}  {:40}  {:>6}  {:>10}  {:>6}  {}", "ID", "Type", "Dir", "OpCode", "Len", "Raw Data");
+                println!("{}", "-".repeat(140));
+                for msg in filtered {
+                    let hex_data = hex::encode(&msg.data);
+                    let truncated_hex = if hex_data.len() > 50 {
+                        format!("{}...", &hex_data[..50])
+                    } else {
+                        hex_data
+                    };
+                    println!(
+                        "{:>6}  {:40}  {:>6}  {:#06x}  {:>6}  {}",
+                        msg.id,
+                        truncate(&msg.message_type, 40),
+                        msg.direction,
+                        msg.opcode,
+                        msg.data.len(),
+                        truncated_hex
+                    );
+                }
             }
         }
-        OutputFormat::Json => {
-            println!("{}", serde_json::to_string_pretty(&filtered).unwrap());
-        }
-        OutputFormat::Table => {
-            println!("{:>6}  {:40}  {:>6}  {:>10}", "ID", "Type", "Dir", "OpCode");
-            println!("{}", "-".repeat(70));
-            for msg in filtered {
-                println!(
-                    "{:>6}  {:40}  {:>6}  {:#06x}",
-                    msg.id,
-                    truncate(&msg.message_type, 40),
-                    msg.direction,
-                    msg.opcode
-                );
+    } else {
+        match output {
+            OutputFormat::Jsonl => {
+                for msg in filtered {
+                    println!("{}", serde_json::to_string(&msg).unwrap());
+                }
+            }
+            OutputFormat::Json => {
+                println!("{}", serde_json::to_string_pretty(&filtered).unwrap());
+            }
+            OutputFormat::Table => {
+                println!("{:>6}  {:40}  {:>6}  {:>10}", "ID", "Type", "Dir", "OpCode");
+                println!("{}", "-".repeat(70));
+                for msg in filtered {
+                    println!(
+                        "{:>6}  {:40}  {:>6}  {:#06x}",
+                        msg.id,
+                        truncate(&msg.message_type, 40),
+                        msg.direction,
+                        msg.opcode
+                    );
+                }
             }
         }
     }
@@ -229,9 +314,9 @@ fn main() -> Result<()> {
             limit,
             output,
             summary,
+            raw,
         }) => {
             let file_path = file;
-            eprintln!("Parsing PCAP file: {}", file_path);
 
             // Load PCAP file and parse packets
             let mut assembler = FragmentAssembler::new();
@@ -253,26 +338,87 @@ fn main() -> Result<()> {
                 && limit.is_none()
             {
                 // If no filters are applied, print all messages (like the original cat command)
-                match output {
-                    OutputFormat::Jsonl => {
-                        for msg in &messages {
-                            println!("{}", serde_json::to_string(&msg).unwrap());
+                if raw {
+                    match output {
+                        OutputFormat::Jsonl => {
+                            for msg in &messages {
+                                let raw_output = RawMessageOutput {
+                                    id: msg.id,
+                                    opcode: msg.opcode,
+                                    message_type: msg.message_type.clone(),
+                                    direction: msg.direction.clone(),
+                                    queue: msg.queue.as_ref().map(|q| format!("{:?}", q)),
+                                    data_len: msg.data.len(),
+                                    raw: hex::encode(&msg.data),
+                                    sequence: msg.sequence,
+                                    iteration: msg.iteration,
+                                    header_flags: msg.header_flags,
+                                };
+                                println!("{}", serde_json::to_string(&raw_output).unwrap());
+                            }
+                        }
+                        OutputFormat::Json => {
+                            let raw_outputs: Vec<_> = messages
+                                .iter()
+                                .map(|msg| RawMessageOutput {
+                                    id: msg.id,
+                                    opcode: msg.opcode,
+                                    message_type: msg.message_type.clone(),
+                                    direction: msg.direction.clone(),
+                                    queue: msg.queue.as_ref().map(|q| format!("{:?}", q)),
+                                    data_len: msg.data.len(),
+                                    raw: hex::encode(&msg.data),
+                                    sequence: msg.sequence,
+                                    iteration: msg.iteration,
+                                    header_flags: msg.header_flags,
+                                })
+                                .collect();
+                            println!("{}", serde_json::to_string_pretty(&raw_outputs).unwrap());
+                        }
+                        OutputFormat::Table => {
+                            println!("{:>6}  {:40}  {:>6}  {:>10}  {:>6}  {}", "ID", "Type", "Dir", "OpCode", "Len", "Raw Data");
+                            println!("{}", "-".repeat(140));
+                            for msg in &messages {
+                                let hex_data = hex::encode(&msg.data);
+                                let truncated_hex = if hex_data.len() > 50 {
+                                    format!("{}...", &hex_data[..50])
+                                } else {
+                                    hex_data
+                                };
+                                println!(
+                                    "{:>6}  {:40}  {:>6}  {:#06x}  {:>6}  {}",
+                                    msg.id,
+                                    truncate(&msg.message_type, 40),
+                                    msg.direction,
+                                    msg.opcode,
+                                    msg.data.len(),
+                                    truncated_hex
+                                );
+                            }
                         }
                     }
-                    OutputFormat::Json => {
-                        println!("{}", serde_json::to_string_pretty(&messages).unwrap());
-                    }
-                    OutputFormat::Table => {
-                        println!("{:>6}  {:40}  {:>6}  {:>10}", "ID", "Type", "Dir", "OpCode");
-                        println!("{}", "-".repeat(70));
-                        for msg in &messages {
-                            println!(
-                                "{:>6}  {:40}  {:>6}  {:#06x}",
-                                msg.id,
-                                truncate(&msg.message_type, 40),
-                                msg.direction,
-                                msg.opcode
-                            );
+                } else {
+                    match output {
+                        OutputFormat::Jsonl => {
+                            for msg in &messages {
+                                println!("{}", serde_json::to_string(&msg).unwrap());
+                            }
+                        }
+                        OutputFormat::Json => {
+                            println!("{}", serde_json::to_string_pretty(&messages).unwrap());
+                        }
+                        OutputFormat::Table => {
+                            println!("{:>6}  {:40}  {:>6}  {:>10}", "ID", "Type", "Dir", "OpCode");
+                            println!("{}", "-".repeat(70));
+                            for msg in &messages {
+                                println!(
+                                    "{:>6}  {:40}  {:>6}  {:#06x}",
+                                    msg.id,
+                                    truncate(&msg.message_type, 40),
+                                    msg.direction,
+                                    msg.opcode
+                                );
+                            }
                         }
                     }
                 }
@@ -288,20 +434,18 @@ fn main() -> Result<()> {
                     reverse,
                     limit,
                     output,
+                    raw,
                 );
             }
         }
         Some(Commands::Tui { file }) => {
             // Launch the TUI
             let file_path = file;
-            eprintln!("Parsing PCAP file: {}", file_path);
 
             let path = std::path::Path::new(&file_path);
             tui::run(path)?;
         }
-        None => {
-            eprintln!("Use --help for available commands");
-        }
+        None => {}
     }
 
     Ok(())

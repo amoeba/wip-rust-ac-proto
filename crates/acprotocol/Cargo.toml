@@ -28,6 +28,7 @@ crossterm = { version = "0.28", optional = true }
 encoding_rs = "0.8"
 futures = { version = "0.3", optional = true }
 futures-util = { version = "0.3.31", optional = true }
+hex = "0.4"
 image = { version = "0.25.5", features = ["png"], optional = true }
 num-derive = "0.4.2"
 num_enum = { workspace = true }
