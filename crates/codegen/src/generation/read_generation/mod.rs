@@ -233,7 +233,9 @@ pub fn generate_field_group_reads(
                     // Add field-level tracing span
                     out.push_str("            #[cfg(feature = \"tracing\")]\n");
                     out.push_str(&format!("            let {} = {{\n", span_var));
-                    out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
+                    out.push_str(
+                        "                let pos = reader.stream_position().unwrap_or(0);\n",
+                    );
                     out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                     out.push_str("            };\n");
                     // For conditional fields, generate_read_call already handles optionality
@@ -255,7 +257,9 @@ pub fn generate_field_group_reads(
                     // Add field-level tracing span
                     out.push_str("            #[cfg(feature = \"tracing\")]\n");
                     out.push_str(&format!("            let {} = {{\n", span_var));
-                    out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
+                    out.push_str(
+                        "                let pos = reader.stream_position().unwrap_or(0);\n",
+                    );
                     out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                     out.push_str("            };\n");
                     // For fields that exist in both branches, read directly without wrapping in Some

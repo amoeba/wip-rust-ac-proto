@@ -304,17 +304,14 @@ fn truncate(s: &str, max_len: usize) -> String {
 
 #[cfg(feature = "tracing")]
 fn setup_tracing() {
-    use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+    use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
     tracing_subscriber::registry()
         .with(
             fmt::layer()
-                .with_span_events(fmt::format::FmtSpan::ENTER | fmt::format::FmtSpan::CLOSE)
+                .with_span_events(fmt::format::FmtSpan::ENTER | fmt::format::FmtSpan::CLOSE),
         )
-        .with(
-            EnvFilter::from_default_env()
-                .add_directive("acprotocol=trace".parse().unwrap())
-        )
+        .with(EnvFilter::from_default_env().add_directive("acprotocol=trace".parse().unwrap()))
         .init();
 }
 
