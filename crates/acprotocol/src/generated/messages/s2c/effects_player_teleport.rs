@@ -34,13 +34,13 @@ impl crate::readers::ACDataType for EffectsPlayerTeleport {
         #[cfg(feature = "tracing")]
         drop(_field_span_object_teleport_sequence);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             object_teleport_sequence,

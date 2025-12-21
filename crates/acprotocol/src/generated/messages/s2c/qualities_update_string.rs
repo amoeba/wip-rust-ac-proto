@@ -56,13 +56,13 @@ impl crate::readers::ACDataType for QualitiesUpdateString {
         #[cfg(feature = "tracing")]
         drop(_field_span_key);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
         #[cfg(feature = "tracing")]
         let _field_span_value = {
             let pos = reader.stream_position().unwrap_or(0);

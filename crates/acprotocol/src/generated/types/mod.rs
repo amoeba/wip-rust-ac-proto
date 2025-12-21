@@ -3121,13 +3121,13 @@ impl crate::readers::ACDataType for ReferralHeader {
         #[cfg(feature = "tracing")]
         drop(_field_span_id_server);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
         #[cfg(feature = "tracing")]
         let _field_span_unknown = {
             let pos = reader.stream_position().unwrap_or(0);
@@ -6078,13 +6078,13 @@ impl crate::readers::ACDataType for GameplayOptions {
         #[cfg(feature = "tracing")]
         drop(_field_span_option_properties);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             size,
@@ -6992,13 +6992,13 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
         #[cfg(feature = "tracing")]
         drop(_field_span_behavior);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
         let mut header2 = None;
         if (behavior.bits() & 0x04000000) != 0 {
             #[cfg(feature = "tracing")]
@@ -7407,13 +7407,13 @@ impl crate::readers::ACDataType for PublicWeenieDesc {
             drop(_field_span_pet_owner_id);
         }
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             header,
@@ -7916,13 +7916,13 @@ impl crate::readers::ACDataType for OldPublicWeenieDesc {
             drop(_field_span_material);
         }
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             header,
@@ -8086,13 +8086,13 @@ impl crate::readers::ACDataType for JumpPack {
         #[cfg(feature = "tracing")]
         drop(_field_span_object_force_position_sequence);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             extent,
@@ -8167,13 +8167,13 @@ impl crate::readers::ACDataType for MoveToStatePack {
         #[cfg(feature = "tracing")]
         drop(_field_span_contact);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             raw_motion_state,
@@ -8445,13 +8445,13 @@ impl crate::readers::ACDataType for AutonomousPositionPack {
         #[cfg(feature = "tracing")]
         drop(_field_span_contact);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             position,
@@ -8855,13 +8855,13 @@ impl crate::readers::ACDataType for InterpretedMotionState {
         #[cfg(feature = "tracing")]
         drop(_field_span_commands);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             flags,
@@ -9111,13 +9111,13 @@ impl crate::readers::ACDataType for ObjDesc {
         #[cfg(feature = "tracing")]
         drop(_field_span_ap_changes);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             version,
@@ -9629,13 +9629,13 @@ impl crate::readers::ACDataType for CharacterIdentity {
         #[cfg(feature = "tracing")]
         drop(_field_span_seconds_greyed_out);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             character_id,
@@ -9984,13 +9984,13 @@ impl crate::readers::ACDataType for PhysicsDesc {
         #[cfg(feature = "tracing")]
         drop(_field_span_object_instance_sequence);
         #[cfg(feature = "tracing")]
-        let _field_span___alignment_marker_align_dword = {
+        let _field_span_alignment_marker_align_dword = {
             let pos = reader.stream_position().unwrap_or(0);
             tracing::span!(tracing::Level::TRACE, "field", name = "__alignment_marker_align_dword", position = pos).entered()
         };
         align_dword(reader)?;
         #[cfg(feature = "tracing")]
-        drop(_field_span___alignment_marker_align_dword);
+        drop(_field_span_alignment_marker_align_dword);
 
         Ok(Self {
             flags,

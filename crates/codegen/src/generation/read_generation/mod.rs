@@ -112,7 +112,8 @@ pub fn generate_field_group_reads(
 
                 // Add field-level tracing span
                 out.push_str("        #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("        let _field_span_{} = {{\n", field_name));
+                let span_var = format!("_field_span_{}", field_name.trim_start_matches('_'));
+                out.push_str(&format!("        let {} = {{\n", span_var));
                 out.push_str("            let pos = reader.stream_position().unwrap_or(0);\n");
                 out.push_str(&format!("            tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                 out.push_str("        };\n");
@@ -124,9 +125,9 @@ pub fn generate_field_group_reads(
                     out.push_str(&format!("        let {} = {}?;\n", field_name, read_call));
                 }
 
-                // Drop field span
+                // Drop field span to end tracing context
                 out.push_str("        #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("        drop(_field_span_{});\n", field_name));
+                out.push_str(&format!("        drop({});\n", span_var));
 
                 // Generate subfield computations if any
                 for subfield in &field.subfields {
@@ -182,9 +183,10 @@ pub fn generate_field_group_reads(
             // TRUE branch: read all true-only and both-branch fields
             for field in &true_only {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                let span_var = format!("_field_span_{}", field_name.trim_start_matches('_'));
                 // Add field-level tracing span
                 out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("            let _field_span_{} = {{\n", field_name));
+                out.push_str(&format!("            let {} = {{\n", span_var));
                 out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
                 out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                 out.push_str("            };\n");
@@ -197,13 +199,14 @@ pub fn generate_field_group_reads(
                 ));
                 // Drop field span
                 out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("            drop(_field_span_{});\n", field_name));
+                out.push_str(&format!("            drop({});\n", span_var));
             }
             for field in &both {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                let span_var = format!("_field_span_{}", field_name.trim_start_matches('_'));
                 // Add field-level tracing span
                 out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("            let _field_span_{} = {{\n", field_name));
+                out.push_str(&format!("            let {} = {{\n", span_var));
                 out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
                 out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                 out.push_str("            };\n");
@@ -216,7 +219,7 @@ pub fn generate_field_group_reads(
                 ));
                 // Drop field span
                 out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("            drop(_field_span_{});\n", field_name));
+                out.push_str(&format!("            drop({});\n", span_var));
             }
 
             // FALSE branch: only emit if there are fields to read in the false branch
@@ -226,9 +229,10 @@ pub fn generate_field_group_reads(
                 // Read false-only fields
                 for field in &false_only {
                     let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    let span_var = format!("_field_span_{}", field_name.trim_start_matches('_'));
                     // Add field-level tracing span
                     out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                    out.push_str(&format!("            let _field_span_{} = {{\n", field_name));
+                    out.push_str(&format!("            let {} = {{\n", span_var));
                     out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
                     out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                     out.push_str("            };\n");
@@ -241,15 +245,16 @@ pub fn generate_field_group_reads(
                     ));
                     // Drop field span
                     out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                    out.push_str(&format!("            drop(_field_span_{});\n", field_name));
+                    out.push_str(&format!("            drop({});\n", span_var));
                 }
 
                 // Read both-branch fields, with type casting if needed
                 for field in &both {
                     let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                    let span_var = format!("_field_span_{}", field_name.trim_start_matches('_'));
                     // Add field-level tracing span
                     out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                    out.push_str(&format!("            let _field_span_{} = {{\n", field_name));
+                    out.push_str(&format!("            let {} = {{\n", span_var));
                     out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
                     out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                     out.push_str("            };\n");
@@ -259,7 +264,7 @@ pub fn generate_field_group_reads(
                     out.push_str(&format!("            {} = {}?;\n", field_name, read_call));
                     // Drop field span
                     out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                    out.push_str(&format!("            drop(_field_span_{});\n", field_name));
+                    out.push_str(&format!("            drop({});\n", span_var));
                 }
 
                 out.push_str("        }\n");
@@ -324,9 +329,10 @@ pub fn generate_field_group_reads(
             ));
             for field in fields {
                 let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                let span_var = format!("_field_span_{}", field_name.trim_start_matches('_'));
                 // Add field-level tracing span
                 out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("            let _field_span_{} = {{\n", field_name));
+                out.push_str(&format!("            let {} = {{\n", span_var));
                 out.push_str("                let pos = reader.stream_position().unwrap_or(0);\n");
                 out.push_str(&format!("                tracing::span!(tracing::Level::TRACE, \"field\", name = \"{}\", position = pos).entered()\n", field.name));
                 out.push_str("            };\n");
@@ -339,7 +345,7 @@ pub fn generate_field_group_reads(
                 ));
                 // Drop field span
                 out.push_str("            #[cfg(feature = \"tracing\")]\n");
-                out.push_str(&format!("            drop(_field_span_{});\n", field_name));
+                out.push_str(&format!("            drop({});\n", span_var));
             }
             out.push_str("        }\n");
         }
