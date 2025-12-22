@@ -21,7 +21,7 @@ fn parse_expression<F, G, H>(
 where
     F: Fn(char) -> bool,
     G: Fn(&str, &str) -> String, // (token, safe_name) -> formatted
-    H: Fn(char, &str) -> String,  // (separator, current_result) -> formatted
+    H: Fn(char, &str) -> String, // (separator, current_result) -> formatted
 {
     let expr = expr.trim();
     let mut result = String::new();
@@ -31,17 +31,18 @@ where
         if is_separator(ch) {
             if !current_token.is_empty() {
                 // Try to find a field with this name
-                let formatted = if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
-                    let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                    format_token(&current_token, &safe_name)
-                } else if current_token.chars().all(|c| c.is_numeric()) {
-                    // It's a number
-                    current_token.clone()
-                } else {
-                    // Unknown token - keep as-is but make it snake_case
-                    let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
-                    format_token(&current_token, &safe_name)
-                };
+                let formatted =
+                    if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+                        let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                        format_token(&current_token, &safe_name)
+                    } else if current_token.chars().all(|c| c.is_numeric()) {
+                        // It's a number
+                        current_token.clone()
+                    } else {
+                        // Unknown token - keep as-is but make it snake_case
+                        let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
+                        format_token(&current_token, &safe_name)
+                    };
                 result.push_str(&formatted);
                 current_token.clear();
             }

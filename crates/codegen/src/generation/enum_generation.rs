@@ -1,4 +1,3 @@
-
 use crate::{
     field_gen::{DEFAULT_ENUM_DERIVES, build_derive_string},
     identifiers::{ProtocolIdentifier, safe_enum_variant_name},

@@ -1,4 +1,3 @@
-
 use crate::{
     field_gen::build_derive_string,
     identifiers::{IdentifierType, safe_identifier},

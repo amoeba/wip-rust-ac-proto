@@ -1,6 +1,9 @@
 use log::debug;
 
-use crate::{field_gen::{FieldContext, build_field_from_context}, types::Field};
+use crate::{
+    field_gen::{FieldContext, build_field_from_context},
+    types::Field,
+};
 
 /// Create a field from a tag in the XML
 pub fn create_field_from_tag(
@@ -29,11 +32,8 @@ pub fn create_field_from_tag(
         }
 
         Some(build_field_from_context(
-            fname,
-            ftype,
-            None, // Regular fields don't have length expressions
-            param,
-            ctx,
+            fname, ftype, None, // Regular fields don't have length expressions
+            param, ctx,
         ))
     } else {
         None
