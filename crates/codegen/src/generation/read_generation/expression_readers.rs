@@ -3,45 +3,50 @@ use crate::{
     types::Field,
 };
 
-/// Convert a condition expression from XML format to Rust code
-/// Examples: "RecordCount > 0" -> "record_count > 0"
-pub fn convert_condition_expression(expr: &str, all_fields: &[Field]) -> String {
+/// Generic expression parser that tokenizes an expression and applies formatting
+///
+/// # Arguments
+/// * `expr` - The expression to parse
+/// * `all_fields` - Available fields for token resolution
+/// * `is_separator` - Predicate to determine if a character is a separator/operator
+/// * `format_token` - Function to format resolved tokens (fields or literals)
+/// * `format_separator` - Function to format separator characters
+fn parse_expression<F, G, H>(
+    expr: &str,
+    all_fields: &[Field],
+    is_separator: F,
+    format_token: G,
+    format_separator: H,
+) -> String
+where
+    F: Fn(char) -> bool,
+    G: Fn(&str, &str) -> String, // (token, safe_name) -> formatted
+    H: Fn(char, &str) -> String,  // (separator, current_result) -> formatted
+{
     let expr = expr.trim();
     let mut result = String::new();
     let mut current_token = String::new();
 
     for ch in expr.chars() {
-        if ch.is_whitespace()
-            || ch == '>'
-            || ch == '<'
-            || ch == '='
-            || ch == '!'
-            || ch == '&'
-            || ch == '|'
-            || ch == '('
-            || ch == ')'
-        {
+        if is_separator(ch) {
             if !current_token.is_empty() {
                 // Try to find a field with this name
-                if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+                let formatted = if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
                     let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                    result.push_str(&safe_name);
+                    format_token(&current_token, &safe_name)
                 } else if current_token.chars().all(|c| c.is_numeric()) {
                     // It's a number
-                    result.push_str(&current_token);
+                    current_token.clone()
                 } else {
                     // Unknown token - keep as-is but make it snake_case
                     let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
-                    result.push_str(&safe_name);
-                }
+                    format_token(&current_token, &safe_name)
+                };
+                result.push_str(&formatted);
                 current_token.clear();
             }
 
-            if !ch.is_whitespace() {
-                result.push(ch);
-            } else if !result.is_empty() && !result.ends_with(' ') {
-                result.push(' ');
-            }
+            result.push_str(&format_separator(ch, &result));
         } else {
             current_token.push(ch);
         }
@@ -49,24 +54,57 @@ pub fn convert_condition_expression(expr: &str, all_fields: &[Field]) -> String 
 
     // Handle any remaining token
     if !current_token.is_empty() {
-        if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
+        let formatted = if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
             let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
-            result.push_str(&safe_name);
+            format_token(&current_token, &safe_name)
         } else if current_token.chars().all(|c| c.is_numeric()) {
-            result.push_str(&current_token);
+            current_token.clone()
         } else {
             let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
-            result.push_str(&safe_name);
-        }
+            format_token(&current_token, &safe_name)
+        };
+        result.push_str(&formatted);
     }
 
     result.trim().to_string()
 }
 
+/// Convert a condition expression from XML format to Rust code
+/// Examples: "RecordCount > 0" -> "record_count > 0"
+pub fn convert_condition_expression(expr: &str, all_fields: &[Field]) -> String {
+    parse_expression(
+        expr,
+        all_fields,
+        // Separator check: comparison and logical operators
+        |ch| {
+            ch.is_whitespace()
+                || ch == '>'
+                || ch == '<'
+                || ch == '='
+                || ch == '!'
+                || ch == '&'
+                || ch == '|'
+                || ch == '('
+                || ch == ')'
+        },
+        // Token formatting: just use the safe name as-is
+        |_token, safe_name| safe_name.to_string(),
+        // Separator formatting: preserve non-whitespace, normalize whitespace
+        |ch, result| {
+            if !ch.is_whitespace() {
+                ch.to_string()
+            } else if !result.is_empty() && !result.ends_with(' ') {
+                " ".to_string()
+            } else {
+                String::new()
+            }
+        },
+    )
+}
+
 /// Convert a length expression from XML format to Rust code
 /// Examples: "Count" -> "count", "RecordCount - 1" -> "(record_count - 1)"
 pub fn convert_length_expression(expr: &str, all_fields: &[Field]) -> String {
-    // Simple expression parsing - handle basic arithmetic
     let expr = expr.trim();
 
     // Special case: "*" means read remaining bytes - this will be handled specially
@@ -80,58 +118,28 @@ pub fn convert_length_expression(expr: &str, all_fields: &[Field]) -> String {
         return format!("{} as usize", safe_name);
     }
 
-    // Handle arithmetic expressions (e.g., "RecordCount - 1")
-    // Split on operators and convert field names
-    let mut result = String::new();
-    let mut current_token = String::new();
-
-    for ch in expr.chars() {
-        if ch.is_whitespace()
-            || ch == '+'
-            || ch == '-'
-            || ch == '*'
-            || ch == '/'
-            || ch == '('
-            || ch == ')'
-        {
-            if !current_token.is_empty() {
-                // Try to find a field with this name
-                if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
-                    let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
-                    result.push_str(&format!("{} as usize", safe_name));
-                } else if current_token.chars().all(|c| c.is_numeric()) {
-                    // It's a number
-                    result.push_str(&current_token);
-                } else {
-                    // Unknown token - keep as-is but make it snake_case
-                    let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
-                    result.push_str(&format!("{} as usize", safe_name));
-                }
-                current_token.clear();
-            }
-
+    parse_expression(
+        expr,
+        all_fields,
+        // Separator check: arithmetic operators
+        |ch| {
+            ch.is_whitespace()
+                || ch == '+'
+                || ch == '-'
+                || ch == '*'
+                || ch == '/'
+                || ch == '('
+                || ch == ')'
+        },
+        // Token formatting: wrap field names in "as usize"
+        |_token, safe_name| format!("{} as usize", safe_name),
+        // Separator formatting: add spaces around operators
+        |ch, _result| {
             if !ch.is_whitespace() {
-                result.push(' ');
-                result.push(ch);
-                result.push(' ');
+                format!(" {} ", ch)
+            } else {
+                String::new()
             }
-        } else {
-            current_token.push(ch);
-        }
-    }
-
-    // Handle any remaining token
-    if !current_token.is_empty() {
-        if let Some(field) = all_fields.iter().find(|f| f.name == current_token) {
-            let safe_name = safe_identifier(&field.name, IdentifierType::Field).name;
-            result.push_str(&format!("{} as usize", safe_name));
-        } else if current_token.chars().all(|c| c.is_numeric()) {
-            result.push_str(&current_token);
-        } else {
-            let safe_name = safe_identifier(&current_token, IdentifierType::Field).name;
-            result.push_str(&format!("{} as usize", safe_name));
-        }
-    }
-
-    result.trim().to_string()
+        },
+    )
 }

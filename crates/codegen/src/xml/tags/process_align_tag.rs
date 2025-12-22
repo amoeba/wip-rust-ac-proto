@@ -2,13 +2,9 @@ use crate::types::Field;
 
 /// Process an align tag in the XML
 pub fn process_align_tag(e: &quick_xml::events::BytesStart) -> Option<Field> {
-    let mut align_type = None;
-
-    for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"type" {
-            align_type = Some(attr.unescape_value().unwrap().into_owned());
-        }
-    }
+    crate::extract_xml_attrs!(e, {
+        b"type" => align_type
+    });
 
     if let Some(align_to) = align_type {
         // Generate a synthetic field name for alignment padding

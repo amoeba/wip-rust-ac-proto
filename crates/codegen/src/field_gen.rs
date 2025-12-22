@@ -180,3 +180,57 @@ pub struct FieldContext {
     /// Whether we're currently collecting trailing fields for a nested switch
     pub collecting_nested_trailing_fields: bool,
 }
+
+/// Determine if a field is optional and which branch it belongs to based on context
+/// Returns: (is_optional, if_branch)
+pub fn determine_optional_and_branch(ctx: &FieldContext) -> (bool, Option<IfBranch>) {
+    let is_optional = ctx.in_if_true || ctx.in_if_false || ctx.in_maskmap;
+    let if_branch = if ctx.in_if_true {
+        Some(IfBranch::True)
+    } else if ctx.in_if_false {
+        Some(IfBranch::False)
+    } else {
+        None
+    };
+    (is_optional, if_branch)
+}
+
+/// Build a Field with context-aware conditional fields
+/// This handles the common pattern of populating optional_condition, mask_field, and mask_value
+/// based on the current FieldContext state.
+pub fn build_field_from_context(
+    name: String,
+    field_type: String,
+    length_expression: Option<String>,
+    param: Option<String>,
+    ctx: &FieldContext,
+) -> Field {
+    let (is_optional, if_branch) = determine_optional_and_branch(ctx);
+
+    Field {
+        name,
+        field_type,
+        is_optional,
+        length_expression,
+        optional_condition: if is_optional {
+            ctx.current_if_condition.clone()
+        } else {
+            None
+        },
+        mask_field: if ctx.in_maskmap {
+            ctx.current_maskmap_field.clone()
+        } else {
+            None
+        },
+        mask_value: if ctx.in_maskmap {
+            ctx.current_mask_value.clone()
+        } else {
+            None
+        },
+        if_branch,
+        if_false_branch_type: None,
+        subfields: Vec::new(),
+        nested_field_set: None,
+        param,
+    }
+}

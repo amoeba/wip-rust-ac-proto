@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 
 use crate::{
     field_gen::{DEFAULT_ENUM_DERIVES, build_derive_string},
@@ -347,25 +346,12 @@ pub fn generate_nested_switch_enum(
     let mut out = String::new();
 
     // Group nested case values by field signature
-    let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
-
-    for (case_value, case_fields) in &nested_switch.variant_fields {
-        let field_sig = case_fields
-            .iter()
-            .map(|f| format!("{}:{}", f.name, f.field_type))
-            .collect::<Vec<_>>()
-            .join(";");
-
-        field_groups
-            .entry(field_sig)
-            .or_insert_with(|| (*case_value, Vec::new()))
-            .1
-            .push(*case_value);
-    }
-
-    // Sort by primary value for consistent output
-    let mut sorted_groups: Vec<_> = field_groups.into_iter().collect();
-    sorted_groups.sort_by(|a, b| a.1.0.cmp(&b.1.0));
+    let all_case_values: Vec<i64> = nested_switch.variant_fields.keys().copied().collect();
+    let sorted_groups = super::helpers::group_case_values_by_field_signature(
+        &all_case_values,
+        &nested_switch.variant_fields,
+        &None, // Nested switches don't have further nesting
+    );
 
     // First, generate standalone variant structs
     for (_field_sig, (_primary_value, all_values)) in &sorted_groups {

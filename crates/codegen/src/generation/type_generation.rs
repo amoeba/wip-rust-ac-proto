@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 
 use crate::{
     field_gen::build_derive_string,
@@ -132,38 +131,12 @@ pub struct {type_name}{type_generics} {{}}\n\n"
         }
 
         // Group case values by their field sets (to handle multi-value cases)
-        let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
-
-        for case_value in &all_case_values {
-            let case_fields = variant_fields.get(case_value).cloned().unwrap_or_default();
-            let mut field_sig = case_fields
-                .iter()
-                .map(|f| format!("{}:{}", f.name, f.field_type))
-                .collect::<Vec<_>>()
-                .join(";");
-
-            // Include nested switch structure in signature to avoid grouping cases with different nested switches
-            if let Some(ref nested_switches) = field_set.nested_switches
-                && let Some(nested_switch) = nested_switches.get(case_value)
-            {
-                // Add nested switch discriminator and case values to signature
-                let nested_sig = format!(
-                    "__nested_{}_{:?}",
-                    nested_switch.switch_field,
-                    nested_switch.variant_fields.keys().collect::<Vec<_>>()
-                );
-                field_sig.push_str(&nested_sig);
-            }
-
-            field_groups
-                .entry(field_sig)
-                .or_insert_with(|| (*case_value, Vec::new()))
-                .1
-                .push(*case_value);
-        }
-
-        let mut sorted_groups: Vec<_> = field_groups.into_iter().collect();
-        sorted_groups.sort_by(|a, b| a.1.0.cmp(&b.1.0));
+        let all_case_values_vec: Vec<i64> = all_case_values.iter().copied().collect();
+        let sorted_groups = super::helpers::group_case_values_by_field_signature(
+            &all_case_values_vec,
+            variant_fields,
+            &field_set.nested_switches,
+        );
 
         // Generate standalone variant structs for each variant
         for (_field_sig, (_primary_value, all_values)) in &sorted_groups {

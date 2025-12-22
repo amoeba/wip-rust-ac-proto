@@ -84,3 +84,57 @@ pub fn generate_acdata_type_impl(
         String::new()
     }
 }
+
+/// Group case values by their field signature
+///
+/// This is used to identify variant cases that have identical field structures,
+/// allowing them to be represented by the same variant struct.
+///
+/// # Arguments
+/// * `all_case_values` - All case values to group
+/// * `variant_fields` - Map of case values to their fields
+/// * `nested_switches` - Optional nested switch information
+///
+/// # Returns
+/// A sorted vector of (field_signature, (primary_value, all_values)) tuples
+pub fn group_case_values_by_field_signature(
+    all_case_values: &[i64],
+    variant_fields: &std::collections::BTreeMap<i64, Vec<crate::types::Field>>,
+    nested_switches: &Option<std::collections::BTreeMap<i64, crate::types::NestedSwitch>>,
+) -> Vec<(String, (i64, Vec<i64>))> {
+    use std::collections::BTreeMap;
+
+    let mut field_groups: BTreeMap<String, (i64, Vec<i64>)> = BTreeMap::new();
+
+    for case_value in all_case_values {
+        let case_fields = variant_fields.get(case_value).cloned().unwrap_or_default();
+        let mut field_sig = case_fields
+            .iter()
+            .map(|f| format!("{}:{}", f.name, f.field_type))
+            .collect::<Vec<_>>()
+            .join(";");
+
+        // Include nested switch structure in signature to avoid grouping cases with different nested switches
+        if let Some(nested_switches) = nested_switches
+            && let Some(nested_switch) = nested_switches.get(case_value)
+        {
+            // Add nested switch discriminator and case values to signature
+            let nested_sig = format!(
+                "__nested_{}_{:?}",
+                nested_switch.switch_field,
+                nested_switch.variant_fields.keys().collect::<Vec<_>>()
+            );
+            field_sig.push_str(&nested_sig);
+        }
+
+        field_groups
+            .entry(field_sig)
+            .or_insert_with(|| (*case_value, Vec::new()))
+            .1
+            .push(*case_value);
+    }
+
+    let mut sorted_groups: Vec<_> = field_groups.into_iter().collect();
+    sorted_groups.sort_by(|a, b| a.1.0.cmp(&b.1.0));
+    sorted_groups
+}
