@@ -5,15 +5,34 @@ use crate::{
     types::{Field, FieldSet},
 };
 
-/// Add a field to a field set
-pub fn add_field_to_set(
+/// Route a field to the appropriate collection based on context (if/switch/common)
+/// This handles if-true/if-false branches as well as switch cases and common fields
+pub fn route_field(
     field: Field,
     current_field_set: &mut Option<FieldSet>,
     ctx: &mut FieldContext,
 ) {
-    // If we're in an <if> block, this shouldn't be called - fields are handled separately
-    // This is just for normal fields
+    // If we're in an <if> block, collect fields separately
+    if ctx.in_if_true {
+        ctx.if_true_fields.push(field);
+        debug!("Added field to if_true_fields");
+        return;
+    } else if ctx.in_if_false {
+        ctx.if_false_fields.push(field);
+        debug!("Added field to if_false_fields");
+        return;
+    }
 
+    // Otherwise, add to the field set using the existing logic
+    add_field_to_set(field, current_field_set, ctx);
+}
+
+/// Add a field to a field set (internal routing for switch/common fields)
+fn add_field_to_set(
+    field: Field,
+    current_field_set: &mut Option<FieldSet>,
+    ctx: &mut FieldContext,
+) {
     // If we're in a nested switch, route fields to the nested FieldSet instead
     if ctx.switch_nesting_level > 1 {
         if ctx.collecting_nested_trailing_fields {

@@ -3,10 +3,10 @@ use crate::type_utils::get_rust_type;
 use super::types::GeneratedFile;
 
 // Re-export functions from read_generation submodules
-pub use super::read_generation::expression_readers::convert_length_expression;
-pub use super::read_generation::primitive_readers::{
-    convert_condition_expression, generate_read_call,
+pub use super::read_generation::expression_readers::{
+    convert_condition_expression, convert_length_expression,
 };
+pub use super::read_generation::primitive_readers::generate_read_call;
 pub use super::read_generation::{
     ConditionKey, FieldGroup, generate_field_group_reads, group_consecutive_fields_by_condition,
 };

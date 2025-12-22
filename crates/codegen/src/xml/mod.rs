@@ -14,4 +14,7 @@ pub mod tags {
 pub mod utils {
     pub mod add_field_to_set;
     pub mod create_field_from_tag;
+
+    // Re-export the main routing function for convenience
+    pub use add_field_to_set::route_field;
 }

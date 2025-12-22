@@ -16,7 +16,7 @@ use crate::{
             process_table_tag::process_table_tag, process_type_tag::process_type_tag,
             process_vector_tag::process_vector_tag,
         },
-        utils::{add_field_to_set::add_field_to_set, create_field_from_tag::create_field_from_tag},
+        utils::{route_field, create_field_from_tag::create_field_from_tag},
     },
 };
 
@@ -144,7 +144,7 @@ pub fn parse_xml_content(xml: &str, source: GenerateSource) -> ParseResult {
                     if let Some(mut align_field) = process_align_tag(&e) {
                         // Mark as internal so it won't be added to struct definition
                         align_field.name = format!("__alignment_marker_{}", align_field.name);
-                        add_field_to_set(align_field, &mut current_field_set, &mut field_ctx);
+                        route_field(align_field, &mut current_field_set, &mut field_ctx);
                         debug!("Added alignment field");
                     }
                 } else if tag_name == "switch" {
@@ -274,7 +274,7 @@ pub fn parse_xml_content(xml: &str, source: GenerateSource) -> ParseResult {
                     if let Some(mut align_field) = process_align_tag(&e) {
                         // Mark as internal so it won't be added to struct definition
                         align_field.name = format!("__alignment_marker_{}", align_field.name);
-                        add_field_to_set(align_field, &mut current_field_set, &mut field_ctx);
+                        route_field(align_field, &mut current_field_set, &mut field_ctx);
                         debug!("Added alignment field (empty tag)");
                     }
                 } else if tag_name == "value" {
@@ -375,7 +375,7 @@ pub fn parse_xml_content(xml: &str, source: GenerateSource) -> ParseResult {
                                     }
                                 }
                             } else {
-                                add_field_to_set(field, &mut current_field_set, &mut field_ctx);
+                                route_field(field, &mut current_field_set, &mut field_ctx);
                             }
                         }
                         field_ctx.in_field = false;

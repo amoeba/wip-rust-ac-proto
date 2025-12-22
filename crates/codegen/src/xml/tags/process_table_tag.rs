@@ -70,35 +70,6 @@ pub fn process_table_tag(
             param: None,
         };
 
-        // If we're in an <if> block, collect fields separately
-        if ctx.in_if_true {
-            ctx.if_true_fields.push(new_field);
-            debug!("Added table to if_true_fields");
-            return;
-        } else if ctx.in_if_false {
-            ctx.if_false_fields.push(new_field);
-            debug!("Added table to if_false_fields");
-            return;
-        }
-
-        if let Some(field_set) = current_field_set {
-            if ctx.in_switch {
-                if let (Some(case_vals), Some(variant_fields)) =
-                    (&ctx.current_case_values, &mut field_set.variant_fields)
-                {
-                    // Add the same field to all values in this case
-                    for case_val in case_vals {
-                        variant_fields
-                            .entry(*case_val)
-                            .or_insert_with(Vec::new)
-                            .push(new_field.clone());
-                        debug!("Added table to variant case {case_val}");
-                    }
-                }
-            } else {
-                field_set.common_fields.push(new_field);
-                debug!("Added table to common_fields");
-            }
-        }
+        crate::xml::utils::route_field(new_field, current_field_set, ctx);
     }
 }

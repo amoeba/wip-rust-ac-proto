@@ -7,10 +7,9 @@ pub use collection_readers::{
     generate_hashmap_read_with_length, generate_packable_hash_table_read,
     generate_packable_list_read, generate_phash_table_read, generate_vec_read_with_length,
 };
-pub use expression_readers::convert_length_expression;
+pub use expression_readers::{convert_condition_expression, convert_length_expression};
 pub use primitive_readers::{
-    convert_condition_expression, generate_conditional_read_call, generate_read_base_logic,
-    generate_read_call,
+    generate_conditional_read_call, generate_read_base_logic, generate_read_call,
 };
 
 use crate::{
