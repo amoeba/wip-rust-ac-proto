@@ -2,12 +2,12 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use acprotocol::cli::pcap::{
-    format_parsed_messages, format_raw_messages, output_messages, print_summary, DirectionFilter,
-    OutputFormat, SortField,
+    DirectionFilter, OutputFormat, SortField, format_parsed_messages, format_raw_messages,
+    output_messages, print_summary,
 };
 use acprotocol::cli::tui;
-use acprotocol::network::pcap;
 use acprotocol::network::FragmentAssembler;
+use acprotocol::network::pcap;
 
 #[derive(Parser)]
 #[command(name = "pcap")]
