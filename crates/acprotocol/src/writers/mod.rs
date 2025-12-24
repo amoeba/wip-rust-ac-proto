@@ -591,7 +591,7 @@ mod tests {
 
     #[test]
     fn test_f32_roundtrip() {
-        let original = 3.14159f32;
+        let original = std::f32::consts::PI;
         let mut buffer = Vec::new();
         let mut cursor = Cursor::new(&mut buffer);
 
@@ -605,7 +605,7 @@ mod tests {
 
     #[test]
     fn test_f64_roundtrip() {
-        let original = 3.141592653589793f64;
+        let original = std::f64::consts::PI;
         let mut buffer = Vec::new();
         let mut cursor = Cursor::new(&mut buffer);
 
