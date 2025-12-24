@@ -81,6 +81,7 @@ impl CharacterCharGenVerificationResponseType1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "CharacterCharGenVerificationResponseType1").entered();
 
+        write_u32(writer, CharGenResponseType::OK as u32)?;
         self.character_id.write(writer)?;
         write_string(writer, &self.name)?;
         write_u32(writer, self.seconds_until_deletion)?;

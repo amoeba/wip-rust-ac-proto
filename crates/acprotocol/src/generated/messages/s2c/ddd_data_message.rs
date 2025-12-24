@@ -141,6 +141,13 @@ impl DDDDataMessageType0 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "DDDDataMessageType0").entered();
 
+        write_i64(writer, self.dat_file.clone() as i64)?;
+        write_u32(writer, self.resource_type)?;
+        self.resource_id.write(writer)?;
+        write_u32(writer, self.iteration)?;
+        write_u32(writer, CompressionType::None as u32)?;
+        write_u32(writer, self.version)?;
+        write_u32(writer, self.data_size)?;
         write_vec::<u8>(writer, &self.data)?;
         Ok(())
     }
@@ -158,6 +165,13 @@ impl DDDDataMessageType1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "DDDDataMessageType1").entered();
 
+        write_i64(writer, self.dat_file.clone() as i64)?;
+        write_u32(writer, self.resource_type)?;
+        self.resource_id.write(writer)?;
+        write_u32(writer, self.iteration)?;
+        write_u32(writer, CompressionType::ZLib as u32)?;
+        write_u32(writer, self.version)?;
+        write_u32(writer, self.data_size)?;
         write_u32(writer, self.file_size)?;
         write_vec::<u8>(writer, &self.data)?;
         Ok(())

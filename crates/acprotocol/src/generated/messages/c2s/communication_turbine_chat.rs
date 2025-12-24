@@ -358,7 +358,30 @@ impl CommunicationTurbineChatType1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "CommunicationTurbineChatType1").entered();
 
-        self.blob_dispatch_type.write(writer)?;
+        write_u32(writer, self.mmessage_size)?;
+        write_u32(writer, TurbineChatType::ServerToClientMessage as u32)?;
+        // Write nested switch discriminator
+        match &self.blob_dispatch_type {
+            CommunicationTurbineChatType1BlobDispatchTypeVariant::Type1(_) => write_u32(writer, 1)?,
+        }
+        write_i32(writer, self.target_type)?;
+        write_i32(writer, self.target_id)?;
+        write_i32(writer, self.transport_type)?;
+        write_i32(writer, self.transport_id)?;
+        write_i32(writer, self.cookie)?;
+        write_u32(writer, self.payload_size)?;
+        // Write nested switch variant fields
+        match &self.blob_dispatch_type {
+            CommunicationTurbineChatType1BlobDispatchTypeVariant::Type1(variant_struct) => {
+                write_u32(writer, variant_struct.room_id)?;
+                write_wstring(writer, &variant_struct.display_name.0)?;
+                write_wstring(writer, &variant_struct.text.0)?;
+                write_u32(writer, variant_struct.extra_data_size)?;
+                variant_struct.speaker_id.write(writer)?;
+                write_i32(writer, variant_struct.h_result)?;
+                write_u32(writer, variant_struct.chat_type)?;
+            },
+        }
         Ok(())
     }
 }
@@ -376,7 +399,6 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
 
         match self {
             Self::Type1(variant_struct) => {
-                write_u8(writer, 0x01)?;
                 write_u32(writer, variant_struct.room_id)?;
                 write_wstring(writer, &variant_struct.display_name.0)?;
                 write_wstring(writer, &variant_struct.text.0)?;
@@ -403,7 +425,32 @@ impl CommunicationTurbineChatType3 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "CommunicationTurbineChatType3").entered();
 
-        self.blob_dispatch_type.write(writer)?;
+        write_u32(writer, self.mmessage_size)?;
+        write_u32(writer, TurbineChatType::ClientToServerMessage as u32)?;
+        // Write nested switch discriminator
+        match &self.blob_dispatch_type {
+            CommunicationTurbineChatType3BlobDispatchTypeVariant::Type2(_) => write_u32(writer, 2)?,
+        }
+        write_i32(writer, self.target_type)?;
+        write_i32(writer, self.target_id)?;
+        write_i32(writer, self.transport_type)?;
+        write_i32(writer, self.transport_id)?;
+        write_i32(writer, self.cookie)?;
+        write_u32(writer, self.payload_size)?;
+        // Write nested switch variant fields
+        match &self.blob_dispatch_type {
+            CommunicationTurbineChatType3BlobDispatchTypeVariant::Type2(variant_struct) => {
+                write_u32(writer, variant_struct.context_id)?;
+                write_u32(writer, variant_struct.response_id)?;
+                write_u32(writer, variant_struct.method_id)?;
+                write_u32(writer, variant_struct.room_id)?;
+                write_wstring(writer, &variant_struct.text.0)?;
+                write_u32(writer, variant_struct.extra_data_size)?;
+                variant_struct.speaker_id.write(writer)?;
+                write_i32(writer, variant_struct.h_result)?;
+                write_u32(writer, variant_struct.chat_type)?;
+            },
+        }
         Ok(())
     }
 }
@@ -421,7 +468,6 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
 
         match self {
             Self::Type2(variant_struct) => {
-                write_u8(writer, 0x02)?;
                 write_u32(writer, variant_struct.context_id)?;
                 write_u32(writer, variant_struct.response_id)?;
                 write_u32(writer, variant_struct.method_id)?;
@@ -450,7 +496,27 @@ impl CommunicationTurbineChatType5 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "CommunicationTurbineChatType5").entered();
 
-        self.blob_dispatch_type.write(writer)?;
+        write_u32(writer, self.mmessage_size)?;
+        write_u32(writer, TurbineChatType::AckClientToServerMessage as u32)?;
+        // Write nested switch discriminator
+        match &self.blob_dispatch_type {
+            CommunicationTurbineChatType5BlobDispatchTypeVariant::Type1(_) => write_u32(writer, 1)?,
+        }
+        write_i32(writer, self.target_type)?;
+        write_i32(writer, self.target_id)?;
+        write_i32(writer, self.transport_type)?;
+        write_i32(writer, self.transport_id)?;
+        write_i32(writer, self.cookie)?;
+        write_u32(writer, self.payload_size)?;
+        // Write nested switch variant fields
+        match &self.blob_dispatch_type {
+            CommunicationTurbineChatType5BlobDispatchTypeVariant::Type1(variant_struct) => {
+                write_u32(writer, variant_struct.context_id)?;
+                write_u32(writer, variant_struct.response_id)?;
+                write_u32(writer, variant_struct.method_id)?;
+                write_i32(writer, variant_struct.h_result)?;
+            },
+        }
         Ok(())
     }
 }
@@ -468,7 +534,6 @@ impl CommunicationTurbineChatType5BlobDispatchTypeVariant {
 
         match self {
             Self::Type1(variant_struct) => {
-                write_u8(writer, 0x01)?;
                 write_u32(writer, variant_struct.context_id)?;
                 write_u32(writer, variant_struct.response_id)?;
                 write_u32(writer, variant_struct.method_id)?;

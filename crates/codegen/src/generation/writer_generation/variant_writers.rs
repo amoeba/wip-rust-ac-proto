@@ -184,6 +184,105 @@ fn generate_variant_struct_writer_impl(
     out.push_str("        #[cfg(feature = \"tracing\")]\n");
     out.push_str(&format!("        let _span = tracing::span!(tracing::Level::DEBUG, \"write\", r#type = \"{}\").entered();\n\n", struct_name));
 
+    // Write common fields first (but inject the discriminator value for the switch field)
+    for field in &field_set.common_fields {
+        let mut all_fields = field_set.common_fields.clone();
+        all_fields.extend(case_fields.iter().cloned());
+
+        // If this is the switch field, we need to write the discriminator value
+        // instead of reading from self (since it's not stored in the variant struct)
+        if field_set.switch_field.as_ref() == Some(&field.name) {
+            // Generate the write call for the discriminator based on its type
+            let field_type = &field.field_type;
+
+            // Check if it's an enum type by looking it up in the enum_parent_map
+            if ctx.enum_parent_map.contains_key(field_type) {
+                // Look up the enum variant name for this value
+                if let Some(variant_name) = ctx.enum_value_map.get(&(field_type.clone(), case_value)) {
+                    // Use the enum variant name for readability
+                    out.push_str(&format!("        write_u32(writer, {}::{} as u32)?;\n", field_type, variant_name));
+                } else {
+                    // Fallback to raw value if variant not found in enum definition
+                    out.push_str(&format!("        write_u32(writer, {} as u32)?;\n", case_value));
+                }
+            } else {
+                // It's a primitive type - write directly
+                out.push_str(&format!("        write_u32(writer, {})?;\n", case_value));
+            }
+            continue;
+        }
+
+        // Check if this field is a nested switch discriminator
+        let is_nested_discriminator = if has_nested_switch {
+            nested_switch_field_name.as_ref() == Some(&field.name)
+        } else {
+            false
+        };
+
+        if is_nested_discriminator {
+            // This field is a nested switch discriminator - we need to extract its value
+            // from the nested enum variant and write it as u32
+            let nested_switch = field_set
+                .nested_switches
+                .as_ref()
+                .unwrap()
+                .get(&case_value)
+                .unwrap();
+
+            let nested_enum_field_name =
+                safe_identifier(&nested_switch.switch_field, IdentifierType::Field).name;
+
+            // Generate the nested enum type name
+            let nested_enum_name_raw =
+                format!("{}{}{}", struct_name, nested_switch.switch_field, "Variant");
+            let nested_enum_type_name = safe_identifier(&nested_enum_name_raw, IdentifierType::Type).name;
+
+            out.push_str("        // Write nested switch discriminator\n");
+            out.push_str(&format!("        match &self.{} {{\n", nested_enum_field_name));
+
+            // Group nested case values by field signature to handle aliased variants
+            let all_case_values: Vec<i64> = nested_switch.variant_fields.keys().copied().collect();
+            let sorted_groups = helpers::group_case_values_by_field_signature(
+                &all_case_values,
+                &nested_switch.variant_fields,
+                &None, // No nested-nested switches
+            );
+
+            // Generate match arms for each unique variant
+            for (_field_sig, (_primary_value, all_values)) in sorted_groups {
+                let mut sorted_values = all_values.clone();
+                sorted_values.sort();
+                let first_value = sorted_values[0];
+                let variant_name = super::super::helpers::generate_variant_name(first_value);
+
+                // Generate a match arm that writes the discriminator for the first value
+                // (all aliased values will use the same variant)
+                out.push_str(&format!(
+                    "            {}::{}(_) => write_u32(writer, {})?,\n",
+                    nested_enum_type_name, variant_name, first_value
+                ));
+            }
+            out.push_str("        }\n");
+            continue;
+        }
+
+        let write_call =
+            crate::generation::write_generation::primitive_writers::generate_write_call(
+                ctx,
+                field,
+                &all_fields,
+            );
+
+        // write_call might be a multi-line block or single expression
+        if write_call.contains('\n') || write_call.trim_end().ends_with('}') {
+            // Multi-line block - use as-is
+            out.push_str(&format!("        {}\n", write_call));
+        } else {
+            // Single-line expression - add semicolon
+            out.push_str(&format!("        {};\n", write_call));
+        }
+    }
+
     // Write variant-specific fields
     for field in case_fields {
         // Skip the nested switch discriminator field - it's written by the nested enum
@@ -238,13 +337,68 @@ fn generate_variant_struct_writer_impl(
             }
         }
 
-        // Write the nested switch enum
+        // Write the nested switch variant fields (discriminator already written in common fields)
         let nested_enum_field_name =
             safe_identifier(&nested_switch.switch_field, IdentifierType::Field).name;
-        out.push_str(&format!(
-            "        self.{}.write(writer)?;\n",
-            nested_enum_field_name
-        ));
+
+        // Generate the nested enum type name
+        let nested_enum_name_raw =
+            format!("{}{}{}", struct_name, nested_switch.switch_field, "Variant");
+        let nested_enum_type_name = safe_identifier(&nested_enum_name_raw, IdentifierType::Type).name;
+
+        out.push_str("        // Write nested switch variant fields\n");
+        out.push_str(&format!("        match &self.{} {{\n", nested_enum_field_name));
+
+        // Group nested case values by field signature to handle aliased variants
+        let all_case_values: Vec<i64> = nested_switch.variant_fields.keys().copied().collect();
+        let sorted_groups = helpers::group_case_values_by_field_signature(
+            &all_case_values,
+            &nested_switch.variant_fields,
+            &None, // No nested-nested switches
+        );
+
+        // Generate match arms for each unique variant
+        for (_field_sig, (_primary_value, all_values)) in sorted_groups {
+            let mut sorted_values = all_values.clone();
+            sorted_values.sort();
+            let first_value = sorted_values[0];
+            let case_fields = nested_switch
+                .variant_fields
+                .get(&first_value)
+                .expect("Field group must have fields");
+            let variant_name = super::super::helpers::generate_variant_name(first_value);
+
+            out.push_str(&format!(
+                "            {}::{}(variant_struct) => {{\n",
+                nested_enum_type_name, variant_name
+            ));
+
+            // Write only the variant fields, NOT the discriminator
+            for field in case_fields {
+                let field_name = safe_identifier(&field.name, IdentifierType::Field).name;
+                let write_call =
+                    crate::generation::write_generation::primitive_writers::generate_write_call(
+                        ctx,
+                        field,
+                        case_fields,
+                    );
+
+                // Replace self.field access with variant_struct.field
+                let write_call = write_call.replace(
+                    &format!("self.{}", field_name),
+                    &format!("variant_struct.{}", field_name),
+                );
+
+                if write_call.contains('\n') || write_call.trim_end().ends_with('}') {
+                    out.push_str(&format!("                {}\n", write_call));
+                } else {
+                    out.push_str(&format!("                {};\n", write_call));
+                }
+            }
+
+            out.push_str("            },\n");
+        }
+        out.push_str("        }\n");
 
         // Write trailing fields
         for field in &nested_switch.trailing_fields {
@@ -355,11 +509,8 @@ fn generate_nested_switch_enum_writer(
             "            Self::{variant_name}(variant_struct) => {{\n",
         ));
 
-        // Write the discriminator
-        out.push_str(&format!(
-            "                write_u8(writer, 0x{:02X})?;\n",
-            first_value as u8
-        ));
+        // NOTE: Discriminator is written by the parent struct in the common fields section
+        // Do NOT write it here to avoid duplication
 
         // Write case fields
         for field in case_fields {

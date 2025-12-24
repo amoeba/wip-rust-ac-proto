@@ -3308,6 +3308,13 @@ impl LoginRequestHeaderType2 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "LoginRequestHeaderType2").entered();
 
+        write_string(writer, &self.client_version)?;
+        write_u32(writer, self.length)?;
+        write_u32(writer, NetAuthType::AccountPassword as u32)?;
+        write_u32(writer, self.flags.clone() as u32)?;
+        write_u32(writer, self.sequence)?;
+        write_string(writer, &self.account)?;
+        write_string(writer, &self.account_to_login_as)?;
         write_wstring(writer, &self.password.0)?;
         Ok(())
     }
@@ -3325,6 +3332,13 @@ impl LoginRequestHeaderType40000002 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "LoginRequestHeaderType40000002").entered();
 
+        write_string(writer, &self.client_version)?;
+        write_u32(writer, self.length)?;
+        write_u32(writer, NetAuthType::GlsTicket as u32)?;
+        write_u32(writer, self.flags.clone() as u32)?;
+        write_u32(writer, self.sequence)?;
+        write_string(writer, &self.account)?;
+        write_string(writer, &self.account_to_login_as)?;
         write_string(writer, &self.gls_ticket)?;
         Ok(())
     }
@@ -5290,6 +5304,9 @@ impl EmoteSetType1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteSetType1").entered();
 
+        write_u32(writer, EmoteCategory::RefuseEmoteCategory as u32)?;
+        write_f32(writer, self.probability)?;
+        write_packable_list::<Emote>(writer, &self.emotes)?;
         write_u32(writer, self.class_id)?;
         Ok(())
     }
@@ -5307,6 +5324,9 @@ impl EmoteSetType2 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteSetType2").entered();
 
+        write_u32(writer, EmoteCategory::VendorEmoteCategory as u32)?;
+        write_f32(writer, self.probability)?;
+        write_packable_list::<Emote>(writer, &self.emotes)?;
         write_u32(writer, self.vendor_type)?;
         Ok(())
     }
@@ -5324,6 +5344,9 @@ impl EmoteSetType5 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteSetType5").entered();
 
+        write_u32(writer, EmoteCategory::HeartBeatEmoteCategory as u32)?;
+        write_f32(writer, self.probability)?;
+        write_packable_list::<Emote>(writer, &self.emotes)?;
         write_u32(writer, self.style)?;
         write_u32(writer, self.substyle)?;
         Ok(())
@@ -5342,6 +5365,9 @@ impl EmoteSetTypeC {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteSetTypeC").entered();
 
+        write_u32(writer, EmoteCategory::QuestSuccessEmoteCategory as u32)?;
+        write_f32(writer, self.probability)?;
+        write_packable_list::<Emote>(writer, &self.emotes)?;
         write_string(writer, &self.quest)?;
         Ok(())
     }
@@ -5359,6 +5385,9 @@ impl EmoteSetTypeF {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteSetTypeF").entered();
 
+        write_u32(writer, EmoteCategory::WoundedTauntEmoteCategory as u32)?;
+        write_f32(writer, self.probability)?;
+        write_packable_list::<Emote>(writer, &self.emotes)?;
         write_f32(writer, self.min_health)?;
         write_f32(writer, self.max_health)?;
         Ok(())
@@ -6007,6 +6036,9 @@ impl EmoteType1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType1").entered();
 
+        write_u32(writer, EmoteType::ActEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         Ok(())
     }
@@ -6024,6 +6056,9 @@ impl EmoteType2 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType2").entered();
 
+        write_u32(writer, EmoteType::AwardXPEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u64(writer, self.amount64)?;
         write_u64(writer, self.hero_xp64)?;
         Ok(())
@@ -6042,6 +6077,9 @@ impl EmoteType3 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType3").entered();
 
+        write_u32(writer, EmoteType::GiveEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         self.c_profile.write(writer)?;
         Ok(())
     }
@@ -6059,6 +6097,9 @@ impl EmoteType4 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType4").entered();
 
+        write_u32(writer, EmoteType::MoveHomeEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         self.frame.write(writer)?;
         Ok(())
     }
@@ -6076,6 +6117,9 @@ impl EmoteType5 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType5").entered();
 
+        write_u32(writer, EmoteType::MotionEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.motion)?;
         Ok(())
     }
@@ -6093,6 +6137,9 @@ impl EmoteType7 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType7").entered();
 
+        write_u32(writer, EmoteType::PhysScriptEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.physics_script)?;
         Ok(())
     }
@@ -6110,6 +6157,9 @@ impl EmoteType9 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType9").entered();
 
+        write_u32(writer, EmoteType::SoundEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.sound)?;
         Ok(())
     }
@@ -6127,6 +6177,9 @@ impl EmoteTypeE {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteTypeE").entered();
 
+        write_u32(writer, EmoteType::CastSpellEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.spell_id)?;
         Ok(())
     }
@@ -6144,6 +6197,9 @@ impl EmoteType1C {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType1C").entered();
 
+        write_u32(writer, EmoteType::AwardSkillXPEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.amount)?;
         write_u32(writer, self.stat)?;
         Ok(())
@@ -6162,6 +6218,9 @@ impl EmoteType1E {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType1E").entered();
 
+        write_u32(writer, EmoteType::InqQuestSolvesEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_u32(writer, self.min)?;
         write_u32(writer, self.max)?;
@@ -6181,6 +6240,9 @@ impl EmoteType20 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType20").entered();
 
+        write_u32(writer, EmoteType::DecrementQuestEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_u32(writer, self.amount)?;
         Ok(())
@@ -6199,6 +6261,9 @@ impl EmoteType22 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType22").entered();
 
+        write_u32(writer, EmoteType::AddCharacterTitleEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.amount)?;
         Ok(())
     }
@@ -6216,6 +6281,9 @@ impl EmoteType23 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType23").entered();
 
+        write_u32(writer, EmoteType::InqBoolStatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_u32(writer, self.stat)?;
         Ok(())
@@ -6234,6 +6302,9 @@ impl EmoteType24 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType24").entered();
 
+        write_u32(writer, EmoteType::InqIntStatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_u32(writer, self.min)?;
         write_u32(writer, self.max)?;
@@ -6254,6 +6325,9 @@ impl EmoteType25 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType25").entered();
 
+        write_u32(writer, EmoteType::InqFloatStatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_f64(writer, self.f_min)?;
         write_f64(writer, self.f_max)?;
@@ -6274,6 +6348,9 @@ impl EmoteType26 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType26").entered();
 
+        write_u32(writer, EmoteType::InqStringStatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_string(writer, &self.test_string)?;
         write_u32(writer, self.stat)?;
@@ -6293,6 +6370,9 @@ impl EmoteType31 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType31").entered();
 
+        write_u32(writer, EmoteType::AwardLevelProportionalXPEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_f64(writer, self.percent)?;
         write_u64(writer, self.min64)?;
         write_u64(writer, self.max64)?;
@@ -6312,6 +6392,9 @@ impl EmoteType32 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType32").entered();
 
+        write_u32(writer, EmoteType::AwardLevelProportionalSkillXPEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.stat)?;
         write_f64(writer, self.percent)?;
         write_u32(writer, self.min)?;
@@ -6333,6 +6416,9 @@ impl EmoteType35 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType35").entered();
 
+        write_u32(writer, EmoteType::SetIntStatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.stat)?;
         write_u32(writer, self.amount)?;
         Ok(())
@@ -6351,6 +6437,9 @@ impl EmoteType38 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType38").entered();
 
+        write_u32(writer, EmoteType::CreateTreasureEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_i32(writer, self.wealth_rating)?;
         write_i32(writer, self.treasure_class)?;
         write_i32(writer, self.treasure_type)?;
@@ -6370,6 +6459,9 @@ impl EmoteType3F {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType3F").entered();
 
+        write_u32(writer, EmoteType::SetSanctuaryPositionEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         self.position.write(writer)?;
         Ok(())
     }
@@ -6387,6 +6479,9 @@ impl EmoteType4C {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType4C").entered();
 
+        write_u32(writer, EmoteType::InqOwnsItemsEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.msg)?;
         self.c_profile.write(writer)?;
         Ok(())
@@ -6405,6 +6500,9 @@ impl EmoteType6E {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType6E").entered();
 
+        write_u32(writer, EmoteType::UntrainSkillEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.stat)?;
         Ok(())
     }
@@ -6422,6 +6520,9 @@ impl EmoteType70 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType70").entered();
 
+        write_u32(writer, EmoteType::SpendLuminanceEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u64(writer, self.amount64)?;
         Ok(())
     }
@@ -6439,6 +6540,9 @@ impl EmoteType72 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType72").entered();
 
+        write_u32(writer, EmoteType::InqInt64StatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_string(writer, &self.message)?;
         write_u64(writer, self.min64)?;
         write_u64(writer, self.max64)?;
@@ -6459,6 +6563,9 @@ impl EmoteType76 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "EmoteType76").entered();
 
+        write_u32(writer, EmoteType::SetFloatStatEmoteType as u32)?;
+        write_f32(writer, self.delay)?;
+        write_f32(writer, self.extent)?;
         write_u32(writer, self.stat)?;
         write_f64(writer, self.percent)?;
         Ok(())
@@ -7437,6 +7544,7 @@ impl WindowPropertyType1000007F {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType1000007F").entered();
 
+        write_u32(writer, 268435583)?;
         write_u32(writer, self.unknown_j)?;
         write_u64(writer, self.value_j)?;
         Ok(())
@@ -7455,6 +7563,7 @@ impl WindowPropertyType10000086 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType10000086").entered();
 
+        write_u32(writer, 268435590)?;
         write_u32(writer, self.unknown_i)?;
         write_u32(writer, self.value_i)?;
         Ok(())
@@ -7473,6 +7582,7 @@ impl WindowPropertyType10000087 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType10000087").entered();
 
+        write_u32(writer, 268435591)?;
         write_u32(writer, self.unknown_h)?;
         write_u32(writer, self.value_h)?;
         Ok(())
@@ -7491,6 +7601,7 @@ impl WindowPropertyType10000088 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType10000088").entered();
 
+        write_u32(writer, 268435592)?;
         write_u32(writer, self.unknown_f)?;
         write_u32(writer, self.value_f)?;
         Ok(())
@@ -7509,6 +7620,7 @@ impl WindowPropertyType10000089 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType10000089").entered();
 
+        write_u32(writer, 268435593)?;
         write_u32(writer, self.unknown_e)?;
         write_u32(writer, self.value_e)?;
         Ok(())
@@ -7527,6 +7639,7 @@ impl WindowPropertyType1000008A {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType1000008A").entered();
 
+        write_u32(writer, 268435594)?;
         write_u32(writer, self.unknown_d)?;
         write_u8(writer, self.value_d)?;
         Ok(())
@@ -7545,8 +7658,18 @@ impl WindowPropertyType1000008D {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowPropertyType1000008D").entered();
 
+        write_u32(writer, 268435597)?;
         write_u32(writer, self.unknown_c)?;
-        self.title_source.write(writer)?;
+        // Write nested switch variant fields
+        match &self.title_source {
+            WindowPropertyType1000008DTitleSourceVariant::Type0(variant_struct) => {
+                write_u32(writer, variant_struct.string_id)?;
+                write_u32(writer, variant_struct.file_id)?;
+            },
+            WindowPropertyType1000008DTitleSourceVariant::Type1(variant_struct) => {
+                write_wstring(writer, &variant_struct.value_a.0)?;
+            },
+        }
         Ok(())
     }
 }
@@ -7564,12 +7687,10 @@ impl WindowPropertyType1000008DTitleSourceVariant {
 
         match self {
             Self::Type0(variant_struct) => {
-                write_u8(writer, 0x00)?;
                 write_u32(writer, variant_struct.string_id)?;
                 write_u32(writer, variant_struct.file_id)?;
             },
             Self::Type1(variant_struct) => {
-                write_u8(writer, 0x01)?;
                 write_wstring(writer, &variant_struct.value_a.0)?;
             },
         }
@@ -7670,6 +7791,7 @@ impl WindowOptionType1000008B {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "WindowOptionType1000008B").entered();
 
+        write_u32(writer, 268435595)?;
         write_u8(writer, self.unknown_b)?;
         write_u8(writer, self.property_count)?;
         write_vec::<WindowProperty>(writer, &self.properties)?;
@@ -7789,6 +7911,7 @@ impl OptionPropertyType10000080 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "OptionPropertyType10000080").entered();
 
+        write_u32(writer, 268435584)?;
         write_u32(writer, self.unknown_l)?;
         write_f32(writer, self.inactive_opacity)?;
         Ok(())
@@ -7807,6 +7930,7 @@ impl OptionPropertyType10000081 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "OptionPropertyType10000081").entered();
 
+        write_u32(writer, 268435585)?;
         write_u32(writer, self.unknown_k)?;
         write_f32(writer, self.active_opacity)?;
         Ok(())
@@ -7825,6 +7949,7 @@ impl OptionPropertyType1000008C {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "OptionPropertyType1000008C").entered();
 
+        write_u32(writer, 268435596)?;
         write_u32(writer, self.unknown_a)?;
         write_packable_list::<WindowOption>(writer, &self.window_options)?;
         Ok(())
@@ -8983,6 +9108,8 @@ impl ItemProfileTypeNeg1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "ItemProfileTypeNeg1").entered();
 
+        write_u32(writer, self.packed_amount)?;
+        self.object_id.write(writer)?;
         self.weenie_description.write(writer)?;
         Ok(())
     }
@@ -9000,6 +9127,8 @@ impl ItemProfileType1 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "ItemProfileType1").entered();
 
+        write_u32(writer, self.packed_amount)?;
+        self.object_id.write(writer)?;
         self.old_weenie_description.write(writer)?;
         Ok(())
     }
@@ -11350,6 +11479,12 @@ impl MovementDataType0 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "MovementDataType0").entered();
 
+        write_u16(writer, self.object_movement_sequence)?;
+        write_u16(writer, self.object_server_control_sequence)?;
+        write_u16(writer, self.autonomous)?;
+        write_u32(writer, MovementType::InterpretedMotionState as u32)?;
+        write_u8(writer, self.option_flags.clone() as u8)?;
+        write_u16(writer, self.stance.clone() as u16)?;
         self.state.write(writer)?;
         if (self.option_flags.clone() as u32 & 0x01) != 0
             && let Some(ref value) = self.sticky_object {
@@ -11371,6 +11506,12 @@ impl MovementDataType6 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "MovementDataType6").entered();
 
+        write_u16(writer, self.object_movement_sequence)?;
+        write_u16(writer, self.object_server_control_sequence)?;
+        write_u16(writer, self.autonomous)?;
+        write_u32(writer, MovementType::MoveToObject as u32)?;
+        write_u8(writer, self.option_flags.clone() as u8)?;
+        write_u16(writer, self.stance.clone() as u16)?;
         self.target.write(writer)?;
         self.origin.write(writer)?;
         self.move_to_params.write(writer)?;
@@ -11391,6 +11532,12 @@ impl MovementDataType7 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "MovementDataType7").entered();
 
+        write_u16(writer, self.object_movement_sequence)?;
+        write_u16(writer, self.object_server_control_sequence)?;
+        write_u16(writer, self.autonomous)?;
+        write_u32(writer, MovementType::MoveToPosition as u32)?;
+        write_u8(writer, self.option_flags.clone() as u8)?;
+        write_u16(writer, self.stance.clone() as u16)?;
         self.origin.write(writer)?;
         self.move_to_params.write(writer)?;
         write_f32(writer, self.my_run_rate)?;
@@ -11410,6 +11557,12 @@ impl MovementDataType8 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "MovementDataType8").entered();
 
+        write_u16(writer, self.object_movement_sequence)?;
+        write_u16(writer, self.object_server_control_sequence)?;
+        write_u16(writer, self.autonomous)?;
+        write_u32(writer, MovementType::TurnToObject as u32)?;
+        write_u8(writer, self.option_flags.clone() as u8)?;
+        write_u16(writer, self.stance.clone() as u16)?;
         self.target_id.write(writer)?;
         write_f32(writer, self.desired_heading)?;
         self.turn_to_params.write(writer)?;
@@ -11429,6 +11582,12 @@ impl MovementDataType9 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "MovementDataType9").entered();
 
+        write_u16(writer, self.object_movement_sequence)?;
+        write_u16(writer, self.object_server_control_sequence)?;
+        write_u16(writer, self.autonomous)?;
+        write_u32(writer, MovementType::TurnToPosition as u32)?;
+        write_u8(writer, self.option_flags.clone() as u8)?;
+        write_u16(writer, self.stance.clone() as u16)?;
         self.turn_to_params.write(writer)?;
         Ok(())
     }
@@ -14343,6 +14502,9 @@ impl GameMoveDataType4 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "GameMoveDataType4").entered();
 
+        write_u32(writer, 4)?;
+        self.player_id.write(writer)?;
+        write_i32(writer, self.team)?;
         write_i32(writer, self.id_piece_to_move)?;
         write_i32(writer, self.y_grid)?;
         Ok(())
@@ -14361,6 +14523,9 @@ impl GameMoveDataType5 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "GameMoveDataType5").entered();
 
+        write_u32(writer, 5)?;
+        self.player_id.write(writer)?;
+        write_i32(writer, self.team)?;
         write_i32(writer, self.id_piece_to_move)?;
         write_i32(writer, self.y_grid)?;
         write_i32(writer, self.x_to)?;
@@ -14381,6 +14546,9 @@ impl GameMoveDataType6 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "write", r#type = "GameMoveDataType6").entered();
 
+        write_u32(writer, 6)?;
+        self.player_id.write(writer)?;
+        write_i32(writer, self.team)?;
         write_i32(writer, self.id_piece_to_move)?;
         Ok(())
     }
