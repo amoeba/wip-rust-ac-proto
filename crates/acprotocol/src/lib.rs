@@ -10,7 +10,6 @@ pub use generated::messages;
 pub use generated::packets;
 pub use generated::types;
 
-pub mod cli;
 pub mod constants;
 pub mod dat;
 pub mod filter;
