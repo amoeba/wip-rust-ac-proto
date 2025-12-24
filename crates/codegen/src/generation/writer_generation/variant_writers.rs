@@ -198,12 +198,20 @@ fn generate_variant_struct_writer_impl(
             // Check if it's an enum type by looking it up in the enum_parent_map
             if ctx.enum_parent_map.contains_key(field_type) {
                 // Look up the enum variant name for this value
-                if let Some(variant_name) = ctx.enum_value_map.get(&(field_type.clone(), case_value)) {
+                if let Some(variant_name) =
+                    ctx.enum_value_map.get(&(field_type.clone(), case_value))
+                {
                     // Use the enum variant name for readability
-                    out.push_str(&format!("        write_u32(writer, {}::{} as u32)?;\n", field_type, variant_name));
+                    out.push_str(&format!(
+                        "        write_u32(writer, {}::{} as u32)?;\n",
+                        field_type, variant_name
+                    ));
                 } else {
                     // Fallback to raw value if variant not found in enum definition
-                    out.push_str(&format!("        write_u32(writer, {} as u32)?;\n", case_value));
+                    out.push_str(&format!(
+                        "        write_u32(writer, {} as u32)?;\n",
+                        case_value
+                    ));
                 }
             } else {
                 // It's a primitive type - write directly
@@ -235,10 +243,14 @@ fn generate_variant_struct_writer_impl(
             // Generate the nested enum type name
             let nested_enum_name_raw =
                 format!("{}{}{}", struct_name, nested_switch.switch_field, "Variant");
-            let nested_enum_type_name = safe_identifier(&nested_enum_name_raw, IdentifierType::Type).name;
+            let nested_enum_type_name =
+                safe_identifier(&nested_enum_name_raw, IdentifierType::Type).name;
 
             out.push_str("        // Write nested switch discriminator\n");
-            out.push_str(&format!("        match &self.{} {{\n", nested_enum_field_name));
+            out.push_str(&format!(
+                "        match &self.{} {{\n",
+                nested_enum_field_name
+            ));
 
             // Group nested case values by field signature to handle aliased variants
             let all_case_values: Vec<i64> = nested_switch.variant_fields.keys().copied().collect();
@@ -344,10 +356,14 @@ fn generate_variant_struct_writer_impl(
         // Generate the nested enum type name
         let nested_enum_name_raw =
             format!("{}{}{}", struct_name, nested_switch.switch_field, "Variant");
-        let nested_enum_type_name = safe_identifier(&nested_enum_name_raw, IdentifierType::Type).name;
+        let nested_enum_type_name =
+            safe_identifier(&nested_enum_name_raw, IdentifierType::Type).name;
 
         out.push_str("        // Write nested switch variant fields\n");
-        out.push_str(&format!("        match &self.{} {{\n", nested_enum_field_name));
+        out.push_str(&format!(
+            "        match &self.{} {{\n",
+            nested_enum_field_name
+        ));
 
         // Group nested case values by field signature to handle aliased variants
         let all_case_values: Vec<i64> = nested_switch.variant_fields.keys().copied().collect();
