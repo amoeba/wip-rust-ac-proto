@@ -1,4 +1,4 @@
-use crate::cli_helper::parse_opcode_filter;
+use crate::cli::parse_opcode_filter;
 use crate::network::RawMessage;
 
 use super::output::{format_parsed_messages, format_raw_messages};
