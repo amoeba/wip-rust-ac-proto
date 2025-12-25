@@ -174,7 +174,7 @@ pub fn generate_write_base_logic(
         "f64" => format!("write_f64(writer, self.{})?", field_name),
         "bool" => format!("write_bool(writer, self.{})?", field_name),
         "String" => format!("write_string(writer, &self.{})?", field_name),
-        "WString" => format!("write_wstring(writer, &self.{}.0)?", field_name),
+        "WString" => format!("write_string32l(writer, &self.{}.0, false)?", field_name),
         _ => {
             // Check if it's an enum
             if ctx.enum_parent_map.contains_key(field_type) {

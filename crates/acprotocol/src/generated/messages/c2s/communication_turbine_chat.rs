@@ -187,8 +187,8 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
         match blob_dispatch_type {
             0x01 => {
                 let room_id = read_u32(reader)?;
-                let display_name = read_wstring(reader).map(WString)?;
-                let text = read_wstring(reader).map(WString)?;
+                let display_name = read_string32l(reader, false).map(WString)?;
+                let text = read_string32l(reader, false).map(WString)?;
                 let extra_data_size = read_u32(reader)?;
                 let speaker_id = ObjectId::read(reader)?;
                 let h_result = read_i32(reader)?;
@@ -243,7 +243,7 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
                 let response_id = read_u32(reader)?;
                 let method_id = read_u32(reader)?;
                 let room_id = read_u32(reader)?;
-                let text = read_wstring(reader).map(WString)?;
+                let text = read_string32l(reader, false).map(WString)?;
                 let extra_data_size = read_u32(reader)?;
                 let speaker_id = ObjectId::read(reader)?;
                 let h_result = read_i32(reader)?;
@@ -374,8 +374,8 @@ impl CommunicationTurbineChatType1 {
         match &self.blob_dispatch_type {
             CommunicationTurbineChatType1BlobDispatchTypeVariant::Type1(variant_struct) => {
                 write_u32(writer, variant_struct.room_id)?;
-                write_wstring(writer, &variant_struct.display_name.0)?;
-                write_wstring(writer, &variant_struct.text.0)?;
+                write_string32l(writer, &variant_struct.display_name.0, false)?;
+                write_string32l(writer, &variant_struct.text.0, false)?;
                 write_u32(writer, variant_struct.extra_data_size)?;
                 variant_struct.speaker_id.write(writer)?;
                 write_i32(writer, variant_struct.h_result)?;
@@ -400,8 +400,8 @@ impl CommunicationTurbineChatType1BlobDispatchTypeVariant {
         match self {
             Self::Type1(variant_struct) => {
                 write_u32(writer, variant_struct.room_id)?;
-                write_wstring(writer, &variant_struct.display_name.0)?;
-                write_wstring(writer, &variant_struct.text.0)?;
+                write_string32l(writer, &variant_struct.display_name.0, false)?;
+                write_string32l(writer, &variant_struct.text.0, false)?;
                 write_u32(writer, variant_struct.extra_data_size)?;
                 variant_struct.speaker_id.write(writer)?;
                 write_i32(writer, variant_struct.h_result)?;
@@ -444,7 +444,7 @@ impl CommunicationTurbineChatType3 {
                 write_u32(writer, variant_struct.response_id)?;
                 write_u32(writer, variant_struct.method_id)?;
                 write_u32(writer, variant_struct.room_id)?;
-                write_wstring(writer, &variant_struct.text.0)?;
+                write_string32l(writer, &variant_struct.text.0, false)?;
                 write_u32(writer, variant_struct.extra_data_size)?;
                 variant_struct.speaker_id.write(writer)?;
                 write_i32(writer, variant_struct.h_result)?;
@@ -472,7 +472,7 @@ impl CommunicationTurbineChatType3BlobDispatchTypeVariant {
                 write_u32(writer, variant_struct.response_id)?;
                 write_u32(writer, variant_struct.method_id)?;
                 write_u32(writer, variant_struct.room_id)?;
-                write_wstring(writer, &variant_struct.text.0)?;
+                write_string32l(writer, &variant_struct.text.0, false)?;
                 write_u32(writer, variant_struct.extra_data_size)?;
                 variant_struct.speaker_id.write(writer)?;
                 write_i32(writer, variant_struct.h_result)?;

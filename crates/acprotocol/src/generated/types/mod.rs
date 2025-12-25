@@ -3235,7 +3235,7 @@ impl LoginRequestHeaderType2 {
         #[cfg(feature = "tracing")]
         let _span = tracing::span!(tracing::Level::DEBUG, "read", r#type = "LoginRequestHeaderType2").entered();
 
-        let password = read_wstring(reader).map(WString)?;
+        let password = read_string32l(reader, false).map(WString)?;
 
         Ok(Self {
             client_version,
@@ -3315,7 +3315,7 @@ impl LoginRequestHeaderType2 {
         write_u32(writer, self.sequence)?;
         write_string(writer, &self.account)?;
         write_string(writer, &self.account_to_login_as)?;
-        write_wstring(writer, &self.password.0)?;
+        write_string32l(writer, &self.password.0, false)?;
         Ok(())
     }
 }
@@ -7480,7 +7480,7 @@ impl WindowPropertyType1000008DTitleSourceVariant {
                 }))
             },
             0x01 => {
-                let value_a = read_wstring(reader).map(WString)?;
+                let value_a = read_string32l(reader, false).map(WString)?;
                 Ok(Self::Type1(WindowPropertyType1000008DTitleSourceVariantType1 {
                     value_a,
                 }))
@@ -7667,7 +7667,7 @@ impl WindowPropertyType1000008D {
                 write_u32(writer, variant_struct.file_id)?;
             },
             WindowPropertyType1000008DTitleSourceVariant::Type1(variant_struct) => {
-                write_wstring(writer, &variant_struct.value_a.0)?;
+                write_string32l(writer, &variant_struct.value_a.0, false)?;
             },
         }
         Ok(())
@@ -7691,7 +7691,7 @@ impl WindowPropertyType1000008DTitleSourceVariant {
                 write_u32(writer, variant_struct.file_id)?;
             },
             Self::Type1(variant_struct) => {
-                write_wstring(writer, &variant_struct.value_a.0)?;
+                write_string32l(writer, &variant_struct.value_a.0, false)?;
             },
         }
         Ok(())

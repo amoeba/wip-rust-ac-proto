@@ -19,7 +19,7 @@ pub fn is_primitive_type(rust_type: &str) -> bool {
 /// Check if a type should be generated as a newtype struct (vs type alias)
 /// Returns true if it's a semantic type with a primitive parent (not a C-style alias)
 pub fn should_be_newtype_struct(type_name: &str, rust_parent_type: &str) -> bool {
-    // WString is always a newtype struct (has custom UTF-16 wire format)
+    // WString is always a newtype struct (has custom 32-bit length wire format)
     if type_name == "WString" {
         return true;
     }
