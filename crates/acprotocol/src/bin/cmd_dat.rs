@@ -47,6 +47,24 @@ enum Commands {
         #[arg(long = "type", help = "Filter files by type (Texture, Unknown)")]
         file_type: Option<String>,
     },
+    Icon {
+        #[arg(help = "Path to DAT file", short('f'), long("file"))]
+        dat_file: String,
+        #[arg(help = "Icon texture ID (required)", long)]
+        icon_id: String,
+        #[arg(help = "Underlay texture ID (optional)", long)]
+        underlay: Option<String>,
+        #[arg(help = "Overlay texture ID (optional)", long)]
+        overlay: Option<String>,
+        #[arg(help = "Second overlay texture ID (optional)", long)]
+        overlay2: Option<String>,
+        #[arg(help = "UI effect texture ID (optional)", long)]
+        ui_effect: Option<String>,
+        #[arg(short, long, default_value = "icon.png", help = "Output PNG file")]
+        output: String,
+        #[arg(short, long, default_value = "1", help = "Scale factor (1-10)")]
+        scale: u32,
+    },
 }
 
 #[cfg(feature = "dat-tokio")]
@@ -98,13 +116,25 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .await
                 .unwrap();
 
+            println!("Total file buffer size: {} bytes", buf.len());
+
             // Step 3: Convert the buffer into our file
             // This is the common part
-            let mut buf_reader = Cursor::new(buf);
+            let mut buf_reader = Cursor::new(buf.clone());
             match found_file.file_type() {
                 DatFileType::Texture => {
                     let outer_file: DatFile<Texture> = DatFile::read(&mut buf_reader)?;
+                    let bytes_read = buf_reader.position();
                     let texture = outer_file.inner;
+                    println!("Texture format: {:?}, size: {}x{}", texture.format, texture.width, texture.height);
+                    println!("Unknown field: {}", texture.unknown);
+                    println!("Data length: {} bytes (expected: {} for {}x{})",
+                        texture.data.len(),
+                        texture.width * texture.height * 4,
+                        texture.width,
+                        texture.height);
+                    println!("Bytes read from buffer: {}, remaining: {}", bytes_read, buf.len() - bytes_read as usize);
+
                     let output_path = format!("{}.png", object_id);
                     texture.to_png(&output_path, scale)?;
                     println!("Texture saved to {:?} (scale: {}x)", output_path, scale);
@@ -170,6 +200,135 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     );
                 }
             }
+        }
+        Commands::Icon {
+            dat_file,
+            icon_id,
+            underlay,
+            overlay,
+            overlay2,
+            ui_effect,
+            output,
+            scale,
+        } => {
+            use image::{ImageBuffer, Pixel, RgbaImage};
+
+            // Helper function to load a texture by ID
+            async fn load_texture(
+                dat_file: &str,
+                dat: &DatDatabase,
+                texture_id: &str,
+            ) -> Result<Texture, Box<dyn std::error::Error>> {
+                use acprotocol::dat::reader::file_reader::FileRangeReader;
+                use acprotocol::dat::reader::dat_file_reader::DatFileReader;
+
+                let found_file = find_file_by_id(dat, texture_id).await?;
+
+                let file = tokio::fs::File::open(dat_file).await?;
+                let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
+                let mut file_reader = FileRangeReader::new(compat_file);
+                let mut reader = DatFileReader::new(
+                    found_file.file_size as usize,
+                    dat.header.block_size as usize,
+                )?;
+                let buf = reader
+                    .read_file(&mut file_reader, found_file.file_offset)
+                    .await?;
+
+                let mut buf_reader = Cursor::new(buf);
+                let outer_file: DatFile<Texture> = DatFile::read(&mut buf_reader)?;
+                Ok(outer_file.inner)
+            }
+
+            let file = tokio::fs::File::open(&dat_file).await?;
+            let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
+            let mut range_reader = FileRangeReader::new(compat_file);
+            let dat = DatDatabase::read_async(&mut range_reader).await?;
+
+            // Build layers in proper order: underlay -> icon_id -> overlay -> overlay2 -> ui_effect
+            let mut layers = Vec::new();
+
+            if let Some(ref underlay_id) = underlay {
+                println!("Loading underlay: {}", underlay_id);
+                layers.push(load_texture(&dat_file, &dat, underlay_id).await?);
+            }
+
+            println!("Loading icon: {}", icon_id);
+            let icon_texture = load_texture(&dat_file, &dat, &icon_id).await?;
+            let width = icon_texture.width as u32;
+            let height = icon_texture.height as u32;
+            layers.push(icon_texture);
+
+            if let Some(ref overlay_id) = overlay {
+                println!("Loading overlay: {}", overlay_id);
+                layers.push(load_texture(&dat_file, &dat, overlay_id).await?);
+            }
+
+            if let Some(ref overlay2_id) = overlay2 {
+                println!("Loading overlay2: {}", overlay2_id);
+                layers.push(load_texture(&dat_file, &dat, overlay2_id).await?);
+            }
+
+            if let Some(ref effect_id) = ui_effect {
+                println!("Loading ui_effect: {}", effect_id);
+                layers.push(load_texture(&dat_file, &dat, effect_id).await?);
+            }
+
+            println!("Compositing {} layer(s)", layers.len());
+
+            // Start with first layer as base
+            let base_buf = layers[0].export()?;
+            let mut base_img: RgbaImage = ImageBuffer::from_raw(width, height, base_buf)
+                .expect("Failed to create ImageBuffer from first texture");
+
+            // Replace white with black (simple game rendering behavior)
+            for pixel in base_img.pixels_mut() {
+                if pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 {
+                    pixel[0] = 0;
+                    pixel[1] = 0;
+                    pixel[2] = 0;
+                }
+            }
+
+            let mut blended_image = base_img;
+
+            // Blend remaining layers on top
+            for layer in layers.iter().skip(1) {
+                let layer_buf = layer.export()?;
+                let mut layer_img: RgbaImage = ImageBuffer::from_raw(width, height, layer_buf)
+                    .expect("Failed to create ImageBuffer from layer");
+
+                // Replace white with black in this layer too
+                for pixel in layer_img.pixels_mut() {
+                    if pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 {
+                        pixel[0] = 0;
+                        pixel[1] = 0;
+                        pixel[2] = 0;
+                    }
+                }
+
+                for x in 0..width {
+                    for y in 0..height {
+                        let target_pixel = blended_image.get_pixel_mut(x, y);
+                        let new_pixel = layer_img.get_pixel(x, y);
+                        target_pixel.blend(new_pixel);
+                    }
+                }
+            }
+
+            // Apply scaling if needed
+            let final_image = if scale > 1 {
+                image::DynamicImage::ImageRgba8(blended_image).resize(
+                    width * scale,
+                    height * scale,
+                    image::imageops::FilterType::Lanczos3,
+                )
+            } else {
+                image::DynamicImage::ImageRgba8(blended_image)
+            };
+
+            final_image.save(&output)?;
+            println!("Saved composited icon to {} ({}x{} @ {}x scale)", output, width, height, scale);
         }
     }
 
@@ -247,6 +406,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                     );
                 }
             }
+        }
+        Commands::Icon {
+            dat_file: _,
+            icon_id: _,
+            underlay: _,
+            overlay: _,
+            overlay2: _,
+            ui_effect: _,
+            output: _,
+            scale: _,
+        } => {
+            eprintln!("Icon compositing requires the 'dat-tokio' feature. Please rebuild with --features=\"dat-tokio dat-export\"");
+            std::process::exit(1);
         }
     }
 
