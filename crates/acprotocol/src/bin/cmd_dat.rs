@@ -24,6 +24,8 @@ enum Commands {
         object_id: String,
         #[arg(short, long, default_value = "./")]
         output_dir: String,
+        #[arg(short, long, default_value = "1", help = "Scale factor for exported textures (1-10)")]
+        scale: u32,
     },
     Read {
         #[arg(
@@ -59,6 +61,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             dat_file,
             object_id,
             output_dir,
+            scale,
         } => {
             use acprotocol::dat::reader::dat_file_reader::DatFileReader;
 
@@ -103,8 +106,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     let outer_file: DatFile<Texture> = DatFile::read(&mut buf_reader)?;
                     let texture = outer_file.inner;
                     let output_path = format!("{}.png", object_id);
-                    texture.to_png(&output_path, 1)?;
-                    println!("Texture saved to {:?}", output_path);
+                    texture.to_png(&output_path, scale)?;
+                    println!("Texture saved to {:?} (scale: {}x)", output_path, scale);
                 }
                 _ => {
                     println!(
@@ -184,6 +187,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             dat_file,
             object_id,
             output_dir,
+            scale,
         } => {
             println!(
                 "Extract: {:?}, {:?}, {:?}!",
