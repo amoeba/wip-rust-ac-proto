@@ -28,18 +28,9 @@ use image::{DynamicImage, ImageBuffer, Pixel, Rgba, RgbaImage};
 use crate::dat::file_types::texture::Texture;
 
 #[cfg(feature = "dat-export")]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IconExportOptions {
     pub convert_white_to_black: bool,
-}
-
-#[cfg(feature = "dat-export")]
-impl Default for IconExportOptions {
-    fn default() -> Self {
-        IconExportOptions {
-            convert_white_to_black: false,
-        }
-    }
 }
 
 #[cfg(feature = "dat-export")]
