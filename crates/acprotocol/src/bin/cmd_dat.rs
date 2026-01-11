@@ -1,7 +1,6 @@
 use std::{error::Error, io::Cursor};
 
-use acprotocol::cli::find_file_by_id;
-use acprotocol::dat::{DatDatabase, DatFile, DatFileType, Texture};
+use acprotocol::dat::{find_file_by_id, DatDatabase, DatFile, DatFileType, Texture};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
