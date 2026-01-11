@@ -42,7 +42,24 @@ pub struct Icon {
 
 #[cfg(feature = "dat-export")]
 impl Icon {
-    pub fn blend(&self) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>, std::io::Error> {
+    /// Convert white pixels to black in the given image (game rendering
+    /// behavior)
+    ///
+    /// Without running this, icons have a white outline around the outline of
+    /// whatever shape and, ingame, that same area has a black outline. I don't
+    /// have any proof of what the client is doing so this I do this since it
+    /// appears to get the right result.
+    fn convert_white_to_black(image: &mut RgbaImage) {
+        for pixel in image.pixels_mut() {
+            if pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255 {
+                pixel[0] = 0;
+                pixel[1] = 0;
+                pixel[2] = 0;
+            }
+        }
+    }
+
+    pub fn blend(&self, convert_white_to_black: bool) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>, std::io::Error> {
         // TODO: Remove clones
 
         let mut texture_stack: Vec<Texture> = vec![];
@@ -73,6 +90,10 @@ impl Icon {
         let mut blended_image: RgbaImage = ImageBuffer::from_raw(self.width, self.height, base_buf)
             .expect("Failed to create ImageBuffer");
 
+        if convert_white_to_black {
+            Self::convert_white_to_black(&mut blended_image);
+        }
+
         if texture_stack.len() == 1 {
             println!("Early return since we only have one layer.");
             return Ok(blended_image);
@@ -81,9 +102,13 @@ impl Icon {
         // Write any remaining textures in the stack
         for next_layer in texture_stack.iter().skip(1) {
             let next_layer_buf = next_layer.export()?;
-            let next_layer_img: RgbaImage =
+            let mut next_layer_img: RgbaImage =
                 ImageBuffer::from_raw(self.width, self.height, next_layer_buf)
                     .expect("Failed to create ImageBuffer");
+
+            if convert_white_to_black {
+                Self::convert_white_to_black(&mut next_layer_img);
+            }
 
             for x in 0..self.width {
                 for y in 0..self.height {
@@ -98,7 +123,18 @@ impl Icon {
     }
 
     pub fn export(&self) -> Result<Vec<u8>, std::io::Error> {
-        let blended = self.blend()?;
+        self.export_internal(false)
+    }
+
+    pub fn export_with_options(
+        &self,
+        convert_white_to_black: bool,
+    ) -> Result<Vec<u8>, std::io::Error> {
+        self.export_internal(convert_white_to_black)
+    }
+
+    fn export_internal(&self, convert_white_to_black: bool) -> Result<Vec<u8>, std::io::Error> {
+        let blended = self.blend(convert_white_to_black)?;
 
         let image = DynamicImage::ImageRgba8(blended).resize(
             self.width * self.scale,
@@ -114,7 +150,7 @@ impl Icon {
     }
 
     pub fn export_to_file(&self, path: &str) -> Result<(), std::io::Error> {
-        let blended = self.blend()?;
+        let blended = self.blend(false)?;
 
         let image = DynamicImage::ImageRgba8(blended).resize(
             self.width * self.scale,
