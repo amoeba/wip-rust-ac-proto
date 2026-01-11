@@ -1,6 +1,6 @@
 use std::{error::Error, io::Cursor};
 
-use acprotocol::dat::{find_file_by_id, DatDatabase, DatFile, DatFileType, Texture};
+use acprotocol::dat::{find_file_by_id, DatDatabase, DatFile, DatFileType, Texture, ExportOptions};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -284,7 +284,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
 
             println!("Compositing icon with white-to-black conversion");
-            let buf = icon.export_with_options(true)?;
+            let options = ExportOptions {
+                convert_white_to_black: true,
+            };
+            let buf = icon.export_with_options(&options)?;
             std::fs::write(&output, buf)?;
             println!("Saved composited icon to {} ({}x{} @ {}x scale)", output, width, height, scale);
         }

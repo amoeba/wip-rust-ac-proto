@@ -28,6 +28,21 @@ use image::{DynamicImage, ImageBuffer, Pixel, Rgba, RgbaImage};
 use crate::dat::file_types::texture::Texture;
 
 #[cfg(feature = "dat-export")]
+#[derive(Debug, Clone)]
+pub struct IconExportOptions {
+    pub convert_white_to_black: bool,
+}
+
+#[cfg(feature = "dat-export")]
+impl Default for IconExportOptions {
+    fn default() -> Self {
+        IconExportOptions {
+            convert_white_to_black: false,
+        }
+    }
+}
+
+#[cfg(feature = "dat-export")]
 #[derive(Debug)]
 pub struct Icon {
     pub width: u32,
@@ -59,7 +74,7 @@ impl Icon {
         }
     }
 
-    pub fn blend(&self, convert_white_to_black: bool) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>, std::io::Error> {
+    pub fn blend(&self, options: &IconExportOptions) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>, std::io::Error> {
         // TODO: Remove clones
 
         let mut texture_stack: Vec<Texture> = vec![];
@@ -90,7 +105,7 @@ impl Icon {
         let mut blended_image: RgbaImage = ImageBuffer::from_raw(self.width, self.height, base_buf)
             .expect("Failed to create ImageBuffer");
 
-        if convert_white_to_black {
+        if options.convert_white_to_black {
             Self::convert_white_to_black(&mut blended_image);
         }
 
@@ -106,7 +121,7 @@ impl Icon {
                 ImageBuffer::from_raw(self.width, self.height, next_layer_buf)
                     .expect("Failed to create ImageBuffer");
 
-            if convert_white_to_black {
+            if options.convert_white_to_black {
                 Self::convert_white_to_black(&mut next_layer_img);
             }
 
@@ -123,18 +138,11 @@ impl Icon {
     }
 
     pub fn export(&self) -> Result<Vec<u8>, std::io::Error> {
-        self.export_internal(false)
+        self.export_with_options(&IconExportOptions::default())
     }
 
-    pub fn export_with_options(
-        &self,
-        convert_white_to_black: bool,
-    ) -> Result<Vec<u8>, std::io::Error> {
-        self.export_internal(convert_white_to_black)
-    }
-
-    fn export_internal(&self, convert_white_to_black: bool) -> Result<Vec<u8>, std::io::Error> {
-        let blended = self.blend(convert_white_to_black)?;
+    pub fn export_with_options(&self, options: &IconExportOptions) -> Result<Vec<u8>, std::io::Error> {
+        let blended = self.blend(options)?;
 
         let image = DynamicImage::ImageRgba8(blended).resize(
             self.width * self.scale,
@@ -150,7 +158,7 @@ impl Icon {
     }
 
     pub fn export_to_file(&self, path: &str) -> Result<(), std::io::Error> {
-        let blended = self.blend(false)?;
+        let blended = self.blend(&IconExportOptions::default())?;
 
         let image = DynamicImage::ImageRgba8(blended).resize(
             self.width * self.scale,
