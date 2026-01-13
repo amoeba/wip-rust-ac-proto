@@ -432,7 +432,7 @@ impl IconBuilder {
     }
 
     /// Build the Icon by loading all textures from the DAT database
-    #[cfg(feature = "dat-tokio")]
+    #[cfg(all(feature = "dat-tokio", not(target_arch = "wasm32")))]
     pub async fn build(
         &self,
         dat: &crate::dat::DatDatabase,
