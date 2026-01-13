@@ -6072,7 +6072,6 @@ impl std::fmt::Display for Command {
 #[repr(u16)]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TryFromPrimitive)]
 pub enum StanceMode {
-    Invalid = 0x0,
     HandCombat = 0x3C,
     NonCombat = 0x3D,
     SwordCombat = 0x3E,
@@ -6108,7 +6107,6 @@ impl crate::writers::ACWritable for StanceMode {
 impl std::fmt::Display for StanceMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
-            StanceMode::Invalid => "Invalid",
             StanceMode::HandCombat => "HandCombat",
             StanceMode::NonCombat => "NonCombat",
             StanceMode::SwordCombat => "SwordCombat",

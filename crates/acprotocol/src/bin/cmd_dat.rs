@@ -1,8 +1,6 @@
 use std::{error::Error, io::Cursor};
 
-use acprotocol::dat::{
-    DatDatabase, DatFile, DatFileType, IconExportOptions, Texture, find_file_by_id,
-};
+use acprotocol::dat::{DatDatabase, DatFile, DatFileType, Texture, find_file_by_id};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -57,16 +55,37 @@ enum Commands {
     Icon {
         #[arg(help = "Path to DAT file", short('f'), long("file"))]
         dat_file: String,
+
+        // Required
         #[arg(help = "Icon texture ID (required)", long)]
         icon_id: String,
-        #[arg(help = "Underlay texture ID (optional)", long)]
-        underlay: Option<String>,
-        #[arg(help = "Overlay texture ID (optional)", long)]
-        overlay: Option<String>,
-        #[arg(help = "Second overlay texture ID (optional)", long)]
-        overlay2: Option<String>,
-        #[arg(help = "UI effect texture ID (optional)", long)]
+
+        // Literal mode - direct texture IDs
+        #[arg(help = "Background texture ID (literal mode)", long)]
+        background_id: Option<String>,
+        #[arg(help = "Underlay texture ID", long)]
+        underlay_id: Option<String>,
+        #[arg(help = "Overlay texture ID", long)]
+        overlay_id: Option<String>,
+        #[arg(help = "UI effect texture ID (literal mode)", long)]
+        ui_effect_id: Option<String>,
+
+        // Builder mode - semantic helpers
+        #[arg(
+            help = "Item type for automatic background (e.g., 'food', 'armor', 'random')",
+            long
+        )]
+        item_type: Option<String>,
+        #[arg(help = "UI effect name (e.g., 'fire', 'magical', 'random')", long)]
         ui_effect: Option<String>,
+
+        // Dimensions (optional, defaults to icon texture size)
+        #[arg(help = "Output width (defaults to icon texture width)", long)]
+        width: Option<u32>,
+        #[arg(help = "Output height (defaults to icon texture height)", long)]
+        height: Option<u32>,
+
+        // Output settings
         #[arg(short, long, default_value = "icon.png", help = "Output PNG file")]
         output: String,
         #[arg(short, long, default_value = "1", help = "Scale factor (1-10)")]
@@ -220,14 +239,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Commands::Icon {
             dat_file,
             icon_id,
-            underlay,
-            overlay,
-            overlay2,
+            background_id,
+            underlay_id,
+            overlay_id,
+            ui_effect_id,
+            item_type,
             ui_effect,
+            width: width_override,
+            height: height_override,
             output,
             scale,
         } => {
-            use acprotocol::dat::Icon;
+            use acprotocol::dat::icon::{
+                Icon, get_background_from_item_type, get_ui_effect_texture_id, parse_item_type,
+                parse_ui_effect,
+            };
 
             // Helper function to load a texture by ID
             async fn load_texture(
@@ -264,46 +290,86 @@ async fn main() -> Result<(), Box<dyn Error>> {
             // Load the base icon texture
             println!("Loading icon: {}", icon_id);
             let icon_texture = load_texture(&dat_file, &dat, &icon_id).await?;
-            let width = icon_texture.width as u32;
-            let height = icon_texture.height as u32;
+
+            // Use overrides if provided, otherwise use icon texture dimensions
+            let width = width_override.unwrap_or(icon_texture.width as u32);
+            let height = height_override.unwrap_or(icon_texture.height as u32);
+
+            // Default effect is UNDEF (transparent)
+            let default_effect = load_texture(&dat_file, &dat, "060011C5").await?;
 
             // Build icon with optional layers
             let mut icon = Icon {
                 width,
                 height,
                 scale,
-                base: icon_texture,
+                background: None,
                 underlay: None,
+                icon: icon_texture,
                 overlay: None,
-                overlay2: None,
-                effect: None,
+                effect: default_effect,
             };
 
-            if let Some(ref underlay_id) = underlay {
-                println!("Loading underlay: {}", underlay_id);
-                icon.underlay = Some(load_texture(&dat_file, &dat, underlay_id).await?);
+            // BACKGROUND: Literal mode (background_id) takes precedence over builder mode (item_type)
+            if let Some(ref bg_id) = background_id {
+                println!("Loading background (literal): {}", bg_id);
+                icon.background = Some(load_texture(&dat_file, &dat, bg_id).await?);
+            } else if let Some(ref item_type_str) = item_type {
+                // Builder mode: parse item type and get automatic background
+                match parse_item_type(item_type_str) {
+                    Ok(item_type_value) => {
+                        let bg_texture_id = get_background_from_item_type(item_type_value);
+                        let bg_id_str = format!("{:08X}", bg_texture_id);
+                        println!(
+                            "Loading background (builder, item_type={}): {}",
+                            item_type_str, bg_id_str
+                        );
+                        icon.background = Some(load_texture(&dat_file, &dat, &bg_id_str).await?);
+                    }
+                    Err(e) => {
+                        eprintln!("Error parsing item type '{}': {}", item_type_str, e);
+                        return Err(e.into());
+                    }
+                }
             }
 
-            if let Some(ref overlay_id) = overlay {
-                println!("Loading overlay: {}", overlay_id);
-                icon.overlay = Some(load_texture(&dat_file, &dat, overlay_id).await?);
+            // UNDERLAY: Always explicit ID
+            if let Some(ref underlay_id_str) = underlay_id {
+                println!("Loading underlay: {}", underlay_id_str);
+                icon.underlay = Some(load_texture(&dat_file, &dat, underlay_id_str).await?);
             }
 
-            if let Some(ref overlay2_id) = overlay2 {
-                println!("Loading overlay2: {}", overlay2_id);
-                icon.overlay2 = Some(load_texture(&dat_file, &dat, overlay2_id).await?);
+            // OVERLAY: Always explicit ID
+            if let Some(ref overlay_id_str) = overlay_id {
+                println!("Loading overlay: {}", overlay_id_str);
+                icon.overlay = Some(load_texture(&dat_file, &dat, overlay_id_str).await?);
             }
 
-            if let Some(ref effect_id) = ui_effect {
-                println!("Loading ui_effect: {}", effect_id);
-                icon.effect = Some(load_texture(&dat_file, &dat, effect_id).await?);
+            // UI EFFECT: Literal mode (ui_effect_id) takes precedence over builder mode (ui_effect)
+            if let Some(ref effect_id) = ui_effect_id {
+                println!("Loading ui_effect (literal): {}", effect_id);
+                icon.effect = load_texture(&dat_file, &dat, effect_id).await?;
+            } else if let Some(ref effect_str) = ui_effect {
+                // Builder mode: parse UI effect name and get automatic effect texture
+                match parse_ui_effect(effect_str) {
+                    Ok(ui_effect_flags) => {
+                        let effect_texture_id = get_ui_effect_texture_id(ui_effect_flags);
+                        let effect_id_str = format!("{:08X}", effect_texture_id);
+                        println!(
+                            "Loading ui_effect (builder, ui_effect={}): {}",
+                            effect_str, effect_id_str
+                        );
+                        icon.effect = load_texture(&dat_file, &dat, &effect_id_str).await?;
+                    }
+                    Err(e) => {
+                        eprintln!("Error parsing UI effect '{}': {}", effect_str, e);
+                        return Err(e.into());
+                    }
+                }
             }
 
-            println!("Compositing icon with white-to-black conversion");
-            let options = IconExportOptions {
-                convert_white_to_black: true,
-            };
-            let buf = icon.export_with_options(&options)?;
+            println!("Compositing icon layers");
+            let buf = icon.export()?;
             std::fs::write(&output, buf)?;
             println!(
                 "Saved composited icon to {} ({}x{} @ {}x scale)",
@@ -390,10 +456,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         Commands::Icon {
             dat_file: _,
             icon_id: _,
-            underlay: _,
-            overlay: _,
-            overlay2: _,
+            background_id: _,
+            underlay_id: _,
+            overlay_id: _,
+            ui_effect_id: _,
+            item_type: _,
             ui_effect: _,
+            width: _,
+            height: _,
             output: _,
             scale: _,
         } => {
