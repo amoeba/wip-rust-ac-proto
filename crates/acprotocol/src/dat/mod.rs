@@ -20,3 +20,6 @@ pub use utils::find_file_by_id;
 
 #[cfg(feature = "dat-export")]
 pub use icon::{Icon, IconBuilder};
+
+#[cfg(feature = "dat-export")]
+pub use file_types::Exportable;

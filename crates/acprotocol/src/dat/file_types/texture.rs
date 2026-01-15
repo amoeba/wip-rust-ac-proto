@@ -99,7 +99,10 @@ impl Texture {
 
                 Ok(result)
             }
-            _ => todo!(),
+            _ => Err(Error::new(
+                ErrorKind::Unsupported,
+                format!("Unsupported pixel format for export: {:?}", self.format),
+            )),
         }
     }
 
@@ -133,5 +136,16 @@ impl Texture {
             .expect("Failed to write image.");
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "dat-export")]
+impl super::Exportable for Texture {
+    fn export_to_path(&self, path: &str) -> Result<(), Error> {
+        self.to_png(path, 1)
+    }
+
+    fn file_extension(&self) -> &str {
+        "png"
     }
 }

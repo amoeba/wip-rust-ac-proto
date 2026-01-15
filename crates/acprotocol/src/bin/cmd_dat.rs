@@ -51,6 +51,8 @@ enum Commands {
         count: bool,
         #[arg(long = "type", help = "Filter files by type (Texture, Unknown)")]
         file_type: Option<String>,
+        #[arg(long, help = "Filter files by subtype (Icon)")]
+        subtype: Option<String>,
     },
     Icon {
         #[arg(help = "Path to DAT file", short('f'), long("file"))]
@@ -90,6 +92,12 @@ enum Commands {
         output: String,
         #[arg(short, long, default_value = "1", help = "Scale factor (1-10)")]
         scale: u32,
+    },
+    Export {
+        #[arg(help = "Path to DAT file", short('f'), long("file"))]
+        dat_file: String,
+        #[arg(short, long, default_value = "export", help = "Output directory")]
+        output: String,
     },
 }
 
@@ -193,7 +201,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             dat_file,
             count,
             file_type,
+            subtype,
         } => {
+            use acprotocol::dat::reader::dat_file_reader::DatFileReader;
+
             // Use async database reading with RangeReader
             let file = tokio::fs::File::open(&dat_file).await?;
             let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
@@ -203,7 +214,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let mut files = dat.list_files(true)?;
 
             // Filter by type if specified
-            if let Some(type_str) = file_type {
+            if let Some(type_str) = &file_type {
                 let filter_type = match type_str.to_lowercase().as_str() {
                     "texture" => DatFileType::Texture,
                     "unknown" => DatFileType::Unknown,
@@ -216,6 +227,56 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     }
                 };
                 files.retain(|file| file.file_type() == filter_type);
+            }
+
+            // Filter by subtype if specified (requires reading file data)
+            if let Some(subtype_str) = &subtype {
+                match subtype_str.to_lowercase().as_str() {
+                    "icon" => {
+                        // Icons are 32x32 textures - need to read each file to check dimensions
+                        let mut icon_files = Vec::new();
+
+                        for file_entry in &files {
+                            if file_entry.file_type() != DatFileType::Texture {
+                                continue;
+                            }
+
+                            // Read texture data
+                            let read_result = async {
+                                let file = tokio::fs::File::open(&dat_file).await?;
+                                let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
+                                let mut file_reader = FileRangeReader::new(compat_file);
+                                let mut reader = DatFileReader::new(
+                                    file_entry.file_size as usize,
+                                    dat.header.block_size as usize,
+                                )?;
+                                reader
+                                    .read_file(&mut file_reader, file_entry.file_offset)
+                                    .await
+                            }
+                            .await;
+
+                            if let Ok(buf) = read_result {
+                                let mut buf_reader = Cursor::new(buf);
+                                if let Ok(outer_file) = DatFile::<Texture>::read(&mut buf_reader) {
+                                    let texture = outer_file.inner;
+                                    if texture.width == 32 && texture.height == 32 {
+                                        icon_files.push(*file_entry);
+                                    }
+                                }
+                            }
+                        }
+
+                        files = icon_files;
+                    }
+                    _ => {
+                        eprintln!(
+                            "Invalid subtype: {}. Valid subtypes are: Icon",
+                            subtype_str
+                        );
+                        return Ok(());
+                    }
+                }
             }
 
             if count {
@@ -376,6 +437,118 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 output, width, height, scale
             );
         }
+        Commands::Export {
+            dat_file,
+            output,
+        } => {
+            use acprotocol::dat::reader::dat_file_reader::DatFileReader;
+            use acprotocol::dat::Exportable;
+            use std::path::Path;
+
+            println!("Exporting all files from {} to {}", dat_file, output);
+
+            // Check if output directory already exists
+            if tokio::fs::metadata(&output).await.is_ok() {
+                eprintln!(
+                    "Error: Output directory '{}' already exists. Please delete it before running export.",
+                    output
+                );
+                std::process::exit(1);
+            }
+
+            // Read the DAT database
+            let file = tokio::fs::File::open(&dat_file).await?;
+            let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
+            let mut range_reader = FileRangeReader::new(compat_file);
+            let dat = DatDatabase::read_async(&mut range_reader).await?;
+
+            // Get all files and filter by exportable types
+            let all_files = dat.list_files(true)?;
+            let files: Vec<_> = all_files
+                .iter()
+                .filter(|f| f.file_type() == DatFileType::Texture)
+                .collect();
+
+            println!("Found {} exportable files (out of {} total)", files.len(), all_files.len());
+
+            // Create output directory
+            tokio::fs::create_dir_all(&output).await?;
+
+            // Create subdirectories for each file type
+            let texture_dir = Path::new(&output).join("Texture");
+            tokio::fs::create_dir_all(&texture_dir).await?;
+
+            // Export each file
+            let mut texture_count = 0;
+            let mut error_count = 0;
+
+            for (index, file_entry) in files.iter().enumerate() {
+                if index % 100 == 0 {
+                    println!("Processing file {}/{}", index + 1, files.len());
+                }
+
+                let file_type = file_entry.file_type();
+                let object_id = format!("{:08X}", file_entry.object_id);
+
+                // Read file data
+                let read_result = async {
+                    let file = tokio::fs::File::open(&dat_file).await?;
+                    let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
+                    let mut file_reader = FileRangeReader::new(compat_file);
+                    let mut reader = DatFileReader::new(
+                        file_entry.file_size as usize,
+                        dat.header.block_size as usize,
+                    )?;
+                    reader
+                        .read_file(&mut file_reader, file_entry.file_offset)
+                        .await
+                }
+                .await;
+
+                let buf = match read_result {
+                    Ok(buf) => buf,
+                    Err(e) => {
+                        eprintln!("Error reading file {}: {}", object_id, e);
+                        error_count += 1;
+                        continue;
+                    }
+                };
+
+                // Parse and export based on file type
+                match file_type {
+                    DatFileType::Texture => {
+                        let mut buf_reader = Cursor::new(buf);
+                        match DatFile::<Texture>::read(&mut buf_reader) {
+                            Ok(outer_file) => {
+                                let texture = outer_file.inner;
+                                let extension = texture.file_extension();
+                                let output_path = texture_dir.join(format!("0x{}.{}", object_id, extension));
+                                match texture.export_to_path(&output_path.to_string_lossy()) {
+                                    Ok(_) => texture_count += 1,
+                                    Err(e) => {
+                                        eprintln!("Error exporting texture {}: {}", object_id, e);
+                                        error_count += 1;
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Error parsing texture {}: {}", object_id, e);
+                                error_count += 1;
+                            }
+                        }
+                    }
+                    _ => {
+                        // This shouldn't happen due to our filter, but handle it anyway
+                        eprintln!("Unexpected file type: {:?}", file_type);
+                    }
+                }
+            }
+
+            println!("\nExport complete!");
+            println!("  Textures exported: {}", texture_count);
+            println!("  Errors: {}", error_count);
+            println!("  Total: {}", texture_count + error_count);
+        }
     }
 
     Ok(())
@@ -469,6 +642,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         } => {
             eprintln!(
                 "Icon compositing requires the 'dat-tokio' feature. Please rebuild with --features=\"dat-tokio dat-export\""
+            );
+            std::process::exit(1);
+        }
+        Commands::Export {
+            dat_file: _,
+            output: _,
+        } => {
+            eprintln!(
+                "Export requires the 'dat-tokio' feature. Please rebuild with --features=\"dat-tokio dat-export\""
             );
             std::process::exit(1);
         }
