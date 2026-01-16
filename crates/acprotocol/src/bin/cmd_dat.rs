@@ -440,12 +440,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 output, width, height, scale
             );
         }
-        Commands::Export {
-            dat_file,
-            output,
-        } => {
-            use acprotocol::dat::reader::dat_file_reader::DatFileReader;
+        Commands::Export { dat_file, output } => {
             use acprotocol::dat::Exportable;
+            use acprotocol::dat::reader::dat_file_reader::DatFileReader;
             use std::path::Path;
 
             println!("Exporting all files from {} to {}", dat_file, output);
@@ -472,7 +469,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .filter(|f| f.file_type() == DatFileType::Texture)
                 .collect();
 
-            println!("Found {} exportable files (out of {} total)", files.len(), all_files.len());
+            println!(
+                "Found {} exportable files (out of {} total)",
+                files.len(),
+                all_files.len()
+            );
 
             // Create output directory
             tokio::fs::create_dir_all(&output).await?;
@@ -525,7 +526,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             Ok(outer_file) => {
                                 let texture = outer_file.inner;
                                 let extension = texture.file_extension();
-                                let output_path = texture_dir.join(format!("0x{}.{}", object_id, extension));
+                                let output_path =
+                                    texture_dir.join(format!("0x{}.{}", object_id, extension));
                                 match texture.export_to_path(&output_path.to_string_lossy()) {
                                     Ok(_) => texture_count += 1,
                                     Err(e) => {
