@@ -49,10 +49,8 @@ enum Commands {
         dat_file: String,
         #[arg(long, help = "Print only the total count of files")]
         count: bool,
-        #[arg(long = "type", help = "Filter files by type (Texture, Unknown)")]
+        #[arg(long = "type", help = "Filter files by type (Texture, Unknown, Icon)")]
         file_type: Option<String>,
-        #[arg(long, help = "Filter files by subtype (Icon)")]
-        subtype: Option<String>,
     },
     Icon {
         #[arg(help = "Path to DAT file", short('f'), long("file"))]
@@ -201,7 +199,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
             dat_file,
             count,
             file_type,
-            subtype,
         } => {
             use acprotocol::dat::reader::dat_file_reader::DatFileReader;
 
@@ -214,85 +211,91 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let mut files = dat.list_files(true)?;
 
             // Filter by type if specified
+            let filter_to_icons_only = file_type
+                .as_ref()
+                .map(|s| s.to_lowercase() == "icon")
+                .unwrap_or(false);
+
             if let Some(type_str) = &file_type {
-                let filter_type = match type_str.to_lowercase().as_str() {
-                    "texture" => DatFileType::Texture,
-                    "unknown" => DatFileType::Unknown,
-                    _ => {
-                        eprintln!(
-                            "Invalid file type: {}. Valid types are: Texture, Unknown",
-                            type_str
-                        );
-                        return Ok(());
+                match type_str.to_lowercase().as_str() {
+                    "texture" => {
+                        files.retain(|file| file.file_type() == DatFileType::Texture);
                     }
-                };
-                files.retain(|file| file.file_type() == filter_type);
-            }
-
-            // Filter by subtype if specified (requires reading file data)
-            if let Some(subtype_str) = &subtype {
-                match subtype_str.to_lowercase().as_str() {
+                    "unknown" => {
+                        files.retain(|file| file.file_type() == DatFileType::Unknown);
+                    }
                     "icon" => {
-                        // Icons are 32x32 textures - need to read each file to check dimensions
-                        let mut icon_files = Vec::new();
-
-                        for file_entry in &files {
-                            if file_entry.file_type() != DatFileType::Texture {
-                                continue;
-                            }
-
-                            // Read texture data
-                            let read_result = async {
-                                let file = tokio::fs::File::open(&dat_file).await?;
-                                let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
-                                let mut file_reader = FileRangeReader::new(compat_file);
-                                let mut reader = DatFileReader::new(
-                                    file_entry.file_size as usize,
-                                    dat.header.block_size as usize,
-                                )?;
-                                reader
-                                    .read_file(&mut file_reader, file_entry.file_offset)
-                                    .await
-                            }
-                            .await;
-
-                            if let Ok(buf) = read_result {
-                                let mut buf_reader = Cursor::new(buf);
-                                if let Ok(outer_file) = DatFile::<Texture>::read(&mut buf_reader) {
-                                    let texture = outer_file.inner;
-                                    if texture.width == 32 && texture.height == 32 {
-                                        icon_files.push(*file_entry);
-                                    }
-                                }
-                            }
-                        }
-
-                        files = icon_files;
+                        // Filter to textures first
+                        files.retain(|file| file.file_type() == DatFileType::Texture);
                     }
                     _ => {
                         eprintln!(
-                            "Invalid subtype: {}. Valid subtypes are: Icon",
-                            subtype_str
+                            "Invalid file type: {}. Valid types are: Texture, Unknown, Icon",
+                            type_str
                         );
                         return Ok(());
                     }
                 }
             }
 
+            // Build a map of file IDs to their subtype (Icon or None)
+            // This requires reading texture headers for all texture files
+            use std::collections::HashMap;
+            let mut icon_map: HashMap<u32, bool> = HashMap::new();
+
+            let texture_files: Vec<_> = files
+                .iter()
+                .filter(|f| f.file_type() == DatFileType::Texture)
+                .collect();
+
+            for file_entry in &texture_files {
+                // Read texture data to check dimensions
+                let read_result = async {
+                    let file = tokio::fs::File::open(&dat_file).await?;
+                    let compat_file = tokio_util::compat::TokioAsyncReadCompatExt::compat(file);
+                    let mut file_reader = FileRangeReader::new(compat_file);
+                    let mut reader = DatFileReader::new(
+                        file_entry.file_size as usize,
+                        dat.header.block_size as usize,
+                    )?;
+                    reader
+                        .read_file(&mut file_reader, file_entry.file_offset)
+                        .await
+                }
+                .await;
+
+                if let Ok(buf) = read_result {
+                    let mut buf_reader = Cursor::new(buf);
+                    if let Ok(outer_file) = DatFile::<Texture>::read(&mut buf_reader) {
+                        let texture = outer_file.inner;
+                        let is_icon = texture.width == 32 && texture.height == 32;
+                        icon_map.insert(file_entry.object_id, is_icon);
+                    }
+                }
+            }
+
+            // If filtering to icons only, keep only those with 32x32 dimensions
+            if filter_to_icons_only {
+                files.retain(|f| icon_map.get(&f.object_id).copied().unwrap_or(false));
+            }
+
             if count {
                 println!("{}", files.len());
             } else {
                 println!(
-                    "{:<10} {:<10} {:<10} {:<10}",
+                    "{:<12} {:<10} {:<10} {:<20}",
                     "ID", "OFFSET", "SIZE", "TYPE"
                 );
                 for file in files {
+                    let is_icon = icon_map.get(&file.object_id).copied().unwrap_or(false);
+                    let type_display = if is_icon {
+                        format!("{} (Icon)", file.file_type())
+                    } else {
+                        format!("{}", file.file_type())
+                    };
                     println!(
-                        "{:08X} {:<10} {:<10} {:<10}",
-                        file.object_id,
-                        file.file_offset,
-                        file.file_size,
-                        file.file_type()
+                        "0x{:08X} {:<10} {:<10} {:<20}",
+                        file.object_id, file.file_offset, file.file_size, type_display
                     );
                 }
             }
@@ -593,31 +596,40 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut files = dat.list_files(true)?;
 
             // Filter by type if specified
-            if let Some(type_str) = file_type {
-                let filter_type = match type_str.to_lowercase().as_str() {
-                    "texture" => DatFileType::Texture,
-                    "unknown" => DatFileType::Unknown,
+            if let Some(type_str) = &file_type {
+                match type_str.to_lowercase().as_str() {
+                    "texture" => {
+                        files.retain(|file| file.file_type() == DatFileType::Texture);
+                    }
+                    "unknown" => {
+                        files.retain(|file| file.file_type() == DatFileType::Unknown);
+                    }
+                    "icon" => {
+                        eprintln!(
+                            "Icon subtype filtering requires the 'dat-tokio' feature. Please rebuild with --features=\"dat-tokio dat-export\""
+                        );
+                        std::process::exit(1);
+                    }
                     _ => {
                         eprintln!(
-                            "Invalid file type: {}. Valid types are: Texture, Unknown",
+                            "Invalid file type: {}. Valid types are: Texture, Unknown, Icon",
                             type_str
                         );
                         return Ok(());
                     }
-                };
-                files.retain(|file| file.file_type() == filter_type);
+                }
             }
 
             if count {
                 println!("{}", files.len());
             } else {
                 println!(
-                    "{:<10} {:<10} {:<10} {:<10}",
+                    "{:<12} {:<10} {:<10} {:<10}",
                     "ID", "OFFSET", "SIZE", "TYPE"
                 );
                 for file in files {
                     println!(
-                        "{:08X} {:<10} {:<10} {:<10}",
+                        "0x{:08X} {:<10} {:<10} {:<10}",
                         file.object_id,
                         file.file_offset,
                         file.file_size,
