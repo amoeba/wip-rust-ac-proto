@@ -359,9 +359,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let width = width_override.unwrap_or(icon_texture.width as u32);
             let height = height_override.unwrap_or(icon_texture.height as u32);
 
-            // Default effect is UNDEF (transparent)
-            let default_effect = load_texture(&dat_file, &dat, "060011C5").await?;
-
             // Build icon with optional layers
             let mut icon = Icon {
                 width,
@@ -371,7 +368,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 underlay: None,
                 icon: icon_texture,
                 overlay: None,
-                effect: default_effect,
+                effect: None,
             };
 
             // BACKGROUND: Literal mode (background_id) takes precedence over builder mode (item_type)
@@ -412,7 +409,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             // UI EFFECT: Literal mode (ui_effect_id) takes precedence over builder mode (ui_effect)
             if let Some(ref effect_id) = ui_effect_id {
                 println!("Loading ui_effect (literal): {}", effect_id);
-                icon.effect = load_texture(&dat_file, &dat, effect_id).await?;
+                icon.effect = Some(load_texture(&dat_file, &dat, effect_id).await?);
             } else if let Some(ref effect_str) = ui_effect {
                 // Builder mode: parse UI effect name and get automatic effect texture
                 match parse_ui_effect(effect_str) {
@@ -423,13 +420,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             "Loading ui_effect (builder, ui_effect={}): {}",
                             effect_str, effect_id_str
                         );
-                        icon.effect = load_texture(&dat_file, &dat, &effect_id_str).await?;
+                        icon.effect = Some(load_texture(&dat_file, &dat, &effect_id_str).await?);
                     }
                     Err(e) => {
                         eprintln!("Error parsing UI effect '{}': {}", effect_str, e);
                         return Err(e.into());
                     }
                 }
+            } else if icon.background.is_some() || icon.underlay.is_some() || icon.overlay.is_some()
+            {
+                // Compositing with layers but no effect specified - use default UNDEF effect
+                // This replaces white pixels with black (matching Lifestoned behavior)
+                println!("Loading default effect (UNDEF): 060011C5");
+                icon.effect = Some(load_texture(&dat_file, &dat, "060011C5").await?);
             }
 
             println!("Compositing icon layers");

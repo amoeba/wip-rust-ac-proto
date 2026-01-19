@@ -200,7 +200,7 @@ pub struct Icon {
     pub underlay: Option<Texture>,
     pub icon: Texture,
     pub overlay: Option<Texture>,
-    pub effect: Texture,
+    pub effect: Option<Texture>,
 }
 
 #[cfg(feature = "dat-export")]
@@ -242,6 +242,16 @@ impl Icon {
     }
 
     pub fn blend(&self) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>, std::io::Error> {
+        let icon_buf = self.icon.export()?;
+        let icon_img: RgbaImage = ImageBuffer::from_raw(self.width, self.height, icon_buf)
+            .expect("Failed to create ImageBuffer from icon");
+
+        // If no effect, return the raw icon texture (no compositing)
+        let Some(ref effect) = self.effect else {
+            println!("Exporting raw icon (no compositing)");
+            return Ok(icon_img);
+        };
+
         // Layer order (matching Lifestoned.Lib/ImageBuilder.cs):
         // 1. Background (from item type)
         // 2. Underlay
@@ -267,17 +277,11 @@ impl Icon {
             layer_stack.push(underlay_img);
         }
 
-        // 3. Add icon, blended with effect (always blend to handle white pixel replacement)
-        let icon_buf = self.icon.export()?;
-        let icon_img: RgbaImage = ImageBuffer::from_raw(self.width, self.height, icon_buf)
-            .expect("Failed to create ImageBuffer from icon");
-
-        let effect_buf = self.effect.export()?;
+        // 3. Add icon blended with effect (white pixels replaced with effect pixels)
+        let effect_buf = effect.export()?;
         let effect_img: RgbaImage = ImageBuffer::from_raw(self.width, self.height, effect_buf)
             .expect("Failed to create ImageBuffer from effect");
-
-        let blended = Self::blend_effect(&icon_img, &effect_img);
-        layer_stack.push(blended);
+        layer_stack.push(Self::blend_effect(&icon_img, &effect_img));
 
         // 4. Add overlay if present
         if let Some(ref overlay) = self.overlay {
@@ -291,6 +295,7 @@ impl Icon {
         println!("Blending {} layer(s)", layer_stack.len());
 
         // Start with black background (matching Lifestoned behavior)
+        // This is used when compositing layers together
         let mut result = RgbaImage::new(self.width, self.height);
         for pixel in result.pixels_mut() {
             *pixel = Rgba([0, 0, 0, 255]);
@@ -310,39 +315,31 @@ impl Icon {
         Ok(result)
     }
 
-    pub fn export(&self) -> Result<Vec<u8>, std::io::Error> {
+    /// Renders the icon to a scaled DynamicImage
+    fn render(&self) -> Result<DynamicImage, std::io::Error> {
         let blended = self.blend()?;
-
-        let image = DynamicImage::ImageRgba8(blended).resize(
+        Ok(DynamicImage::ImageRgba8(blended).resize(
             self.width * self.scale,
             self.height * self.scale,
             image::imageops::FilterType::Lanczos3,
-        );
+        ))
+    }
 
+    pub fn export(&self) -> Result<Vec<u8>, std::io::Error> {
+        let image = self.render()?;
         let mut buffer = Vec::new();
-        let mut cursor = Cursor::new(&mut buffer);
-        let _ = image.write_to(&mut cursor, image::ImageFormat::Png);
-
+        image
+            .write_to(&mut Cursor::new(&mut buffer), image::ImageFormat::Png)
+            .expect("Failed to write PNG to buffer");
         Ok(buffer)
     }
 
     pub fn export_to_file(&self, path: &str) -> Result<(), std::io::Error> {
-        let blended = self.blend()?;
-
-        let image = DynamicImage::ImageRgba8(blended).resize(
-            self.width * self.scale,
-            self.height * self.scale,
-            image::imageops::FilterType::Lanczos3,
-        );
-
-        // Write to disk
+        let image = self.render()?;
         let file = File::create(path)?;
-        let mut writer = BufWriter::new(file);
-
         image
-            .write_to(&mut writer, image::ImageFormat::Png)
-            .expect("Failed to write image to disk.");
-
+            .write_to(&mut BufWriter::new(file), image::ImageFormat::Png)
+            .expect("Failed to write PNG to file");
         Ok(())
     }
 }
@@ -492,11 +489,14 @@ impl IconBuilder {
             None
         };
 
-        // Load UI effect (default to UNDEF/transparent if not specified)
+        // Load UI effect only if specified
         // White pixels in the icon are replaced with effect pixels via blend_effect
-        let effect_enum = self.ui_effect.unwrap_or(UiEffects::UNDEF);
-        let effect_id = get_ui_effect_texture_id(effect_enum);
-        let effect = load_texture_by_id(dat, dat_file_path, effect_id).await?;
+        let effect = if let Some(ui_effect_flags) = self.ui_effect {
+            let effect_id = get_ui_effect_texture_id(ui_effect_flags);
+            Some(load_texture_by_id(dat, dat_file_path, effect_id).await?)
+        } else {
+            None
+        };
 
         Ok(Icon {
             width,
